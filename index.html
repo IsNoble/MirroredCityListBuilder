@@ -1,0 +1,1182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mirrored City Army Builder (Pure HTML)</title>
+  <style>
+    :root{
+      --bg:#0f0f12;
+      --panel:#171720;
+      --panel2:#1d1d29;
+      --text:#f2f2f7;
+      --muted:#a9a9b8;
+      --line:#2a2a3a;
+      --bad:#ff5a5f;
+      --good:#4ade80;
+      --warn:#fbbf24;
+      --btn:#2a2a3a;
+      --btnHover:#36364e;
+      --input:#101018;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    header{
+      position:sticky; top:0; z-index:10;
+      background: linear-gradient(180deg, #151522, #101018);
+      border-bottom:1px solid var(--line);
+      padding:14px 16px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    header h1{
+      margin:0;
+      font-size:16px;
+      letter-spacing:0.2px;
+      font-weight:700;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:2px;
+    }
+
+    .hdr-left{display:flex; flex-direction:column}
+    .hdr-actions{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+
+    button{
+      border:1px solid var(--line);
+      background:var(--btn);
+      color:var(--text);
+      border-radius:10px;
+      padding:8px 10px;
+      font-weight:600;
+      cursor:pointer;
+      font-size:13px;
+    }
+    button:hover{background:var(--btnHover)}
+    button:disabled{opacity:.55; cursor:not-allowed}
+
+    main{
+      padding:16px;
+      display:grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap:16px;
+      max-width:1200px;
+      margin:0 auto;
+    }
+
+    @media (max-width: 980px){
+      main{grid-template-columns: 1fr}
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+
+    .row{display:grid; gap:10px}
+    .row.two{grid-template-columns:1fr 1fr}
+    @media (max-width: 700px){
+      .row.two{grid-template-columns:1fr}
+    }
+
+    label{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin: 8px 0 6px;
+    }
+
+    input[type="text"], input[type="number"], select, textarea{
+      width:100%;
+      background:var(--input);
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 10px;
+      outline:none;
+      font-size:14px;
+    }
+
+    textarea{min-height:80px; resize:vertical}
+
+    .muted{color:var(--muted); font-size:12px}
+    .tiny{font-size:11px; color:var(--muted)}
+    .hr{height:1px; background:var(--line); margin:12px 0}
+
+    .cards{display:flex; flex-direction:column; gap:10px; margin-top:8px}
+
+    .card{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .card-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--line);
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      background:rgba(255,255,255,0.02);
+      white-space:nowrap;
+    }
+
+    .pill.good{border-color: rgba(74,222,128,.45); color:var(--good)}
+    .pill.bad{border-color: rgba(255,90,95,.45); color:var(--bad)}
+    .pill.warn{border-color: rgba(251,191,36,.45); color:var(--warn)}
+
+    .card-title{
+      display:flex; flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      font-weight:800;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .stat{
+      background:rgba(255,255,255,0.03);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    .stat .k{color:var(--muted); font-size:12px}
+    .stat .v{font-weight:800; font-size:16px; margin-top:4px}
+
+    .badBorder{border-color: rgba(255,90,95,.45) !important}
+    .goodBorder{border-color: rgba(74,222,128,.45) !important}
+
+    .errors{
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .err{
+      border:1px solid rgba(255,90,95,.35);
+      background: rgba(255,90,95,.08);
+      border-radius:14px;
+      padding:10px;
+      font-size:13px;
+    }
+
+    .warnBox{
+      border:1px solid rgba(251,191,36,.35);
+      background: rgba(251,191,36,.08);
+      border-radius:14px;
+      padding:10px;
+      font-size:13px;
+    }
+
+    .okBox{
+      border:1px solid rgba(74,222,128,.35);
+      background: rgba(74,222,128,.08);
+      border-radius:14px;
+      padding:10px;
+      font-size:13px;
+    }
+
+    .btnRow{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+
+    /* PRINT */
+    @media print{
+      header, .noPrint{display:none !important}
+      body{background:#fff; color:#000}
+      .panel{box-shadow:none; border:1px solid #ddd}
+      .card{border:1px solid #ddd}
+      .pill{border:1px solid #ddd; color:#444}
+      .muted{color:#444}
+    }
+  </style>
+</head>
+
+<body>
+  <header class="noPrint">
+    <div class="hdr-left">
+      <h1>Mirrored City Army Builder</h1>
+      <div class="sub">Noble Builder</div>
+    </div>
+    <div class="hdr-actions">
+      <button id="btnExport">Export</button>
+      <button id="btnImport">Import</button>
+      <button id="btnPrint">Print</button>
+      <button id="btnReset">Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT: BUILDER -->
+    <section class="panel">
+      <div class="row two">
+        <div>
+          <label>Roster Name</label>
+          <input id="rosterName" type="text" placeholder="e.g., Jeff's Cool List" />
+        </div>
+        <div>
+          <label>Creation Mode</label>
+          <select id="creationMode">
+            <option value="starting">Starting Warband (creation rules enforced)</option>
+          </select>
+          <div class="tiny">This page enforces starting-warband constraints (500 lumens, etc.).</div>
+        </div>
+      </div>
+
+      <!-- Warband + Archetype -->
+      <div class="row two">
+        <div>
+          <label>Warband</label>
+          <select id="warbandSelect"></select>
+          <div id="warbandDesc" class="tiny"></div>
+        </div>
+
+        <div>
+          <label>Archetype</label>
+          <select id="archetypeSelect"></select>
+          <div id="archetypeDesc" class="tiny"></div>
+        </div>
+      </div>
+
+      <!-- Leader row -->
+      <div class="row two">
+        <div>
+          <label>Leader</label>
+          <select id="leaderSelect"></select>
+          <div class="tiny">Leader counts toward the Hero cap.</div>
+        </div>
+        <div>
+          <label class="muted">Notes</label>
+          <div class="tiny">Archetype controls which Leaders/Heroes/Henchmen you can select.</div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="btnRow noPrint">
+        <button id="btnAddHero">+ Add Hero Card</button>
+        <button id="btnAddHench">+ Add Henchman Card</button>
+      </div>
+
+      <div class="tiny">Edit the DATA section in this file to add more warbands/units/gear.</div>
+
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <!-- RIGHT: SUMMARY -->
+    <aside class="panel">
+      <h2 style="margin:0 0 10px 0; font-size:16px;">Summary</h2>
+
+      <div class="summary-grid">
+        <div class="stat" id="statLumens">
+          <div class="k">Lumens</div>
+          <div class="v" id="lumensText">0 / 500</div>
+          <div class="tiny" id="lumensSub"></div>
+        </div>
+        <div class="stat" id="statCards">
+          <div class="k">Stat Cards</div>
+          <div class="v" id="cardsText">0 / 5</div>
+          <div class="tiny" id="cardsSub"></div>
+        </div>
+        <div class="stat" id="statHeroes">
+          <div class="k">Heroes (incl. Leader)</div>
+          <div class="v" id="heroesText">0 / 3</div>
+          <div class="tiny">Max 3 at creation (Leader included).</div>
+        </div>
+        <div class="stat" id="statReqs">
+          <div class="k">Requirements</div>
+          <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
+            <span class="pill" id="reqLeader">Leader</span>
+            <span class="pill" id="reqHench">Henchman Card</span>
+            <span class="pill" id="reqOneMore">+1 Card</span>
+            <span class="pill" id="reqMinCards">≥3 Cards</span>
+            <span class="pill" id="reqNoSells">No Sellswords</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="errors" id="messages"></div>
+
+      <div class="hr"></div>
+
+      <label class="noPrint">Roster JSON (read-only preview)</label>
+      <textarea id="jsonPreview" readonly></textarea>
+      <div class="tiny">Export/Import uses this format. Local save is in your browser only.</div>
+    </aside>
+  </main>
+
+<script>
+/**
+ * PURE HTML APP (single file)
+ * - No build tools, no TSX, no npm.
+ * - Upload index.html via cPanel and it works.
+ */
+
+/* =========================
+   DATA
+   ========================= */
+
+const RULES = {
+  startingLumens: 500,
+  startingStatCardsMax: 5,
+  startingStatCardsMinFilled: 3,
+  startingMaxHeroesIncludingLeader: 3, // IMPORTANT: leader counts
+  sellswordsAllowedAtCreation: false
+};
+
+/**
+ * ORDER OF THE LAST SUN — Units
+ * Note: Costs/limits here match the values you provided in the prior message.
+ * If any cost/limit differs from your book, edit here.
+ */
+const UNITS = [
+  // ===== ORDER OF THE LAST SUN — LEADERS =====
+  { id: "ols_vindicator", name: "Vindicator", type: "LEADER", cost: 70, tags: [], limit: "1" },
+  { id: "ols_justicar", name: "Justicar", type: "LEADER", cost: 65, tags: [], limit: "1" },
+  { id: "ols_dawnfather", name: "Dawnfather / Dawnmother", type: "LEADER", cost: 60, tags: [], limit: "0-1" },
+
+  // ===== ORDER OF THE LAST SUN — HEROES =====
+  { id: "ols_purifier", name: "Purifier", type: "HERO", cost: 40, tags: [], limit: "0-3" },
+  { id: "ols_suntouched_vessel", name: "Suntouched Vessel", type: "HERO", cost: 50, tags: [], limit: "" },
+  { id: "ols_chaplain", name: "Chaplain", type: "HERO", cost: 55, tags: [], limit: "0-1" },
+  { id: "ols_sunward_initiate", name: "Sunward Initiate", type: "HERO", cost: 25, tags: [], limit: "0-2" },
+  { id: "ols_dawnguard", name: "Dawnguard", type: "HERO", cost: 45, tags: [], limit: "0-2" },
+
+  // ===== ORDER OF THE LAST SUN — HENCHMEN =====
+  { id: "ols_warhound", name: "Warhound", type: "HENCHMAN", cost: 15, tags: [], limit: "0-6" },
+  { id: "ols_man_at_arms", name: "Man-at-Arms", type: "HENCHMAN", cost: 25, tags: [], limit: "" },
+  { id: "ols_dawner", name: "Dawner", type: "HENCHMAN", cost: 20, tags: ["HORDE"], limit: "" },
+  { id: "ols_vigilant", name: "Vigilant", type: "HENCHMAN", cost: 25, tags: [], limit: "0-6" },
+
+  // Example Sellsword placeholder (kept to demonstrate the "no sellswords at creation" rule)
+  { id: "sell_blade_for_hire", name: "Blade for Hire", type: "SELLSWORD", cost: 60, tags: [], limit: "" }
+];
+
+/**
+ * Wargear (placeholder)
+ * - restrictions: ["HERO","LEADER"] etc.
+ * - Adjust later once you have the real tables
+ */
+const WARGEAR = [
+  { id: "gear_shield", name: "Shield", cost: 10, restrictions: ["LEADER","HERO"] },
+  { id: "gear_pistol", name: "Blackpowder Pistol", cost: 15, restrictions: ["LEADER","HERO"] },
+  { id: "gear_net", name: "Weighted Net", cost: 8, restrictions: ["HENCHMAN","HERO","LEADER"] }
+];
+
+/**
+ * Warbands with archetypes
+ */
+const WARBANDS = [
+  {
+    id: "order_of_the_last_sun",
+    name: "Order of the Last Sun",
+    description: "A sanctioned strike force of Solmir. Archetype dictates allowed units.",
+    archetypes: [
+      {
+        id: "purifier_conclave",
+        name: "Purifier Conclave",
+        description: "Militant hunters of corruption. Justicar-led, warhounds common.",
+        leaders: ["ols_justicar", "ols_vindicator"],
+        heroes: ["ols_purifier", "ols_chaplain", "ols_sunward_initiate"],
+        henchmen: ["ols_warhound", "ols_man_at_arms", "ols_vigilant"],
+        sellswords: ["sell_blade_for_hire"]
+      },
+      {
+        id: "solmiric_clergy",
+        name: "Solmiric Clergy",
+        description: "Priests and attendants. Dawnfather leads; Dawnguard and Dawners support.",
+        leaders: ["ols_dawnfather", "ols_vindicator"],
+        heroes: ["ols_dawnguard", "ols_suntouched_vessel", "ols_sunward_initiate"],
+        henchmen: ["ols_dawner", "ols_man_at_arms", "ols_vigilant"],
+        sellswords: ["sell_blade_for_hire"]
+      }
+    ]
+  }
+];
+
+/* =========================
+   APP STATE
+   ========================= */
+
+const STORAGE_KEY = "mirrored_city_builder_roster_v3";
+
+let state = {
+  name: "",
+  warbandId: WARBANDS[0]?.id || "",
+  archetypeId: "",
+  leaderUnitId: "",
+  cards: []
+};
+
+/* =========================
+   UTIL
+   ========================= */
+
+function uid() {
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+function byId(id){ return document.getElementById(id); }
+
+function getWarbandBase() {
+  return WARBANDS.find(w => w.id === state.warbandId) || WARBANDS[0] || null;
+}
+
+function getArchetype(warband) {
+  if (!warband?.archetypes?.length) return null;
+  return warband.archetypes.find(a => a.id === state.archetypeId) || warband.archetypes[0];
+}
+
+function getUnit(unitId) {
+  return UNITS.find(u => u.id === unitId) || null;
+}
+
+function allowedUnitIdsForKind(warbandBase, kind){
+  const arch = getArchetype(warbandBase);
+
+  if (arch){
+    if (kind === "HERO") return arch.heroes.slice();
+    if (kind === "HENCHMAN") return arch.henchmen.slice();
+    return [];
+  }
+
+  if (kind === "HERO") return (warbandBase.heroes || []).slice();
+  if (kind === "HENCHMAN") return (warbandBase.henchmen || []).slice();
+  return [];
+}
+
+function allowedLeaderIds(warbandBase){
+  const arch = getArchetype(warbandBase);
+  if (arch) return (arch.leaders || []).slice();
+  return (warbandBase.leaders || []).slice();
+}
+
+function canTakeGear(unitType, gear){
+  if (!gear.restrictions || gear.restrictions.length === 0) return true;
+  return gear.restrictions.includes(unitType);
+}
+
+function clampInt(n, min, max){
+  const x = parseInt(n, 10);
+  if (Number.isNaN(x)) return min;
+  return Math.max(min, Math.min(max, x));
+}
+
+/* =========================
+   COSTS
+   ========================= */
+
+function cardCost(card){
+  const unit = getUnit(card.unitId);
+  if (!unit) return 0;
+  const base = unit.cost || 0;
+
+  let count = 1;
+  if (card.kind === "HENCHMAN") {
+    count = card.count || 1;
+  }
+
+  let gearTotal = 0;
+  for (const gid of (card.wargearIds || [])){
+    const g = WARGEAR.find(x => x.id === gid);
+    if (g) gearTotal += (g.cost || 0);
+  }
+
+  return (base * count) + gearTotal;
+}
+
+function totalLumens(){
+  let total = 0;
+
+  const leader = getUnit(state.leaderUnitId);
+  if (leader) {
+    total += (leader.cost || 0);
+    const leaderCard = state.cards.find(c => c.kind === "LEADER_CARD");
+    if (leaderCard) {
+      for (const gid of (leaderCard.wargearIds || [])){
+        const g = WARGEAR.find(x => x.id === gid);
+        if (g) total += (g.cost || 0);
+      }
+    }
+  }
+
+  for (const c of state.cards){
+    if (c.kind === "LEADER_CARD") continue;
+    total += cardCost(c);
+  }
+
+  return total;
+}
+
+/* =========================
+   VALIDATION
+   ========================= */
+
+function validate(){
+  const errs = [];
+  const warns = [];
+
+  const warbandBase = getWarbandBase();
+  const arch = getArchetype(warbandBase);
+
+  const hasLeader = !!state.leaderUnitId;
+
+  const filledCards = state.cards.filter(c => c.kind !== "LEADER_CARD").length;
+
+  const hasHenchmanCard = state.cards.some(c => c.kind === "HENCHMAN");
+  const hasOneMore = filledCards >= 3;
+
+  // Heroes INCLUDING leader
+  const heroCardsCount = state.cards.filter(c => c.kind === "HERO").length;
+  const heroesIncludingLeader = (hasLeader ? 1 : 0) + heroCardsCount;
+
+  let hasSellsword = false;
+  for (const c of state.cards){
+    if (c.kind === "LEADER_CARD") continue;
+    const u = getUnit(c.unitId);
+    if (u && u.type === "SELLSWORD") hasSellsword = true;
+  }
+
+  const spent = totalLumens();
+  if (spent > RULES.startingLumens){
+    errs.push(`Over budget: spent ${spent} / ${RULES.startingLumens} lumens.`);
+  }
+
+  if (filledCards > RULES.startingStatCardsMax){
+    errs.push(`Too many Stat Cards: ${filledCards} / ${RULES.startingStatCardsMax}.`);
+  }
+  if (filledCards < RULES.startingStatCardsMinFilled){
+    errs.push(`Not enough Stat Cards filled: ${filledCards} / ${RULES.startingStatCardsMinFilled} required at creation.`);
+  }
+
+  if (!hasLeader){
+    errs.push("Starting warband must include a Leader.");
+  }
+
+  if (arch == null && (warbandBase?.archetypes?.length)){
+    errs.push("This warband requires selecting an Archetype.");
+  }
+
+  if (!hasHenchmanCard){
+    errs.push("Starting warband must include at least one Henchman Card.");
+  }
+
+  if (!hasOneMore){
+    errs.push("Starting warband must include Leader + Henchman + one additional Stat Card (minimum 3 cards).");
+  }
+
+  if (heroesIncludingLeader > RULES.startingMaxHeroesIncludingLeader){
+    errs.push(`Too many Heroes (including Leader): ${heroesIncludingLeader} / ${RULES.startingMaxHeroesIncludingLeader}.`);
+  }
+
+  if (!RULES.sellswordsAllowedAtCreation && hasSellsword){
+    errs.push("Sellswords cannot be hired during warband creation.");
+  }
+
+  if (hasLeader){
+    const allowedLeaders = allowedLeaderIds(warbandBase);
+    if (!allowedLeaders.includes(state.leaderUnitId)){
+      const leaderUnit = getUnit(state.leaderUnitId);
+      errs.push(`Leader not allowed for selected archetype: ${leaderUnit ? leaderUnit.name : state.leaderUnitId}.`);
+    }
+  }
+
+  for (const c of state.cards){
+    if (c.kind === "LEADER_CARD") continue;
+
+    const u = getUnit(c.unitId);
+    if (!u){
+      warns.push("A card has no unit selected.");
+      continue;
+    }
+
+    const allowedIds = allowedUnitIdsForKind(warbandBase, c.kind);
+    if (!allowedIds.includes(c.unitId)){
+      errs.push(`Invalid unit for this archetype/card type: ${u.name} on a ${c.kind} card.`);
+    }
+
+    if (c.kind === "HENCHMAN"){
+      const isHorde = (u.tags || []).includes("HORDE");
+      const max = isHorde ? 4 : 3;
+      const count = clampInt(c.count, 1, max);
+      if (count !== c.count){
+        errs.push(`${u.name}: Henchman count must be 1–${max}${isHorde ? " (HORDE)" : ""}.`);
+      }
+    }
+  }
+
+  return {
+    errs,
+    warns,
+    meta: {
+      hasLeader,
+      hasHenchmanCard,
+      hasOneMore,
+      meetsMinCards: filledCards >= RULES.startingStatCardsMinFilled,
+      noSellswords: !hasSellsword,
+      filledCards,
+      heroesIncludingLeader,
+      spent
+    }
+  };
+}
+
+/* =========================
+   RENDERING
+   ========================= */
+
+function render(){
+  byId("rosterName").value = state.name || "";
+
+  const warbandBase = getWarbandBase();
+
+  const wbSel = byId("warbandSelect");
+  wbSel.innerHTML = "";
+  for (const w of WARBANDS){
+    const opt = document.createElement("option");
+    opt.value = w.id;
+    opt.textContent = w.name;
+    wbSel.appendChild(opt);
+  }
+  wbSel.value = state.warbandId;
+
+  byId("warbandDesc").textContent = warbandBase?.description || "";
+
+  // Archetype
+  const archSel = byId("archetypeSelect");
+  const archDesc = byId("archetypeDesc");
+  archSel.innerHTML = "";
+
+  const archetypes = warbandBase?.archetypes || [];
+  if (!archetypes.length){
+    archSel.disabled = true;
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "— (No archetypes) —";
+    archSel.appendChild(opt);
+    archDesc.textContent = "";
+    state.archetypeId = "";
+  } else {
+    archSel.disabled = false;
+    if (!state.archetypeId) state.archetypeId = archetypes[0].id;
+
+    for (const a of archetypes){
+      const opt = document.createElement("option");
+      opt.value = a.id;
+      opt.textContent = a.name;
+      archSel.appendChild(opt);
+    }
+    archSel.value = state.archetypeId;
+
+    const arch = getArchetype(warbandBase);
+    archDesc.textContent = arch?.description || "";
+  }
+
+  // Leader select
+  const leaderSel = byId("leaderSelect");
+  leaderSel.innerHTML = "";
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "— Select Leader —";
+  leaderSel.appendChild(placeholder);
+
+  const leaderIds = allowedLeaderIds(warbandBase);
+  for (const id of leaderIds){
+    const u = getUnit(id);
+    if (!u) continue;
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = `${u.name} (${u.cost} lumens)`;
+    leaderSel.appendChild(opt);
+  }
+  leaderSel.value = state.leaderUnitId || "";
+
+  // Leader gear card exists?
+  if (state.leaderUnitId){
+    if (!state.cards.some(c => c.kind === "LEADER_CARD")){
+      state.cards.unshift({ id: uid(), kind: "LEADER_CARD", unitId: "", count: 1, wargearIds: [] });
+    }
+  } else {
+    state.cards = state.cards.filter(c => c.kind !== "LEADER_CARD");
+  }
+
+  const cardsEl = byId("cards");
+  cardsEl.innerHTML = "";
+
+  if (state.leaderUnitId){
+    const leaderUnit = getUnit(state.leaderUnitId);
+    const leaderCard = state.cards.find(c => c.kind === "LEADER_CARD");
+    cardsEl.appendChild(renderLeaderGearCard(leaderUnit, leaderCard));
+  }
+
+  for (const c of state.cards){
+    if (c.kind === "LEADER_CARD") continue;
+    cardsEl.appendChild(renderStatCard(c, warbandBase));
+  }
+
+  const v = validate();
+  renderSummary(v);
+
+  byId("jsonPreview").value = JSON.stringify(safeExportState(), null, 2);
+
+  save();
+}
+
+function renderLeaderGearCard(leaderUnit, leaderCard){
+  const wrap = document.createElement("div");
+  wrap.className = "card";
+  wrap.innerHTML = `
+    <div class="card-top">
+      <div class="card-title">
+        <span>Leader Gear</span>
+        <span class="pill">LEADER</span>
+        <span class="pill">Gear Cost: <span id="leaderGearCost"></span></span>
+      </div>
+      <button class="noPrint" title="Leader is selected above" disabled>Leader</button>
+    </div>
+    <div class="muted">Leader: <strong>${leaderUnit ? leaderUnit.name : "—"}</strong></div>
+    <label>Wargear (Leader/Hero gear only)</label>
+    <div id="leaderGearList"></div>
+    <div class="tiny">Gear cost is added to the Leader.</div>
+  `;
+
+  const gearList = wrap.querySelector("#leaderGearList");
+  gearList.style.display = "grid";
+  gearList.style.gridTemplateColumns = "1fr 1fr";
+  gearList.style.gap = "8px";
+
+  const unitType = leaderUnit?.type || "LEADER";
+  const allowed = WARGEAR.filter(g => canTakeGear(unitType, g));
+
+  for (const g of allowed){
+    const row = document.createElement("label");
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.gap = "8px";
+    row.style.margin = "0";
+    row.style.color = "var(--text)";
+    row.style.fontSize = "13px";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = (leaderCard.wargearIds || []).includes(g.id);
+    cb.addEventListener("change", () => {
+      if (cb.checked){
+        if (!leaderCard.wargearIds.includes(g.id)) leaderCard.wargearIds.push(g.id);
+      } else {
+        leaderCard.wargearIds = leaderCard.wargearIds.filter(x => x !== g.id);
+      }
+      render();
+    });
+
+    const span = document.createElement("span");
+    span.textContent = `${g.name} (+${g.cost})`;
+
+    row.appendChild(cb);
+    row.appendChild(span);
+    gearList.appendChild(row);
+  }
+
+  const gearCost = (leaderCard.wargearIds || []).reduce((sum, gid) => {
+    const g = WARGEAR.find(x => x.id === gid);
+    return sum + (g ? (g.cost || 0) : 0);
+  }, 0);
+  wrap.querySelector("#leaderGearCost").textContent = `${gearCost}`;
+
+  return wrap;
+}
+
+function renderStatCard(card, warbandBase){
+  const wrap = document.createElement("div");
+  wrap.className = "card";
+
+  const kindLabel = card.kind === "HERO" ? "HERO" : "HENCHMAN";
+
+  const unit = getUnit(card.unitId);
+  const isHorde = unit && (unit.tags || []).includes("HORDE");
+  const maxCount = (card.kind === "HENCHMAN") ? (isHorde ? 4 : 3) : 1;
+
+  wrap.innerHTML = `
+    <div class="card-top">
+      <div class="card-title">
+        <span>${kindLabel} Card</span>
+        ${isHorde ? `<span class="pill warn">HORDE</span>` : ""}
+        <span class="pill">Card Cost: <span id="cost_${card.id}"></span></span>
+        ${unit?.limit ? `<span class="pill">${unit.limit}</span>` : ""}
+      </div>
+      <button class="noPrint" id="rm_${card.id}">Remove</button>
+    </div>
+
+    <div class="row two">
+      <div>
+        <label>Unit</label>
+        <select id="unit_${card.id}"></select>
+      </div>
+      <div>
+        <label>Count ${card.kind === "HENCHMAN" ? `(1–${maxCount})` : ""}</label>
+        <input id="count_${card.id}" type="number" min="1" max="${maxCount}" ${card.kind === "HENCHMAN" ? "" : "disabled"} />
+        <div class="tiny">${card.kind === "HENCHMAN" ? (isHorde ? "HORDE henchmen can be 1–4." : "Henchmen are 1–3.") : "Heroes are always 1 model."}</div>
+      </div>
+    </div>
+
+    <label>Wargear</label>
+    <div id="gear_${card.id}"></div>
+  `;
+
+  wrap.querySelector(`#rm_${card.id}`).addEventListener("click", () => {
+    state.cards = state.cards.filter(c => c.id !== card.id);
+    render();
+  });
+
+  const unitSel = wrap.querySelector(`#unit_${card.id}`);
+  unitSel.innerHTML = "";
+
+  const allowedIds = allowedUnitIdsForKind(warbandBase, card.kind);
+
+  const ph = document.createElement("option");
+  ph.value = "";
+  ph.textContent = "— Select Unit —";
+  unitSel.appendChild(ph);
+
+  for (const id of allowedIds){
+    const u = getUnit(id);
+    if (!u) continue;
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = `${u.name} (${u.cost} lumens${(u.tags||[]).includes("HORDE") ? ", HORDE" : ""}${u.type==="SELLSWORD" ? ", SELLWORD" : ""})`;
+    unitSel.appendChild(opt);
+  }
+
+  unitSel.value = card.unitId || "";
+  unitSel.addEventListener("change", () => {
+    card.unitId = unitSel.value;
+    const u = getUnit(card.unitId);
+    const horde = u && (u.tags||[]).includes("HORDE");
+    const max = (card.kind === "HENCHMAN") ? (horde ? 4 : 3) : 1;
+    card.count = clampInt(card.count || 1, 1, max);
+    render();
+  });
+
+  const countEl = wrap.querySelector(`#count_${card.id}`);
+  if (card.kind === "HENCHMAN"){
+    countEl.value = card.count || 1;
+    countEl.addEventListener("input", () => {
+      const u = getUnit(card.unitId);
+      const horde = u && (u.tags||[]).includes("HORDE");
+      const max = horde ? 4 : 3;
+      card.count = clampInt(countEl.value, 1, max);
+      render();
+    });
+  } else {
+    countEl.value = 1;
+    card.count = 1;
+  }
+
+  const gearEl = wrap.querySelector(`#gear_${card.id}`);
+  gearEl.style.display = "grid";
+  gearEl.style.gridTemplateColumns = "1fr 1fr";
+  gearEl.style.gap = "8px";
+
+  const unitType = (getUnit(card.unitId)?.type) || (card.kind === "HENCHMAN" ? "HENCHMAN" : "HERO");
+  const allowedGear = WARGEAR.filter(g => canTakeGear(unitType, g));
+
+  for (const g of allowedGear){
+    const row = document.createElement("label");
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.gap = "8px";
+    row.style.margin = "0";
+    row.style.color = "var(--text)";
+    row.style.fontSize = "13px";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = (card.wargearIds || []).includes(g.id);
+    cb.addEventListener("change", () => {
+      card.wargearIds = card.wargearIds || [];
+      if (cb.checked){
+        if (!card.wargearIds.includes(g.id)) card.wargearIds.push(g.id);
+      } else {
+        card.wargearIds = card.wargearIds.filter(x => x !== g.id);
+      }
+      render();
+    });
+
+    const span = document.createElement("span");
+    span.textContent = `${g.name} (+${g.cost})`;
+
+    row.appendChild(cb);
+    row.appendChild(span);
+    gearEl.appendChild(row);
+  }
+
+  wrap.querySelector(`#cost_${card.id}`).textContent = `${cardCost(card)}`;
+
+  return wrap;
+}
+
+function renderSummary(v){
+  const spent = v.meta.spent;
+  const remaining = RULES.startingLumens - spent;
+
+  byId("lumensText").textContent = `${spent} / ${RULES.startingLumens}`;
+  byId("lumensSub").textContent = `Remaining: ${remaining}`;
+  const lumBox = byId("statLumens");
+  lumBox.classList.toggle("badBorder", remaining < 0);
+  lumBox.classList.toggle("goodBorder", remaining >= 0);
+
+  byId("cardsText").textContent = `${v.meta.filledCards} / ${RULES.startingStatCardsMax}`;
+  byId("cardsSub").textContent = `Minimum at creation: ${RULES.startingStatCardsMinFilled}`;
+  const cardsBox = byId("statCards");
+  cardsBox.classList.toggle("badBorder", v.meta.filledCards > RULES.startingStatCardsMax || v.meta.filledCards < RULES.startingStatCardsMinFilled);
+  cardsBox.classList.toggle("goodBorder", v.meta.filledCards >= RULES.startingStatCardsMinFilled && v.meta.filledCards <= RULES.startingStatCardsMax);
+
+  byId("heroesText").textContent = `${v.meta.heroesIncludingLeader} / ${RULES.startingMaxHeroesIncludingLeader}`;
+  const heroBox = byId("statHeroes");
+  heroBox.classList.toggle("badBorder", v.meta.heroesIncludingLeader > RULES.startingMaxHeroesIncludingLeader);
+  heroBox.classList.toggle("goodBorder", v.meta.heroesIncludingLeader <= RULES.startingMaxHeroesIncludingLeader);
+
+  setReqPill("reqLeader", v.meta.hasLeader);
+  setReqPill("reqHench", v.meta.hasHenchmanCard);
+  setReqPill("reqOneMore", v.meta.hasOneMore);
+  setReqPill("reqMinCards", v.meta.meetsMinCards);
+  setReqPill("reqNoSells", v.meta.noSellswords);
+
+  const box = byId("messages");
+  box.innerHTML = "";
+
+  if (v.errs.length === 0 && v.warns.length === 0){
+    const ok = document.createElement("div");
+    ok.className = "okBox";
+    ok.textContent = "Looks good so far. This roster passes the starting-warband checks.";
+    box.appendChild(ok);
+  } else {
+    for (const e of v.errs){
+      const el = document.createElement("div");
+      el.className = "err";
+      el.textContent = e;
+      box.appendChild(el);
+    }
+    for (const w of v.warns){
+      const el = document.createElement("div");
+      el.className = "warnBox";
+      el.textContent = w;
+      box.appendChild(el);
+    }
+  }
+}
+
+function setReqPill(id, ok){
+  const el = byId(id);
+  el.classList.remove("good","bad");
+  el.classList.add(ok ? "good" : "bad");
+}
+
+/* =========================
+   EVENTS
+   ========================= */
+
+byId("rosterName").addEventListener("input", (e) => {
+  state.name = e.target.value;
+  render();
+});
+
+byId("warbandSelect").addEventListener("change", (e) => {
+  state.warbandId = e.target.value;
+  state.archetypeId = "";
+  state.leaderUnitId = "";
+  state.cards = [];
+  render();
+});
+
+byId("archetypeSelect").addEventListener("change", (e) => {
+  state.archetypeId = e.target.value;
+  state.leaderUnitId = "";
+  state.cards = [];
+  render();
+});
+
+byId("leaderSelect").addEventListener("change", (e) => {
+  state.leaderUnitId = e.target.value;
+
+  const leaderCard = state.cards.find(c => c.kind === "LEADER_CARD");
+  if (leaderCard) leaderCard.wargearIds = [];
+
+  render();
+});
+
+byId("btnAddHero").addEventListener("click", () => {
+  state.cards.push({ id: uid(), kind: "HERO", unitId: "", count: 1, wargearIds: [] });
+  render();
+});
+
+byId("btnAddHench").addEventListener("click", () => {
+  state.cards.push({ id: uid(), kind: "HENCHMAN", unitId: "", count: 1, wargearIds: [] });
+  render();
+});
+
+byId("btnReset").addEventListener("click", () => {
+  if (!confirm("Reset roster? This clears saved data in this browser.")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = {
+    name: "",
+    warbandId: WARBANDS[0]?.id || "",
+    archetypeId: "",
+    leaderUnitId: "",
+    cards: []
+  };
+  render();
+});
+
+byId("btnPrint").addEventListener("click", () => window.print());
+byId("btnExport").addEventListener("click", () => exportRoster());
+byId("btnImport").addEventListener("click", () => importRoster());
+
+/* =========================
+   SAVE / LOAD / EXPORT
+   ========================= */
+
+function safeExportState(){
+  return {
+    version: 3,
+    roster: {
+      name: state.name,
+      warbandId: state.warbandId,
+      archetypeId: state.archetypeId,
+      leaderUnitId: state.leaderUnitId,
+      cards: state.cards
+        .filter(c => c.kind !== "LEADER_CARD")
+        .map(c => ({ ...c })),
+      leaderGear: (() => {
+        const lc = state.cards.find(c => c.kind === "LEADER_CARD");
+        return lc ? (lc.wargearIds || []) : [];
+      })()
+    }
+  };
+}
+
+function applyImported(obj){
+  if (!obj || !obj.roster) throw new Error("Invalid roster format.");
+
+  const r = obj.roster;
+  state.name = r.name || "";
+  state.warbandId = r.warbandId || (WARBANDS[0]?.id || "");
+  state.archetypeId = r.archetypeId || "";
+  state.leaderUnitId = r.leaderUnitId || "";
+  state.cards = Array.isArray(r.cards) ? r.cards.map(c => ({
+    id: c.id || uid(),
+    kind: c.kind,
+    unitId: c.unitId || "",
+    count: c.count || 1,
+    wargearIds: Array.isArray(c.wargearIds) ? c.wargearIds : []
+  })) : [];
+
+  if (state.leaderUnitId){
+    const leaderGear = Array.isArray(r.leaderGear) ? r.leaderGear : [];
+    state.cards.unshift({ id: uid(), kind: "LEADER_CARD", unitId: "", count: 1, wargearIds: leaderGear });
+  }
+
+  const normalCards = state.cards.filter(c => c.kind !== "LEADER_CARD");
+  if (normalCards.length > RULES.startingStatCardsMax){
+    state.cards = state.cards.filter(c => c.kind === "LEADER_CARD").concat(normalCards.slice(0, RULES.startingStatCardsMax));
+  }
+}
+
+function save(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(safeExportState()));
+  }catch{}
+}
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    applyImported(JSON.parse(raw));
+    return true;
+  }catch{
+    return false;
+  }
+}
+
+function exportRoster(){
+  const obj = safeExportState();
+  const json = JSON.stringify(obj, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = (state.name ? state.name.replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_") : "mirrored_city_roster") + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importRoster(){
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        applyImported(JSON.parse(String(reader.result || "")));
+        render();
+      }catch(e){
+        alert("Import failed: " + (e && e.message ? e.message : "Invalid JSON"));
+      }
+    };
+    reader.readAsText(file);
+  });
+  input.click();
+}
+
+/* =========================
+   BOOT
+   ========================= */
+
+(function boot(){
+  state.warbandId = state.warbandId || (WARBANDS[0]?.id || "");
+  load();
+  if (!state.warbandId && WARBANDS[0]) state.warbandId = WARBANDS[0].id;
+  render();
+})();
+</script>
+</body>
+</html>
