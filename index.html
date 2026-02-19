@@ -325,7 +325,7 @@
       </div>
 
       <div class="tiny">
-        Equipment slots per Stat Card: <strong>3 Weapons</strong>, <strong>1 Helmet</strong>, <strong>1 Armor</strong>, <strong>1 Shield</strong>, <strong>3 Everything Else</strong>.
+        Equipment slots per Stat Card: <strong>3 Weapons</strong>, <strong>1 Helmet</strong>, <strong>1 Armor</strong>, <strong>1 Shield</strong>, <strong>3 Universal</strong>.
       </div>
 
       <div class="cards" id="cards"></div>
@@ -1484,7 +1484,7 @@ function renderEquipmentSlotsUI(host, card, cardKind){
     { key:"HELMET", label:"Helmet", hint:`${RULES.equipSlots.HELMET}`, multi:false },
     { key:"ARMOR",  label:"Armor",  hint:`${RULES.equipSlots.ARMOR}`, multi:false },
     { key:"SHIELD", label:"Shield", hint:`${RULES.equipSlots.SHIELD}`, multi:false },
-    { key:"OTHER",  label:"Everything Else", hint:`Up to ${RULES.equipSlots.OTHER}`, multi:true }
+    { key:"OTHER",  label:"Universal", hint:`Up to ${RULES.equipSlots.OTHER}`, multi:true }
   ];
 
   const slotGrid = document.createElement("div");
