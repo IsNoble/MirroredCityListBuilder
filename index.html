@@ -257,8 +257,8 @@
 <body>
   <header class="noPrint">
     <div class="hdr-left">
-      <h1>Mirrored City Warband Builder</h1>
-      <div class="sub">Noble Builder</div>
+      <h1>Noble Builder</h1>
+      <div class="sub">Pure HTML • Upload via cPanel • Auto-saves locally</div>
     </div>
     <div class="hdr-actions">
       <button id="btnExport">Export</button>
@@ -325,7 +325,7 @@
       </div>
 
       <div class="tiny">
-        Equipment slots per Stat Card: <strong>3 Weapons</strong>, <strong>1 Helmet</strong>, <strong>1 Armor</strong>, <strong>1 Shield</strong>, <strong>3 Universal</strong>.
+        Equipment slots per Stat Card: <strong>3 Weapons</strong>, <strong>1 Helmet</strong>, <strong>1 Armor</strong>, <strong>1 Shield</strong>, <strong>3 Everything Else</strong>.
       </div>
 
       <div class="cards" id="cards"></div>
@@ -418,12 +418,14 @@ const UNITS = [
 ];
 
 /* =========================================================
-   EQUIPMENT (central catalog)
+   EQUIPMENT CATALOG
+   - Dagger cost is 2.
+   - First dagger is free ONLY if dagger appears in that unit's allowed weapon list.
    ========================================================= */
 
 const EQUIPMENT_CATALOG = {
   eq_axe: { id:"eq_axe", name:"Axe", tags:["WEAPON","MELEE"], cost:8 },
-  eq_dagger: { id:"eq_dagger", name:"Dagger", tags:["WEAPON","MELEE"], cost:0, note:"1st Free / 2" },
+  eq_dagger: { id:"eq_dagger", name:"Dagger", tags:["WEAPON","MELEE"], cost:2 },
   eq_flail: { id:"eq_flail", name:"Flail", tags:["WEAPON","MELEE"], cost:18 },
   eq_great_weapon: { id:"eq_great_weapon", name:"Great Weapon", tags:["WEAPON","MELEE","TWO_HANDED"], cost:25 },
   eq_halberd: { id:"eq_halberd", name:"Halberd", tags:["WEAPON","MELEE","TWO_HANDED"], cost:12 },
@@ -464,9 +466,9 @@ const EQUIPMENT_CATALOG = {
   eq_tower_shield: { id:"eq_tower_shield", name:"Tower Shield", tags:["SHIELD"], cost:18 },
   eq_buckler: { id:"eq_buckler", name:"Buckler", tags:["SHIELD"], cost:5 },
 
+  // Universal Equipment
   eq_holy_symbol: { id:"eq_holy_symbol", name:"Holy Symbol", tags:["UNIVERSAL","RARE"], cost:25 },
   eq_holy_water: { id:"eq_holy_water", name:"Holy Water", tags:["UNIVERSAL","CONSUMABLE","RARE"], cost:20 },
-  eq_sunfire_phial: { id:"eq_sunfire_phial", name:"Sunfire Phial", tags:["UNIVERSAL","CONSUMABLE","UNIQUE"], cost:30, uniqueToFaction:"order_of_the_last_sun" },
   eq_torch: { id:"eq_torch", name:"Torch", tags:["UNIVERSAL"], cost:2 },
 
   // Special materials (not selectable yet)
@@ -476,18 +478,23 @@ const EQUIPMENT_CATALOG = {
 
   // OLS Unique equipment
   eq_solar_mace: { id:"eq_solar_mace", name:"Solar Mace", tags:["WEAPON","MELEE","UNIQUE"], cost:15, uniqueToFaction:"order_of_the_last_sun" },
-  eq_sun_mask: { id:"eq_sun_mask", name:"Sun Mask", tags:["HELMET","UNIQUE"], cost:5, note:"Counts as a Helmet", uniqueToFaction:"order_of_the_last_sun" },
+  eq_sun_mask: { id:"eq_sun_mask", name:"Sun Mask", tags:["HELMET","UNIQUE"], cost:5, uniqueToFaction:"order_of_the_last_sun" },
   eq_consecrated_stake: { id:"eq_consecrated_stake", name:"Consecrated Stake", tags:["WEAPON","MELEE","UNIQUE"], cost:10, uniqueToFaction:"order_of_the_last_sun" },
+  eq_sunfire_phial: { id:"eq_sunfire_phial", name:"Sunfire Phial", tags:["UNIVERSAL","CONSUMABLE","UNIQUE"], cost:30, uniqueToFaction:"order_of_the_last_sun" },
 
-  // These are modeled as discrete items for list purposes:
-  // In the rules they behave like "upgrades" to another weapon, but we keep them as selectable "Other" items.
-  eq_silvered_melee: { id:"eq_silvered_melee", name:"Silvered Melee Weapon", tags:["UNIVERSAL","UPGRADE","UNIQUE"], cost:10, note:"+10 (upgrade)", uniqueToFaction:"order_of_the_last_sun" },
-  eq_silvered_ammo: { id:"eq_silvered_ammo", name:"Silvered Ammunition", tags:["UNIVERSAL","AMMO","UNIQUE"], cost:15, uniqueToFaction:"order_of_the_last_sun" }
+  // OLS Silvered weapons (Justicar & Purifier only)
+  eq_silvered_dagger: { id:"eq_silvered_dagger", name:"Silvered Dagger", tags:["WEAPON","MELEE","UNIQUE"], cost:12, uniqueToFaction:"order_of_the_last_sun" },
+  eq_silvered_sword:  { id:"eq_silvered_sword",  name:"Silvered Sword",  tags:["WEAPON","MELEE","UNIQUE"], cost:25, uniqueToFaction:"order_of_the_last_sun" },
+  eq_silvered_rapier: { id:"eq_silvered_rapier", name:"Silvered Rapier", tags:["WEAPON","MELEE","UNIQUE"], cost:20, uniqueToFaction:"order_of_the_last_sun" },
+
+  // OLS Silver ammunition variants
+  eq_silver_arrows:   { id:"eq_silver_arrows",   name:"Silver Arrows",   tags:["UNIVERSAL","AMMO","UNIQUE"], cost:15, uniqueToFaction:"order_of_the_last_sun" },
+  eq_silver_bullets:  { id:"eq_silver_bullets",  name:"Silver Bullets",  tags:["UNIVERSAL","AMMO","UNIQUE"], cost:15, uniqueToFaction:"order_of_the_last_sun" },
+  eq_silver_quarrels: { id:"eq_silver_quarrels", name:"Silver Quarrels", tags:["UNIVERSAL","AMMO","UNIQUE"], cost:15, uniqueToFaction:"order_of_the_last_sun" }
 };
 
 /* =========================================================
    ORDER OF THE LAST SUN - EQUIPMENT LISTS
-   (These lists drive what appears in dropdowns.)
    ========================================================= */
 
 const OLS_EQUIP_LISTS = {
@@ -525,12 +532,11 @@ const OLS_EQUIP_LISTS = {
     id: "special_equipment",
     name: "Special Equipment",
     items: [
-      "eq_holy_symbol","eq_holy_water","eq_silvered_melee","eq_silvered_ammo","eq_sunfire_phial","eq_torch"
+      "eq_holy_symbol","eq_holy_water",
+      "eq_silver_arrows","eq_silver_bullets","eq_silver_quarrels",
+      "eq_sunfire_phial","eq_torch"
     ],
-    overrides: {
-      eq_silvered_melee: { onlyUnits: ["ols_justicar","ols_purifier"] },
-      eq_silvered_ammo: { onlyUnits: ["ols_justicar","ols_purifier"] }
-    }
+    overrides: {}
   },
 
   purifiers_equipment: {
@@ -538,13 +544,17 @@ const OLS_EQUIP_LISTS = {
     name: "Purifier’s Equipment",
     items: [
       "eq_axe","eq_consecrated_stake","eq_dagger","eq_hammer","eq_mace_chain","eq_rapier","eq_sword","eq_whip",
+      "eq_silvered_dagger","eq_silvered_sword","eq_silvered_rapier",
       "eq_crossbow","eq_hand_crossbow","eq_throwing_knives",
       "eq_dueling_pistol","eq_pistol","eq_volley_pistol",
       "eq_helmet","eq_light_armor","eq_medium_armor",
       "eq_shield","eq_buckler"
     ],
     overrides: {
-      eq_dueling_pistol: { onlyUnits: ["ols_justicar"] }
+      eq_dueling_pistol: { onlyUnits: ["ols_justicar"] },
+      eq_silvered_dagger: { onlyUnits: ["ols_justicar","ols_purifier"] },
+      eq_silvered_sword:  { onlyUnits: ["ols_justicar","ols_purifier"] },
+      eq_silvered_rapier: { onlyUnits: ["ols_justicar","ols_purifier"] }
     }
   },
 
@@ -560,12 +570,13 @@ const OLS_EQUIP_LISTS = {
     ],
     overrides: {
       eq_halberd: { onlyUnits: ["ols_man_at_arms"] },
-      eq_spear: { onlyUnits: ["ols_man_at_arms"] },
+      eq_spear:   { onlyUnits: ["ols_man_at_arms"] },
       eq_medium_armor: { onlyUnits: ["ols_man_at_arms"] },
+
       // Blastpowder Weapons (Vigilants Only)
       eq_blunderbuss: { onlyUnits: ["ols_vigilant"] },
-      eq_long_rifle: { onlyUnits: ["ols_vigilant"] },
-      eq_musket: { onlyUnits: ["ols_vigilant"] }
+      eq_long_rifle:  { onlyUnits: ["ols_vigilant"] },
+      eq_musket:      { onlyUnits: ["ols_vigilant"] }
     }
   }
 };
@@ -575,89 +586,21 @@ const OLS_EQUIP_LISTS = {
    ========================================================= */
 
 const UNIT_EQUIP_LIST_ACCESS = {
-  // Leaders
-  ols_vindicator: {
-    WEAPON: ["knights_equipment"],
-    HELMET: ["knights_equipment"],
-    ARMOR:  ["knights_equipment"],
-    SHIELD: ["knights_equipment"],
-    OTHER:  ["special_equipment"]
-  },
-  ols_justicar: {
-    WEAPON: ["purifiers_equipment"],
-    HELMET: ["purifiers_equipment"],
-    ARMOR:  ["purifiers_equipment"],
-    SHIELD: ["purifiers_equipment"],
-    OTHER:  ["special_equipment"]
-  },
-  ols_dawnfather: {
-    WEAPON: ["clergy_equipment"],
-    HELMET: ["clergy_equipment"],
-    ARMOR:  ["clergy_equipment"],
-    SHIELD: ["clergy_equipment"],
-    OTHER:  ["special_equipment"]
-  },
+  ols_vindicator: { WEAPON:["knights_equipment"], HELMET:["knights_equipment"], ARMOR:["knights_equipment"], SHIELD:["knights_equipment"], OTHER:["special_equipment"] },
+  ols_justicar:   { WEAPON:["purifiers_equipment"], HELMET:["purifiers_equipment"], ARMOR:["purifiers_equipment"], SHIELD:["purifiers_equipment"], OTHER:["special_equipment"] },
+  ols_dawnfather: { WEAPON:["clergy_equipment"], HELMET:["clergy_equipment"], ARMOR:["clergy_equipment"], SHIELD:["clergy_equipment"], OTHER:["special_equipment"] },
 
-  // Heroes
-  ols_purifier: {
-    WEAPON: ["purifiers_equipment"],
-    HELMET: ["purifiers_equipment"],
-    ARMOR:  ["purifiers_equipment"],
-    SHIELD: ["purifiers_equipment"],
-    OTHER:  ["special_equipment"]
-  },
-  ols_chaplain: {
-    WEAPON: ["clergy_equipment"],
-    HELMET: ["clergy_equipment"],
-    ARMOR:  ["clergy_equipment"],
-    SHIELD: ["clergy_equipment"],
-    OTHER:  ["special_equipment"]
-  },
-  ols_sunward_initiate: {
-    WEAPON: ["clergy_equipment"],
-    HELMET: ["clergy_equipment"],
-    ARMOR:  ["clergy_equipment"],
-    SHIELD: ["clergy_equipment"],
-    OTHER:  ["special_equipment"]
-  },
-  ols_dawnguard: {
-    WEAPON: ["knights_equipment"],
-    HELMET: ["knights_equipment"],
-    ARMOR:  ["knights_equipment"],
-    SHIELD: ["knights_equipment"],
-    OTHER:  ["special_equipment"]
-  },
-  ols_suntouched_vessel: {
-    WEAPON: ["clergy_equipment"], // (list override prevents Solar Mace)
-    HELMET: [],
-    ARMOR:  [],
-    SHIELD: [],
-    OTHER:  ["special_equipment"]
-  },
+  ols_purifier: { WEAPON:["purifiers_equipment"], HELMET:["purifiers_equipment"], ARMOR:["purifiers_equipment"], SHIELD:["purifiers_equipment"], OTHER:["special_equipment"] },
+  ols_chaplain: { WEAPON:["clergy_equipment"], HELMET:["clergy_equipment"], ARMOR:["clergy_equipment"], SHIELD:["clergy_equipment"], OTHER:["special_equipment"] },
+  ols_sunward_initiate: { WEAPON:["clergy_equipment"], HELMET:["clergy_equipment"], ARMOR:["clergy_equipment"], SHIELD:["clergy_equipment"], OTHER:["special_equipment"] },
+  ols_dawnguard: { WEAPON:["knights_equipment"], HELMET:["knights_equipment"], ARMOR:["knights_equipment"], SHIELD:["knights_equipment"], OTHER:["special_equipment"] },
+  ols_suntouched_vessel: { WEAPON:["clergy_equipment"], HELMET:[], ARMOR:[], SHIELD:[], OTHER:["special_equipment"] },
 
-  // Henchmen
   ols_warhound: { WEAPON:[], HELMET:[], ARMOR:[], SHIELD:[], OTHER:[] },
-  ols_man_at_arms: {
-    WEAPON: ["soldiers_equipment"],
-    HELMET: ["soldiers_equipment"],
-    ARMOR:  ["soldiers_equipment"],
-    SHIELD: ["soldiers_equipment"],
-    OTHER:  ["special_equipment"]
-  },
-  ols_dawner: {
-    WEAPON: ["clergy_equipment"],   // spear/short bow restricted by list override
-    HELMET: ["clergy_equipment"],
-    ARMOR:  ["clergy_equipment"],
-    SHIELD: ["clergy_equipment"],
-    OTHER:  ["special_equipment"]
-  },
-  ols_vigilant: {
-    WEAPON: ["soldiers_equipment"], // blastpowder only shows due to list override
-    HELMET: ["soldiers_equipment"],
-    ARMOR:  ["soldiers_equipment"],
-    SHIELD: ["soldiers_equipment"],
-    OTHER:  ["special_equipment"]
-  }
+
+  ols_man_at_arms: { WEAPON:["soldiers_equipment"], HELMET:["soldiers_equipment"], ARMOR:["soldiers_equipment"], SHIELD:["soldiers_equipment"], OTHER:["special_equipment"] },
+  ols_dawner: { WEAPON:["clergy_equipment"], HELMET:["clergy_equipment"], ARMOR:["clergy_equipment"], SHIELD:["clergy_equipment"], OTHER:["special_equipment"] },
+  ols_vigilant: { WEAPON:["soldiers_equipment"], HELMET:["soldiers_equipment"], ARMOR:["soldiers_equipment"], SHIELD:["soldiers_equipment"], OTHER:["special_equipment"] }
 };
 
 /* =========================================================
@@ -675,7 +618,7 @@ const WARBANDS = [
         name: "Purifier Conclave",
         description: "Militant hunters of corruption. Justicar-led, warhounds common.",
         leaders: ["ols_justicar", "ols_vindicator"],
-        heroes: ["ols_purifier", "ols_chaplain", "ols_sunward_initiate"],
+        heroes: ["ols_purifier", "ols_chaplain", "ols_sunward_initiate", "ols_suntouched_vessel"],
         henchmen: ["ols_warhound", "ols_man_at_arms", "ols_vigilant"],
         sellswords: ["sell_blade_for_hire"]
       },
@@ -709,33 +652,19 @@ function unitProfile(unitId){
    STATE
    ========================================================= */
 
-const STORAGE_KEY = "mirrored_city_builder_lists_v2";
+const STORAGE_KEY = "mirrored_city_builder_lists_v5";
 
 let state = {
   name: "",
   warbandId: WARBANDS[0]?.id || "",
   archetypeId: "",
   leaderUnitId: "",
+  leaderEquipment: null,
   cards: []
 };
 
 function ensureEquipObj(obj){
   if (!obj) return { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
-
-  if (Array.isArray(obj.equipmentIds)){
-    const slot = { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
-    for (const id of obj.equipmentIds){
-      const eq = getEquip(id);
-      const t = eq ? classifyEquip(eq) : "OTHER";
-      if (t === "WEAPON") slot.weaponIds.push(id);
-      else if (t === "HELMET" && !slot.helmetId) slot.helmetId = id;
-      else if (t === "ARMOR" && !slot.armorId) slot.armorId = id;
-      else if (t === "SHIELD" && !slot.shieldId) slot.shieldId = id;
-      else slot.otherIds.push(id);
-    }
-    obj.equipment = slot;
-    delete obj.equipmentIds;
-  }
 
   if (!obj.equipment){
     obj.equipment = { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
@@ -749,6 +678,18 @@ function ensureEquipObj(obj){
   return obj.equipment;
 }
 
+function ensureLeaderEquip(){
+  if (!state.leaderEquipment){
+    state.leaderEquipment = { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
+  } else {
+    state.leaderEquipment.weaponIds = Array.isArray(state.leaderEquipment.weaponIds) ? state.leaderEquipment.weaponIds : [];
+    state.leaderEquipment.otherIds  = Array.isArray(state.leaderEquipment.otherIds) ? state.leaderEquipment.otherIds : [];
+    state.leaderEquipment.helmetId  = state.leaderEquipment.helmetId || "";
+    state.leaderEquipment.armorId   = state.leaderEquipment.armorId || "";
+    state.leaderEquipment.shieldId  = state.leaderEquipment.shieldId || "";
+  }
+}
+
 function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
 function byId(id){ return document.getElementById(id); }
 
@@ -759,6 +700,7 @@ function getArchetype(warband) {
 }
 function getUnit(unitId) { return UNITS.find(u => u.id === unitId) || null; }
 function getEquip(eid) { return EQUIPMENT_CATALOG[eid] || null; }
+function unitFactionId(){ return state.warbandId; }
 
 /* =========================================================
    EQUIPMENT CLASSIFICATION & STARTING FILTERS
@@ -771,6 +713,13 @@ function classifyEquip(eq){
   if (tags.includes("ARMOR"))  return "ARMOR";
   if (tags.includes("WEAPON") || tags.includes("MELEE") || tags.includes("RANGED") || tags.includes("BLASTPOWDER")) return "WEAPON";
   return "OTHER";
+}
+
+function weaponCategory(eq){
+  const tags = eq.tags || [];
+  if (tags.includes("BLASTPOWDER")) return "Blastpowder Weapons";
+  if (tags.includes("RANGED")) return "Ranged Weapons";
+  return "Melee Weapons";
 }
 
 function isUniqueEquipment(eq){ return (eq.tags || []).includes("UNIQUE") || !!eq.uniqueToFaction; }
@@ -793,23 +742,16 @@ function isFactionLocked(eq, factionId){
    LIST-DRIVEN AVAILABILITY
    ========================================================= */
 
-function unitFactionId(){ return state.warbandId; }
-
 function getUnitAllowedLists(unitId, slotType){
   const access = UNIT_EQUIP_LIST_ACCESS[unitId];
   if (!access) return [];
   return (access[slotType] || []).slice();
 }
-
-function getList(listId){
-  return OLS_EQUIP_LISTS[listId] || null;
-}
-
+function getList(listId){ return OLS_EQUIP_LISTS[listId] || null; }
 function getEffectiveRulesFromList(listObj, eqId){
   const o = (listObj && listObj.overrides && listObj.overrides[eqId]) ? listObj.overrides[eqId] : null;
   return o || {};
 }
-
 function listAllowsItemForUnit(listObj, unitId, eqId){
   const rules = getEffectiveRulesFromList(listObj, eqId);
   if (rules.onlyUnits && rules.onlyUnits.length && !rules.onlyUnits.includes(unitId)) return false;
@@ -849,27 +791,53 @@ function allowedEquipmentForUnitSlot(unitId, slotType){
   const listIds = getUnitAllowedLists(unitId, slotType);
   if (!listIds.length) return [];
 
-  const seen = new Set();
   const out = [];
-
   for (const listId of listIds){
     const listObj = getList(listId);
     if (!listObj) continue;
 
     for (const eqId of (listObj.items || [])){
-      if (seen.has(eqId)) continue;
       const eq = getEquip(eqId);
       if (!eq) continue;
-
       if (!isEquipAllowedForUnit(unitId, eq, slotType, listObj)) continue;
 
-      seen.add(eqId);
-      out.push(eq);
+      if (!out.some(x => x.id === eqId)) out.push(eq);
     }
   }
 
   out.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
   return out;
+}
+
+/* =========================================================
+   DAGGER FREE RULE (THIS IS THE NEW BEHAVIOR)
+   - Only applies if eq_dagger is in the unit's allowed WEAPON list.
+   - First dagger per model is free.
+   ========================================================= */
+
+const DAGGER_ID = "eq_dagger";
+
+function unitHasDaggerOnList(unitId){
+  if (!unitId) return false;
+  return allowedEquipmentForUnitSlot(unitId, "WEAPON").some(e => e.id === DAGGER_ID);
+}
+
+function getModelCountForCard(cardKind, card){
+  if (cardKind === "HENCHMAN") return Math.max(1, card.count || 1);
+  return 1;
+}
+
+/**
+ * Returns how many daggers on this card are free.
+ * Example:
+ *  - Hero takes 1 dagger => 1 free
+ *  - Henchmen count 3, takes 2 daggers => 2 free
+ *  - Henchmen count 3, takes 4 daggers => 3 free
+ */
+function freeDaggerCountForCard(cardKind, unitId, equipObj, modelCount){
+  if (!unitHasDaggerOnList(unitId)) return 0;
+  const daggersTaken = (equipObj.weaponIds || []).filter(x => x === DAGGER_ID).length;
+  return Math.min(modelCount, daggersTaken);
 }
 
 /* =========================================================
@@ -923,7 +891,7 @@ function costForCardEquip(eq, cardKind){
 
 function getCardEquip(card){
   if (card.kind === "LEADER"){
-    state.leaderEquipment = state.leaderEquipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
+    ensureLeaderEquip();
     return state.leaderEquipment;
   }
   ensureEquipObj(card);
@@ -950,7 +918,7 @@ function addEquipToSlot(equipObj, slotType, eqId){
   if (!canAddToSlot(equipObj, slotType)) return false;
 
   if (slotType === "WEAPON"){
-    if (!equipObj.weaponIds.includes(eqId)) equipObj.weaponIds.push(eqId);
+    equipObj.weaponIds.push(eqId); // allow duplicates
     return true;
   }
   if (slotType === "OTHER"){
@@ -963,13 +931,18 @@ function addEquipToSlot(equipObj, slotType, eqId){
   return false;
 }
 
-function removeEquip(equipObj, eqId){
+function removeEquipOne(equipObj, eqId){
   if (!eqId) return;
-  equipObj.weaponIds = (equipObj.weaponIds || []).filter(x => x !== eqId);
-  equipObj.otherIds  = (equipObj.otherIds || []).filter(x => x !== eqId);
-  if (equipObj.helmetId === eqId) equipObj.helmetId = "";
-  if (equipObj.armorId === eqId)  equipObj.armorId = "";
-  if (equipObj.shieldId === eqId) equipObj.shieldId = "";
+
+  const wi = (equipObj.weaponIds || []).indexOf(eqId);
+  if (wi >= 0){ equipObj.weaponIds.splice(wi, 1); return; }
+
+  const oi = (equipObj.otherIds || []).indexOf(eqId);
+  if (oi >= 0){ equipObj.otherIds.splice(oi, 1); return; }
+
+  if (equipObj.helmetId === eqId){ equipObj.helmetId = ""; return; }
+  if (equipObj.armorId === eqId){ equipObj.armorId = ""; return; }
+  if (equipObj.shieldId === eqId){ equipObj.shieldId = ""; return; }
 }
 
 function allEquipIds(equipObj){
@@ -983,10 +956,10 @@ function allEquipIds(equipObj){
 }
 
 /* =========================================================
-   COST TOTALS
+   COST TOTALS (now includes dagger-free discount)
    ========================================================= */
 
-function equipmentTotalForCard(equipObj, cardKind){
+function equipmentTotalForCard(equipObj, cardKind, unitId, modelCount){
   let sum = 0;
   let hasVariable = false;
 
@@ -997,6 +970,17 @@ function equipmentTotalForCard(equipObj, cardKind){
     sum += c.base;
     if (c.isVariable) hasVariable = true;
   }
+
+  // Apply dagger discount (only if unit has dagger on list)
+  const dagger = getEquip(DAGGER_ID);
+  if (dagger && unitId){
+    const freeCount = freeDaggerCountForCard(cardKind, unitId, equipObj, modelCount);
+    if (freeCount > 0){
+      const daggerCost = costForCardEquip(dagger, cardKind).base;
+      sum -= daggerCost * freeCount;
+    }
+  }
+
   return { sum, hasVariable };
 }
 
@@ -1004,11 +988,10 @@ function cardCost(card){
   const unit = getUnit(card.unitId);
   if (!unit) return { sum:0, hasVariable:false };
 
-  let count = 1;
-  if (card.kind === "HENCHMAN") count = card.count || 1;
+  const modelCount = (card.kind === "HENCHMAN") ? (card.count || 1) : 1;
+  const base = (unit.cost || 0) * modelCount;
 
-  const base = (unit.cost || 0) * count;
-  const eq = equipmentTotalForCard(getCardEquip(card), card.kind);
+  const eq = equipmentTotalForCard(getCardEquip(card), card.kind, card.unitId, modelCount);
   return { sum: base + eq.sum, hasVariable: eq.hasVariable };
 }
 
@@ -1019,8 +1002,11 @@ function totalLumens(){
   const leader = getUnit(state.leaderUnitId);
   if (leader){
     total += (leader.cost || 0);
-    const eq = equipmentTotalForCard(getCardEquip({kind:"LEADER"}), "LEADER");
+
+    const equipObj = getCardEquip({kind:"LEADER"});
+    const eq = equipmentTotalForCard(equipObj, "LEADER", state.leaderUnitId, 1);
     total += eq.sum;
+
     if (eq.hasVariable) hasVariable = true;
   }
 
@@ -1051,6 +1037,46 @@ function allowedUnitIdsForKind(warbandBase, kind){
   if (kind === "HERO") return (warbandBase.heroes || []).slice();
   if (kind === "HENCHMAN") return (warbandBase.henchmen || []).slice();
   return [];
+}
+
+/* =========================================================
+   UNIT LIMITS
+   ========================================================= */
+
+function parseMaxFromLimit(limitStr){
+  if (!limitStr) return null;
+  const s = String(limitStr).trim();
+  if (!s) return null;
+
+  if (/^\d+$/.test(s)){
+    const n = parseInt(s, 10);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  const m = s.match(/^\s*(\d+)\s*-\s*(\d+)\s*$/);
+  if (m){
+    const max = parseInt(m[2], 10);
+    return Number.isFinite(max) ? max : null;
+  }
+  return null;
+}
+
+function computeModelCounts(){
+  const counts = {};
+  function add(unitId, n){
+    if (!unitId) return;
+    counts[unitId] = (counts[unitId] || 0) + n;
+  }
+
+  if (state.leaderUnitId) add(state.leaderUnitId, 1);
+
+  for (const c of state.cards){
+    if (!c.unitId) continue;
+    const n = (c.kind === "HENCHMAN") ? (c.count || 1) : 1;
+    add(c.unitId, n);
+  }
+
+  return counts;
 }
 
 /* =========================================================
@@ -1107,8 +1133,19 @@ function validate(){
     }
   }
 
+  const modelCounts = computeModelCounts();
+  for (const [unitId, totalModels] of Object.entries(modelCounts)){
+    const u = getUnit(unitId);
+    if (!u) continue;
+    const max = parseMaxFromLimit(u.limit);
+    if (max != null && totalModels > max){
+      errs.push(`${u.name}: exceeds limit (${totalModels} / ${max}).`);
+    }
+  }
+
   for (const c of state.cards){
     const u = getUnit(c.unitId);
+
     if (c.unitId){
       const allowedIds = allowedUnitIdsForKind(warbandBase, c.kind);
       if (!allowedIds.includes(c.unitId)){
@@ -1249,9 +1286,10 @@ function render(){
   leaderSel.value = state.leaderUnitId || "";
 
   if (state.leaderUnitId){
-    state.leaderEquipment = state.leaderEquipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
+    ensureLeaderEquip();
+    pruneIllegalEquipmentForLeader();
   } else {
-    delete state.leaderEquipment;
+    state.leaderEquipment = null;
   }
 
   const cardsEl = byId("cards");
@@ -1279,18 +1317,18 @@ function renderLeaderStatCard(){
 
   const leaderUnit = getUnit(state.leaderUnitId);
   const leaderCard = { kind:"LEADER", unitId: state.leaderUnitId, count:1 };
-  const cc = (() => {
-    const eq = equipmentTotalForCard(getCardEquip(leaderCard), "LEADER");
-    const base = leaderUnit ? (leaderUnit.cost || 0) : 0;
-    return { sum: base + eq.sum, hasVariable: eq.hasVariable };
-  })();
+
+  const equipObj = getCardEquip(leaderCard);
+  const eq = equipmentTotalForCard(equipObj, "LEADER", state.leaderUnitId, 1);
+  const base = leaderUnit ? (leaderUnit.cost || 0) : 0;
+  const total = base + eq.sum;
 
   wrap.innerHTML = `
     <div class="card-top">
       <div class="card-title">
         <span>LEADER Stat Card</span>
         <span class="pill">Counts as 1 Card</span>
-        <span class="pill">Cost: ${cc.sum}${cc.hasVariable ? "+" : ""}</span>
+        <span class="pill">Cost: ${total}${eq.hasVariable ? "+" : ""}</span>
       </div>
       <button class="noPrint" disabled>Leader</button>
     </div>
@@ -1431,8 +1469,9 @@ function pruneIllegalEquipmentForCard(card){
 
 function pruneIllegalEquipmentForLeader(){
   const unitId = state.leaderUnitId;
-  if (!unitId || !state.leaderEquipment) return;
+  if (!unitId) return;
 
+  ensureLeaderEquip();
   const eqObj = state.leaderEquipment;
 
   const allowedWeapons = new Set(allowedEquipmentForUnitSlot(unitId, "WEAPON").map(e=>e.id));
@@ -1450,8 +1489,14 @@ function pruneIllegalEquipmentForLeader(){
 }
 
 /* =========================================================
-   EQUIPMENT UI: render ONLY slots that exist
+   EQUIPMENT UI
    ========================================================= */
+
+function formatCostLabel(eq, cardKind){
+  const c = costForCardEquip(eq, cardKind);
+  const star = isUniqueEquipment(eq) ? "*" : "";
+  return `${c.display}${star}`;
+}
 
 function renderEquipmentSlotsUI(host, card, cardKind){
   host.innerHTML = "";
@@ -1484,7 +1529,7 @@ function renderEquipmentSlotsUI(host, card, cardKind){
     { key:"HELMET", label:"Helmet", hint:`${RULES.equipSlots.HELMET}`, multi:false },
     { key:"ARMOR",  label:"Armor",  hint:`${RULES.equipSlots.ARMOR}`, multi:false },
     { key:"SHIELD", label:"Shield", hint:`${RULES.equipSlots.SHIELD}`, multi:false },
-    { key:"OTHER",  label:"Universal", hint:`Up to ${RULES.equipSlots.OTHER}`, multi:true }
+    { key:"OTHER",  label:"Everything Else", hint:`Up to ${RULES.equipSlots.OTHER}`, multi:true }
   ];
 
   const slotGrid = document.createElement("div");
@@ -1499,10 +1544,7 @@ function renderEquipmentSlotsUI(host, card, cardKind){
     const selectedIds = getSelectedIdsForSlot(eqObj, s.key);
     const allowed = banned ? [] : allowedEquipmentForUnitSlot(unitId, s.key);
 
-    // Hide if banned AND nothing selected
     if (banned && !selectedIds.length) continue;
-
-    // Hide if no options and nothing selected
     if (!allowed.length && !selectedIds.length) continue;
 
     const box = document.createElement("div");
@@ -1561,8 +1603,7 @@ function renderEquipmentSlotsUI(host, card, cardKind){
     const filtered = allowed.filter(eq => {
       if (!eq) return false;
       if (!s.multi && chosenSingle && eq.id === chosenSingle) return false;
-      if (s.key === "WEAPON" && (eqObj.weaponIds || []).includes(eq.id)) return false;
-      if (s.key === "OTHER"  && (eqObj.otherIds || []).includes(eq.id)) return false;
+      if (s.key === "OTHER" && (eqObj.otherIds || []).includes(eq.id)) return false;
       return true;
     });
 
@@ -1575,17 +1616,85 @@ function renderEquipmentSlotsUI(host, card, cardKind){
       continue;
     }
 
-    for (const eq of filtered){
-      const c = costForCardEquip(eq, cardKind === "LEADER" ? "LEADER" : cardKind);
-      const bits = [];
-      if (isUniqueEquipment(eq)) bits.push("Unique");
-      if (isRare(eq)) bits.push("Rare");
-      if (c.isVariable) bits.push("var");
+    if (s.key === "WEAPON"){
+      const groups = { "Melee Weapons": [], "Ranged Weapons": [], "Blastpowder Weapons": [] };
+      for (const eq of filtered){
+        groups[weaponCategory(eq)].push(eq);
+      }
 
-      const opt = document.createElement("option");
-      opt.value = eq.id;
-      opt.textContent = `${eq.name} (${c.display}${bits.length ? " • " + bits.join(", ") : ""})`;
-      sel.appendChild(opt);
+      const showFreeDaggerNote = unitHasDaggerOnList(unitId);
+
+      for (const gName of Object.keys(groups)){
+        const arr = groups[gName];
+        if (!arr.length) continue;
+        arr.sort((a,b)=>a.name.localeCompare(b.name));
+        const og = document.createElement("optgroup");
+        og.label = gName;
+
+        for (const eq of arr){
+          const kind = (cardKind === "LEADER" ? "LEADER" : cardKind);
+          const c = costForCardEquip(eq, kind);
+          const costLabel = formatCostLabel(eq, kind);
+
+          const metaBits = [];
+          if (isRare(eq)) metaBits.push("Rare");
+          if (c.isVariable) metaBits.push("var");
+
+          const daggerNote = (eq.id === DAGGER_ID && showFreeDaggerNote) ? " — first free" : "";
+
+          const opt = document.createElement("option");
+          opt.value = eq.id;
+          opt.textContent = `${eq.name} (${costLabel}${daggerNote}${metaBits.length ? " • " + metaBits.join(", ") : ""})`;
+          og.appendChild(opt);
+        }
+
+        sel.appendChild(og);
+      }
+    } else if (s.key === "OTHER"){
+      const uni = [];
+      const uniq = [];
+      for (const eq of filtered){
+        const tags = eq.tags || [];
+        if (tags.includes("UNIVERSAL")) uni.push(eq);
+        else uniq.push(eq);
+      }
+      uni.sort((a,b)=>a.name.localeCompare(b.name));
+      uniq.sort((a,b)=>a.name.localeCompare(b.name));
+
+      const addGroup = (label, arr) => {
+        if (!arr.length) return;
+        const og = document.createElement("optgroup");
+        og.label = label;
+        for (const eq of arr){
+          const kind = (cardKind === "LEADER" ? "LEADER" : cardKind);
+          const c = costForCardEquip(eq, kind);
+          const costLabel = formatCostLabel(eq, kind);
+          const metaBits = [];
+          if (isRare(eq)) metaBits.push("Rare");
+          if (c.isVariable) metaBits.push("var");
+          const opt = document.createElement("option");
+          opt.value = eq.id;
+          opt.textContent = `${eq.name} (${costLabel}${metaBits.length ? " • " + metaBits.join(", ") : ""})`;
+          og.appendChild(opt);
+        }
+        sel.appendChild(og);
+      };
+
+      addGroup("Universal Equipment", uni);
+      addGroup("Faction Unique", uniq);
+    } else {
+      for (const eq of filtered){
+        const kind = (cardKind === "LEADER" ? "LEADER" : cardKind);
+        const c = costForCardEquip(eq, kind);
+        const costLabel = formatCostLabel(eq, kind);
+        const metaBits = [];
+        if (isRare(eq)) metaBits.push("Rare");
+        if (c.isVariable) metaBits.push("var");
+        const opt = document.createElement("option");
+        opt.value = eq.id;
+        opt.textContent = `${eq.name} (${costLabel}${metaBits.length ? " • " + metaBits.join(", ") : ""})`;
+        sel.appendChild(opt);
+      }
     }
 
     btn.disabled = !canAddToSlot(eqObj, s.key);
@@ -1642,25 +1751,44 @@ function renderSlotChips(container, card, cardKind, slotKey){
     return;
   }
 
-  for (const id of ids){
+  // Determine which daggers are "FREE" in chip display
+  const unitId = (cardKind === "LEADER") ? state.leaderUnitId : card.unitId;
+  const kind = (cardKind === "LEADER" ? "LEADER" : cardKind);
+  const modelCount = (cardKind === "LEADER") ? 1 : getModelCountForCard(kind, card);
+  const freeDaggers = freeDaggerCountForCard(kind, unitId, eqObj, modelCount);
+
+  let daggerFreeRemaining = (slotKey === "WEAPON") ? freeDaggers : 0;
+
+  for (let idx = 0; idx < ids.length; idx++){
+    const id = ids[idx];
     const eq = getEquip(id);
+
     const chip = document.createElement("div");
     chip.className = "equipChip";
 
-    const c = eq ? costForCardEquip(eq, cardKind === "LEADER" ? "LEADER" : cardKind) : { display:"—", base:0, isVariable:true };
+    const c = eq ? costForCardEquip(eq, kind) : { display:"—", base:0, isVariable:true };
+    const costLabel = eq ? formatCostLabel(eq, kind) : "—";
+
     const meta = [];
-    if (eq && isUniqueEquipment(eq)) meta.push("Unique");
     if (eq && isRare(eq)) meta.push("Rare");
     if (c.isVariable) meta.push("var");
 
+    let isFree = false;
+    if (slotKey === "WEAPON" && id === DAGGER_ID && daggerFreeRemaining > 0){
+      isFree = true;
+      daggerFreeRemaining--;
+    }
+
     chip.innerHTML = `
       <span>${eq ? eq.name : id}</span>
-      <span class="tagMini">${eq ? `${c.display}${meta.length ? " • " + meta.join(", ") : ""}` : ""}</span>
+      <span class="tagMini">
+        ${eq ? `${isFree ? "FREE" : costLabel}${meta.length ? " • " + meta.join(", ") : ""}` : ""}
+      </span>
       <span class="x" title="Remove">×</span>
     `;
 
     chip.querySelector(".x").addEventListener("click", () => {
-      removeEquip(eqObj, id);
+      removeEquipOne(eqObj, id);
       render();
     });
 
@@ -1741,16 +1869,16 @@ byId("warbandSelect").addEventListener("change", (e) => {
   state.warbandId = e.target.value;
   state.archetypeId = "";
   state.leaderUnitId = "";
+  state.leaderEquipment = null;
   state.cards = [];
-  delete state.leaderEquipment;
   render();
 });
 
 byId("archetypeSelect").addEventListener("change", (e) => {
   state.archetypeId = e.target.value;
   state.leaderUnitId = "";
+  state.leaderEquipment = null;
   state.cards = [];
-  delete state.leaderEquipment;
   render();
 });
 
@@ -1758,8 +1886,9 @@ byId("leaderSelect").addEventListener("change", (e) => {
   state.leaderUnitId = e.target.value;
   if (state.leaderUnitId){
     state.leaderEquipment = { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
+    pruneIllegalEquipmentForLeader();
   } else {
-    delete state.leaderEquipment;
+    state.leaderEquipment = null;
   }
   render();
 });
@@ -1777,7 +1906,7 @@ byId("btnAddHench").addEventListener("click", () => {
 byId("btnReset").addEventListener("click", () => {
   if (!confirm("Reset roster? This clears saved data in this browser.")) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = { name:"", warbandId: WARBANDS[0]?.id || "", archetypeId:"", leaderUnitId:"", cards: [] };
+  state = { name:"", warbandId: WARBANDS[0]?.id || "", archetypeId:"", leaderUnitId:"", leaderEquipment:null, cards: [] };
   render();
 });
 
@@ -1786,12 +1915,12 @@ byId("btnExport").addEventListener("click", () => exportRoster());
 byId("btnImport").addEventListener("click", () => importRoster());
 
 /* =========================================================
-   SAVE / LOAD / EXPORT
+   EXPORT / IMPORT
    ========================================================= */
 
 function safeExportState(){
   return {
-    version: 3,
+    version: 5,
     roster: {
       name: state.name,
       warbandId: state.warbandId,
@@ -1818,7 +1947,7 @@ function applyImported(obj){
   state.archetypeId = r.archetypeId || "";
   state.leaderUnitId = r.leaderUnitId || "";
 
-  state.leaderEquipment = r.leaderEquipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
+  state.leaderEquipment = r.leaderEquipment || null;
 
   const importedCards = Array.isArray(r.cards) ? r.cards : [];
   state.cards = importedCards.map(c => {
@@ -1833,9 +1962,16 @@ function applyImported(obj){
     return card;
   });
 
-  if (!state.leaderUnitId) delete state.leaderEquipment;
-  if (state.leaderUnitId) pruneIllegalEquipmentForLeader();
-  for (const c of state.cards) pruneIllegalEquipmentForCard(c);
+  if (!state.leaderUnitId){
+    state.leaderEquipment = null;
+  } else {
+    ensureLeaderEquip();
+    pruneIllegalEquipmentForLeader();
+  }
+
+  for (const c of state.cards){
+    pruneIllegalEquipmentForCard(c);
+  }
 }
 
 function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(safeExportState())); }catch{} }
