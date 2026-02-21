@@ -427,7 +427,7 @@ const UNITS = [
   { id: "gf_ogre_mage", name: "Ogre Mage", type: "HERO", cost: 90, tags: [], limit: "0-1" },
   { id: "gf_two_headed_troll", name: "Two-Headed Troll", type: "HERO", cost: 125, tags: [], limit: "0-1" },
   { id: "gf_half_blood_taskmaster", name: "Half-Blood Taskmaster", type: "HERO", cost: 55, tags: [], limit: "0-1" },
-  { id: "gf_half_blood_brutes", name: "Half-Blood Brutes", type: "HENCHMAN", cost: 50, tags: [], limit: "0-3" },
+  { id: "gf_half_blood_brutes", name: "Half-Blood Brutes", type: "HERO", cost: 50, tags: [], limit: "0-3" },
   { id: "gf_scraplings", name: "Scraplings", type: "HENCHMAN", cost: 10, tags: ["HORDE"], limit: "" },
   { id: "gf_thralls", name: "Thralls", type: "HENCHMAN", cost: 15, tags: ["HORDE"], limit: "" },
   { id: "gf_troll_whelps", name: "Troll Whelps", type: "HENCHMAN", cost: 45, tags: ["HORDE"], limit: "0-3" },
@@ -729,6 +729,34 @@ const UNIT_EQUIP_LIST_ACCESS = {
   ols_man_at_arms: { WEAPON:["soldiers_equipment"], HELMET:["soldiers_equipment"], ARMOR:["soldiers_equipment"], SHIELD:["soldiers_equipment"], OTHER:["special_equipment"] },
   ols_dawner: { WEAPON:["clergy_equipment"], HELMET:["clergy_equipment"], ARMOR:["clergy_equipment"], SHIELD:["clergy_equipment"], OTHER:["special_equipment"] },
   ols_vigilant: { WEAPON:["soldiers_equipment"], HELMET:["soldiers_equipment"], ARMOR:["soldiers_equipment"], SHIELD:["soldiers_equipment"], OTHER:["special_equipment"] }
+  ,
+
+  // Great Feast
+  gf_colossal: { WEAPON:["gf_ogre_equipment","gf_troll_equipment"], HELMET:["gf_ogre_equipment","gf_troll_equipment"], ARMOR:["gf_ogre_equipment","gf_troll_equipment"], SHIELD:["gf_ogre_equipment","gf_troll_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_ogre_bully: { WEAPON:["gf_ogre_equipment"], HELMET:["gf_ogre_equipment"], ARMOR:["gf_ogre_equipment"], SHIELD:["gf_ogre_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_troll_warchief: { WEAPON:["gf_troll_equipment"], HELMET:["gf_troll_equipment"], ARMOR:["gf_troll_equipment"], SHIELD:["gf_troll_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+
+  gf_troll_hag: { WEAPON:["gf_troll_equipment"], HELMET:["gf_troll_equipment"], ARMOR:["gf_troll_equipment"], SHIELD:["gf_troll_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_ogre_chef: { WEAPON:["gf_ogre_equipment"], HELMET:["gf_ogre_equipment"], ARMOR:["gf_ogre_equipment"], SHIELD:["gf_ogre_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_ogre_mage: { WEAPON:["gf_ogre_equipment"], HELMET:["gf_ogre_equipment"], ARMOR:["gf_ogre_equipment"], SHIELD:["gf_ogre_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_two_headed_troll: { WEAPON:["gf_troll_equipment"], HELMET:["gf_troll_equipment"], ARMOR:["gf_troll_equipment"], SHIELD:["gf_troll_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_half_blood_taskmaster: { WEAPON:["gf_ogre_equipment","gf_troll_equipment"], HELMET:["gf_ogre_equipment","gf_troll_equipment"], ARMOR:["gf_ogre_equipment","gf_troll_equipment"], SHIELD:["gf_ogre_equipment","gf_troll_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+
+  gf_half_blood_brutes: { WEAPON:["gf_ogre_equipment","gf_troll_equipment"], HELMET:["gf_ogre_equipment","gf_troll_equipment"], ARMOR:["gf_ogre_equipment","gf_troll_equipment"], SHIELD:["gf_ogre_equipment","gf_troll_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_scraplings: { WEAPON:["gf_ogre_equipment"], HELMET:["gf_ogre_equipment"], ARMOR:["gf_ogre_equipment"], SHIELD:["gf_ogre_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_thralls: { WEAPON:["gf_ogre_equipment"], HELMET:["gf_ogre_equipment"], ARMOR:["gf_ogre_equipment"], SHIELD:["gf_ogre_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_troll_whelps: { WEAPON:["gf_troll_equipment"], HELMET:["gf_troll_equipment"], ARMOR:["gf_troll_equipment"], SHIELD:["gf_troll_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+  gf_ogre_youngun: { WEAPON:["gf_ogre_equipment"], HELMET:["gf_ogre_equipment"], ARMOR:["gf_ogre_equipment"], SHIELD:["gf_ogre_equipment"], OTHER:["special_equipment","gf_special_equipment"] },
+
+  // Lorathiir
+  lor_voice_of_the_veil: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] },
+  lor_pathfinder: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] },
+  lor_troupe_mother: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] },
+  lor_bladedancer: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] },
+  lor_grovefolk: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] },
+  lor_thornbound: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] },
+  lor_spirit_kin: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] }
+
 };
 
 /* =========================================================
