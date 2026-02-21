@@ -414,7 +414,35 @@ const UNITS = [
   { id: "ols_dawner", name: "Dawner", type: "HENCHMAN", cost: 20, tags: ["HORDE"], limit: "" },
   { id: "ols_vigilant", name: "Vigilant", type: "HENCHMAN", cost: 25, tags: [], limit: "0-6" },
 
-  { id: "sell_blade_for_hire", name: "Blade for Hire", type: "SELLSWORD", cost: 60, tags: [], limit: "" }
+  { id: "sell_blade_for_hire", name: "Blade for Hire", type: "SELLSWORD", cost: 60, tags: [], limit: "" },
+
+  // =========================================================
+  // THE GREAT FEAST
+  // =========================================================
+  { id: "gf_colossal", name: "Colossal", type: "LEADER", cost: 225, tags: [], limit: "" },
+  { id: "gf_ogre_bully", name: "Ogre Bully", type: "LEADER", cost: 135, tags: [], limit: "" },
+  { id: "gf_troll_warchief", name: "Troll Warchief", type: "LEADER", cost: 160, tags: [], limit: "" },
+  { id: "gf_troll_hag", name: "Troll Hag", type: "HERO", cost: 100, tags: [], limit: "0-1" },
+  { id: "gf_ogre_chef", name: "Ogre Chef", type: "HERO", cost: 75, tags: [], limit: "0-1" },
+  { id: "gf_ogre_mage", name: "Ogre Mage", type: "HERO", cost: 90, tags: [], limit: "0-1" },
+  { id: "gf_two_headed_troll", name: "Two-Headed Troll", type: "HERO", cost: 125, tags: [], limit: "0-1" },
+  { id: "gf_half_blood_taskmaster", name: "Half-Blood Taskmaster", type: "HERO", cost: 55, tags: [], limit: "0-1" },
+  { id: "gf_half_blood_brutes", name: "Half-Blood Brutes", type: "HENCHMAN", cost: 50, tags: [], limit: "0-3" },
+  { id: "gf_scraplings", name: "Scraplings", type: "HENCHMAN", cost: 10, tags: ["HORDE"], limit: "" },
+  { id: "gf_thralls", name: "Thralls", type: "HENCHMAN", cost: 15, tags: ["HORDE"], limit: "" },
+  { id: "gf_troll_whelps", name: "Troll Whelps", type: "HENCHMAN", cost: 45, tags: ["HORDE"], limit: "0-3" },
+  { id: "gf_ogre_youngun", name: "Ogre Young'un", type: "HENCHMAN", cost: 40, tags: ["HORDE"], limit: "0-3" },
+
+  // =========================================================
+  // THE LORATHIIR
+  // =========================================================
+  { id: "lor_voice_of_the_veil", name: "Voice of the Veil", type: "LEADER", cost: 75, tags: [], limit: "1" },
+  { id: "lor_pathfinder", name: "Pathfinder", type: "HERO", cost: 50, tags: [], limit: "0-2" },
+  { id: "lor_troupe_mother", name: "Troupe Mother", type: "HERO", cost: 55, tags: [], limit: "0-1" },
+  { id: "lor_bladedancer", name: "Bladedancer", type: "HENCHMAN", cost: 70, tags: [], limit: "0-3" },
+  { id: "lor_grovefolk", name: "Grovefolk", type: "HENCHMAN", cost: 40, tags: ["HORDE"], limit: "0-6" },
+  { id: "lor_thornbound", name: "Thornbound", type: "HENCHMAN", cost: 35, tags: ["HORDE"], limit: "0-6" },
+  { id: "lor_spirit_kin", name: "Spirit-kin", type: "HENCHMAN", cost: 45, tags: [], limit: "0-2" },
 ];
 
 /* =========================================================
@@ -491,6 +519,29 @@ const EQUIPMENT_CATALOG = {
   eq_silver_arrows:   { id:"eq_silver_arrows",   name:"Silver Arrows",   tags:["UNIVERSAL","AMMO","UNIQUE"], cost:15, uniqueToFaction:"order_of_the_last_sun" },
   eq_silver_bullets:  { id:"eq_silver_bullets",  name:"Silver Bullets",  tags:["UNIVERSAL","AMMO","UNIQUE"], cost:15, uniqueToFaction:"order_of_the_last_sun" },
   eq_silver_quarrels: { id:"eq_silver_quarrels", name:"Silver Quarrels", tags:["UNIVERSAL","AMMO","UNIQUE"], cost:15, uniqueToFaction:"order_of_the_last_sun" }
+  // =========================================================
+  // GREAT FEAST Unique / Faction Equipment
+  // =========================================================
+  eq_cleaver: { id:"eq_cleaver", name:"Cleaver", tags:["WEAPON","MELEE","UNIQUE"], cost:8, uniqueToFaction:"the_great_feast" },
+  eq_knuckleduster: { id:"eq_knuckleduster", name:"Knuckleduster", tags:["WEAPON","MELEE","UNIQUE"], cost:3, uniqueToFaction:"the_great_feast" },
+  eq_mancatcher: { id:"eq_mancatcher", name:"Mancatcher", tags:["WEAPON","MELEE","UNIQUE","TWO_HANDED"], cost:12, uniqueToFaction:"the_great_feast" },
+  eq_boom_boom: { id:"eq_boom_boom", name:"Boom-Boom", tags:["WEAPON","RANGED","UNIQUE","TWO_HANDED"], cost:75, uniqueToFaction:"the_great_feast" },
+  eq_bone_crusher_pestle: { id:"eq_bone_crusher_pestle", name:"Bone-Crusher Pestle & Mortar", tags:["WEAPON","MELEE","UNIQUE","TWO_HANDED"], cost:25, uniqueToFaction:"the_great_feast" },
+  eq_bola: { id:"eq_bola", name:"Bola", tags:["WEAPON","RANGED","UNIQUE"], cost:5, uniqueToFaction:"the_great_feast" },
+  eq_net: { id:"eq_net", name:"Net", tags:["WEAPON","RANGED","UNIQUE"], cost:8, uniqueToFaction:"the_great_feast" },
+  eq_manacles: { id:"eq_manacles", name:"Manacles", tags:["UNIVERSAL","UNIQUE"], cost:5, uniqueToFaction:"the_great_feast" },
+  eq_spare_stock_pens: { id:"eq_spare_stock_pens", name:"Spare Stock Pens", tags:["UNIVERSAL","UNIQUE"], cost:40, uniqueToFaction:"the_great_feast" },
+  eq_fire_hate_salve: { id:"eq_fire_hate_salve", name:"Fire-Hate Salve", tags:["UNIVERSAL","UNIQUE"], cost:20, uniqueToFaction:"the_great_feast" },
+
+  // =========================================================
+  // LORATHIIR Unique / Faction Equipment
+  // =========================================================
+  eq_sickle: { id:"eq_sickle", name:"Sickle", tags:["WEAPON","MELEE"], cost:2 },
+  eq_elven_bow: { id:"eq_elven_bow", name:"Elven Bow", tags:["WEAPON","RANGED"], cost:35 },
+  eq_felmorn_blade: { id:"eq_felmorn_blade", name:"Felmorn Blade", tags:["WEAPON","MELEE","UNIQUE"], cost:20, uniqueToFaction:"the_lorathiir" },
+  eq_felmorn_weave: { id:"eq_felmorn_weave", name:"Felmorn Weave", tags:["ARMOR","UNIQUE"], cost:45, uniqueToFaction:"the_lorathiir" },
+  eq_ash_fallen_grove: { id:"eq_ash_fallen_grove", name:"Ash of the Fallen Grove", tags:["UNIVERSAL","CONSUMABLE","UNIQUE"], cost:25, uniqueToFaction:"the_lorathiir" },
+  eq_essence_vessel: { id:"eq_essence_vessel", name:"Essence Vessel", tags:["UNIVERSAL","UNIQUE"], cost:20, uniqueToFaction:"the_lorathiir" },
 };
 
 /* =========================================================
@@ -582,6 +633,83 @@ const OLS_EQUIP_LISTS = {
 };
 
 /* =========================================================
+   THE GREAT FEAST - EQUIPMENT LISTS
+   ========================================================= */
+
+const GF_EQUIP_LISTS = {
+  gf_ogre_equipment: {
+    id: "gf_ogre_equipment",
+    name: "Ogre Equipment",
+    items: [
+      "eq_axe","eq_cleaver","eq_club","eq_dagger","eq_great_weapon","eq_hammer","eq_knuckleduster","eq_mace","eq_mancatcher","eq_spear","eq_staff","eq_sword",
+      "eq_crossbow","eq_javelin","eq_boom_boom","eq_pistol",
+      "eq_helmet","eq_light_armor","eq_medium_armor",
+      "eq_shield"
+    ],
+    overrides: {
+      eq_staff: { onlyUnits: ["gf_ogre_mage"] },
+      eq_boom_boom: { onlyUnits: ["gf_ogre_bully","gf_colossal"] },
+      eq_pistol: { onlyUnits: ["gf_half_blood_taskmaster"] },
+      eq_medium_armor: { notUnits: ["gf_ogre_youngun","gf_scraplings","gf_thralls"] }
+    }
+  },
+
+  gf_troll_equipment: {
+    id: "gf_troll_equipment",
+    name: "Troll Equipment",
+    items: [
+      "eq_axe","eq_club","eq_dagger","eq_great_weapon","eq_hammer","eq_mace","eq_mancatcher","eq_staff","eq_whip",
+      "eq_javelin","eq_sling","eq_throwing_knives",
+      "eq_helmet","eq_light_armor",
+      "eq_shield","eq_buckler"
+    ],
+    overrides: {
+      eq_staff: { onlyUnits: ["gf_troll_hag"] },
+      eq_hammer: { onlyUnits: ["gf_half_blood_taskmaster","gf_half_blood_brutes"] }
+    }
+  },
+
+  gf_special_equipment: {
+    id: "gf_special_equipment",
+    name: "Great Feast Special Equipment",
+    items: [
+      "eq_manacles","eq_net","eq_bola","eq_spare_stock_pens","eq_fire_hate_salve","eq_bone_crusher_pestle","eq_torch"
+    ],
+    overrides: {
+      eq_bone_crusher_pestle: { onlyUnits: ["gf_ogre_chef"] },
+      eq_fire_hate_salve: { onlyUnits: ["gf_troll_warchief","gf_troll_hag","gf_two_headed_troll","gf_troll_whelps"] },
+      eq_manacles: { onlyUnits: ["gf_half_blood_taskmaster","gf_ogre_bully","gf_troll_warchief","gf_ogre_chef","gf_ogre_mage","gf_troll_hag","gf_two_headed_troll"] }
+    }
+  }
+};
+
+/* =========================================================
+   THE LORATHIIR - EQUIPMENT LIST
+   ========================================================= */
+
+const LOR_EQUIP_LISTS = {
+  lorathiir_equipment: {
+    id: "lorathiir_equipment",
+    name: "Lorathiir Equipment",
+    items: [
+      "eq_club","eq_dagger","eq_felmorn_blade","eq_sickle","eq_spear","eq_staff","eq_sword",
+      "eq_short_bow","eq_elven_bow","eq_throwing_knives",
+      "eq_helmet","eq_light_armor","eq_felmorn_weave",
+      "eq_shield","eq_buckler",
+      "eq_ash_fallen_grove","eq_essence_vessel","eq_torch"
+    ],
+    overrides: {
+      eq_felmorn_blade: { onlyUnits: ["lor_bladedancer"] },
+      eq_helmet: { onlyUnits: ["lor_thornbound"] },
+      eq_shield: { onlyUnits: ["lor_thornbound"] }
+    }
+  }
+};
+
+const ALL_EQUIP_LISTS = { ...OLS_EQUIP_LISTS, ...GF_EQUIP_LISTS, ...LOR_EQUIP_LISTS };
+
+
+/* =========================================================
    UNIT -> WHICH LISTS IT CAN PULL FROM (BY SLOT)
    ========================================================= */
 
@@ -633,6 +761,49 @@ const WARBANDS = [
       }
     ]
   }
+  ,
+  {
+    id: "the_great_feast",
+    name: "The Great Feast",
+    description: "A brutal hierarchy of ogres and trolls. Archetype dictates whether you field a Glutton Host or Blackblood Tribe.",
+    archetypes: [
+      {
+        id: "glutton_host",
+        name: "Glutton Host",
+        description: "Ogre-led host of hungry brutes and expendable followers.",
+        leaders: ["gf_colossal","gf_ogre_bully"],
+        heroes: ["gf_ogre_chef","gf_ogre_mage","gf_half_blood_taskmaster"],
+        henchmen: ["gf_half_blood_brutes","gf_ogre_youngun","gf_scraplings","gf_thralls"],
+        sellswords: ["sell_blade_for_hire"]
+      },
+      {
+        id: "blackblood_tribe",
+        name: "Blackblood Tribe",
+        description: "Troll-led procession from the caves and crags around Velthynor.",
+        leaders: ["gf_colossal","gf_troll_warchief"],
+        heroes: ["gf_troll_hag","gf_two_headed_troll","gf_half_blood_taskmaster"],
+        henchmen: ["gf_half_blood_brutes","gf_troll_whelps","gf_scraplings","gf_thralls"],
+        sellswords: ["sell_blade_for_hire"]
+      }
+    ]
+  },
+  {
+    id: "the_lorathiir",
+    name: "The Lorathiir",
+    description: "Swift elves bound to the dying Thornwood, using Essence as a defining resource.",
+    archetypes: [
+      {
+        id: "thornwood_seekers",
+        name: "Thornwood Seekers",
+        description: "Mortal fighters, spirit-kin allies, and spellcasters seeking Essence in Velthynor.",
+        leaders: ["lor_voice_of_the_veil"],
+        heroes: ["lor_pathfinder","lor_troupe_mother"],
+        henchmen: ["lor_bladedancer","lor_grovefolk","lor_thornbound","lor_spirit_kin"],
+        sellswords: ["sell_blade_for_hire"]
+      }
+    ]
+  }
+
 ];
 
 /* =========================================================
@@ -642,6 +813,8 @@ const WARBANDS = [
 const UNIT_EQUIP_PROFILE = {
   ols_warhound: { noEquipment:true },
   ols_suntouched_vessel: { noHelmet:true, noArmor:true, noShield:true },
+  gf_troll_hag: { noArmor:true },
+
 };
 
 function unitProfile(unitId){
@@ -747,7 +920,7 @@ function getUnitAllowedLists(unitId, slotType){
   if (!access) return [];
   return (access[slotType] || []).slice();
 }
-function getList(listId){ return OLS_EQUIP_LISTS[listId] || null; }
+function getList(listId){ return ALL_EQUIP_LISTS[listId] || null; }
 function getEffectiveRulesFromList(listObj, eqId){
   const o = (listObj && listObj.overrides && listObj.overrides[eqId]) ? listObj.overrides[eqId] : null;
   return o || {};
