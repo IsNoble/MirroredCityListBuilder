@@ -271,6 +271,11 @@
   <main>
     <!-- LEFT -->
     <section class="panel">
+      <div>
+        <label>Name</label>
+        <input id="name_${card.id}" type="text" placeholder="Optional custom name" />
+      </div>
+
       <div class="row two">
         <div>
           <label>Roster Name</label>
@@ -1562,6 +1567,7 @@ function renderStatCard(card, warbandBase){
     <div class="card-top">
       <div class="card-title">
         <span>${kindLabel} Card</span>
+        ${card.customName ? `<span class="pill good">${card.customName}</span>` : ""}
         ${isHorde ? `<span class="pill warn">HORDE</span>` : ""}
         <span class="pill">Cost: ${cc.sum}${cc.hasVariable ? "+" : ""}</span>
         ${unit?.limit ? `<span class="pill">${unit.limit}</span>` : ""}
@@ -1588,6 +1594,15 @@ function renderStatCard(card, warbandBase){
     state.cards = state.cards.filter(c => c.id !== card.id);
     render();
   });
+
+  const nameInput = wrap.querySelector(`#name_${card.id}`);
+  if(nameInput){
+    nameInput.value = card.customName || "";
+    nameInput.addEventListener("input", () => {
+      card.customName = nameInput.value;
+      render();
+    });
+  }
 
   const unitSel = wrap.querySelector(`#unit_${card.id}`);
   unitSel.innerHTML = "";
@@ -2095,12 +2110,12 @@ byId("leaderSelect").addEventListener("change", (e) => {
 });
 
 byId("btnAddHero").addEventListener("click", () => {
-  state.cards.push({ id: uid(), kind: "HERO", unitId: "", count: 1, equipment: { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] } });
+  state.cards.push({ id: uid(), kind: "HERO", unitId: "", count: 1, customName:"", equipment: { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] } });
   render();
 });
 
 byId("btnAddHench").addEventListener("click", () => {
-  state.cards.push({ id: uid(), kind: "HENCHMAN", unitId: "", count: 1, equipment: { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] } });
+  state.cards.push({ id: uid(), kind: "HENCHMAN", unitId: "", count: 1, customName:"", equipment: { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] } });
   render();
 });
 
@@ -2133,6 +2148,7 @@ function safeExportState(){
         kind: c.kind,
         unitId: c.unitId,
         count: c.count,
+        customName: c.customName || "",
         equipment: ensureEquipObj(c) && c.equipment
       }))
     }
@@ -2157,6 +2173,7 @@ function applyImported(obj){
       kind: c.kind,
       unitId: c.unitId || "",
       count: c.count || 1,
+      customName: c.customName || "",
       equipment: c.equipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] }
     };
     ensureEquipObj(card);
