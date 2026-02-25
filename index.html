@@ -1695,7 +1695,7 @@ function renderLeaderStatCard(){
 
     <div class="muted">Leader: <strong>${leaderUnit ? leaderUnit.name : "—"}</strong></div>
 
-    <div class="row two">
+    <div class="row two" id="dutyRow_${card.id}">
       <div>
         <label>Custom Name</label>
         <input id="leaderCustomName" type="text" placeholder="Name this model" />
@@ -1722,9 +1722,11 @@ function renderLeaderStatCard(){
     });
   }
 
+  const leaderDutyRow = wrap.querySelector("#leaderDutyRow");
   const leaderDutySel = wrap.querySelector("#leaderDutySel");
   const leaderDutyHelp = wrap.querySelector("#leaderDutyHelp");
   const leaderIsMerc = state.warbandId === "mercenary_companies" && (state.leaderUnitId || "").startsWith("mc_");
+  if (leaderDutyRow){ leaderDutyRow.style.display = leaderIsMerc ? "" : "none"; }
   if (leaderDutySel){
     leaderDutySel.innerHTML = "";
     const optNone = document.createElement("option");
@@ -1804,7 +1806,7 @@ function renderStatCard(card, warbandBase){
     <div class="tiny muted" id="dutyHelp_${card.id}"></div>
   </div>
 </div>
-<div class="row">
+<div class="row" id="quirkRow_${card.id}">
   <div>
     <label>Half-Blood Quirk</label>
     <select id="quirk_${card.id}"></select>
@@ -1850,9 +1852,11 @@ function renderStatCard(card, warbandBase){
     });
   }
 
+  const dutyRow = wrap.querySelector(`#dutyRow_${card.id}`);
   const dutySel = wrap.querySelector(`#duty_${card.id}`);
   const dutyHelp = wrap.querySelector(`#dutyHelp_${card.id}`);
   const isMerc = state.warbandId === "mercenary_companies" && (card.unitId || "").startsWith("mc_");
+  if (dutyRow){ dutyRow.style.display = isMerc ? "" : "none"; }
   if (dutySel){
     dutySel.innerHTML = "";
     const optNone = document.createElement("option");
@@ -1890,9 +1894,13 @@ function renderStatCard(card, warbandBase){
     });
   }
 
+  const quirkRow = wrap.querySelector(`#quirkRow_${card.id}`);
   const quirkSel = wrap.querySelector(`#quirk_${card.id}`);
   const quirkHelp = wrap.querySelector(`#quirkHelp_${card.id}`);
   const isHB = isGreatFeastHalfBloodUnit(card.unitId);
+  if (quirkRow){
+    quirkRow.style.display = isHB ? "" : "none";
+  }
   if (quirkSel){
     quirkSel.innerHTML = "";
     const opt0 = document.createElement("option");
