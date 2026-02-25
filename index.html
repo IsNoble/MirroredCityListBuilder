@@ -448,6 +448,21 @@ const UNITS = [
   { id: "lor_grovefolk", name: "Grovefolk", type: "HENCHMAN", cost: 40, tags: ["HORDE"], limit: "0-6" },
   { id: "lor_thornbound", name: "Thornbound", type: "HENCHMAN", cost: 35, tags: ["HORDE"], limit: "0-6" },
   { id: "lor_spirit_kin", name: "Spirit-kin", type: "HENCHMAN", cost: 45, tags: [], limit: "0-2" },
+
+  // =========================================================
+  // MERCENARY COMPANIES
+  // =========================================================
+  { id: "mc_captain", name: "Captain", type: "LEADER", cost: 65, tags: [], limit: "1" },
+
+  { id: "mc_lieutenant", name: "Lieutenant", type: "HERO", cost: 50, tags: [], limit: "0-2" },
+  { id: "mc_veteran_duelist", name: "Veteran (Duelist)", type: "HERO", cost: 45, tags: [], limit: "0-3" },
+  { id: "mc_veteran_sharpshooter", name: "Veteran (Sharpshooter)", type: "HERO", cost: 45, tags: [], limit: "0-3" },
+  { id: "mc_muscle", name: "Muscle", type: "HERO", cost: 50, tags: [], limit: "0-1" },
+  { id: "mc_spotter", name: "Spotter", type: "HERO", cost: 35, tags: [], limit: "0-2" },
+
+  { id: "mc_soldier", name: "Soldier", type: "HENCHMAN", cost: 30, tags: [], limit: "" },
+  { id: "mc_marksman", name: "Marksman", type: "HENCHMAN", cost: 25, tags: [], limit: "0-6" },
+  { id: "mc_recruit", name: "Recruit", type: "HENCHMAN", cost: 20, tags: ["HORDE"], limit: "" },
 ];
 
 /* =========================================================
@@ -458,13 +473,17 @@ const UNITS = [
 
 const EQUIPMENT_CATALOG = {
   eq_axe: { id:"eq_axe", name:"Axe", tags:["WEAPON","MELEE"], cost:8 },
-  eq_dagger: { id:"eq_dagger", name:"Dagger", tags:["WEAPON","MELEE"], cost:2 },
+  
+  eq_billhook: { id:"eq_billhook", name:"Billhook", tags:["WEAPON","MELEE"], cost:10 },
+eq_dagger: { id:"eq_dagger", name:"Dagger", tags:["WEAPON","MELEE"], cost:2 },
   eq_flail: { id:"eq_flail", name:"Flail", tags:["WEAPON","MELEE"], cost:18 },
   eq_great_weapon: { id:"eq_great_weapon", name:"Great Weapon", tags:["WEAPON","MELEE","TWO_HANDED"], cost:25 },
   eq_halberd: { id:"eq_halberd", name:"Halberd", tags:["WEAPON","MELEE","TWO_HANDED"], cost:12 },
   eq_hammer: { id:"eq_hammer", name:"Hammer", tags:["WEAPON","MELEE"], cost:8 },
   eq_mace: { id:"eq_mace", name:"Mace", tags:["WEAPON","MELEE"], cost:6 },
-  eq_mace_chain: { id:"eq_mace_chain", name:"Mace and Chain", tags:["WEAPON","MELEE"], cost:20 },
+  
+  eq_mace_and_chain: { id:"eq_mace_and_chain", name:"Mace and Chain", tags:["WEAPON","MELEE"], cost:20 },
+eq_mace_chain: { id:"eq_mace_chain", name:"Mace and Chain", tags:["WEAPON","MELEE"], cost:20 },
   eq_sword: { id:"eq_sword", name:"Sword", tags:["WEAPON","MELEE"], cost:15 },
   eq_club: { id:"eq_club", name:"Club", tags:["WEAPON","MELEE"], cost:3 },
   eq_staff: { id:"eq_staff", name:"Staff", tags:["WEAPON","MELEE","TWO_HANDED"], cost:8 },
@@ -473,7 +492,9 @@ const EQUIPMENT_CATALOG = {
   eq_spear: { id:"eq_spear", name:"Spear", tags:["WEAPON","MELEE","TWO_HANDED"], cost:10 },
 
   eq_crossbow: { id:"eq_crossbow", name:"Crossbow", tags:["WEAPON","RANGED"], cost:25 },
-  eq_hand_crossbow: { id:"eq_hand_crossbow", name:"Hand Crossbow", tags:["WEAPON","RANGED"], cost:15 },
+  
+  eq_repeating_crossbow: { id:"eq_repeating_crossbow", name:"Repeating Crossbow", tags:["WEAPON","RANGED","TWO_HANDED"], cost:30 },
+eq_hand_crossbow: { id:"eq_hand_crossbow", name:"Hand Crossbow", tags:["WEAPON","RANGED"], cost:15 },
   eq_short_bow: { id:"eq_short_bow", name:"Short Bow", tags:["WEAPON","RANGED"], cost:10 },
   eq_long_bow: { id:"eq_long_bow", name:"Long Bow", tags:["WEAPON","RANGED"], cost:15 },
   eq_sling: { id:"eq_sling", name:"Sling", tags:["WEAPON","RANGED"], cost:9 },
@@ -711,7 +732,46 @@ const LOR_EQUIP_LISTS = {
   }
 };
 
-const ALL_EQUIP_LISTS = { ...OLS_EQUIP_LISTS, ...GF_EQUIP_LISTS, ...LOR_EQUIP_LISTS };
+
+/* =========================================================
+   MERCENARY COMPANIES - EQUIPMENT LISTS
+   ========================================================= */
+
+const MC_EQUIP_LISTS = {
+  mercenary_equipment: {
+    id: "mercenary_equipment",
+    name: "Mercenary Equipment",
+    items: [
+      // Melee
+      "eq_axe","eq_billhook","eq_club","eq_dagger","eq_great_weapon","eq_halberd","eq_hammer","eq_mace","eq_mace_and_chain","eq_rapier","eq_spear","eq_sword",
+      // Ranged
+      "eq_crossbow","eq_short_bow","eq_throwing_knives",
+      // Blastpowder
+      "eq_duelling_pistol","eq_pistol",
+      // Armor & Shields
+      "eq_helmet","eq_light_armor","eq_medium_armor","eq_heavy_armor","eq_buckler","eq_shield"
+    ],
+    overrides: {}
+  },
+
+  marksman_equipment: {
+    id: "marksman_equipment",
+    name: "Marksman Equipment",
+    items: [
+      // Melee
+      "eq_axe","eq_club","eq_dagger","eq_hammer","eq_mace","eq_sword",
+      // Ranged
+      "eq_crossbow","eq_short_bow","eq_long_bow","eq_repeating_crossbow",
+      // Blastpowder
+      "eq_blunderbuss","eq_long_rifle","eq_musket",
+      // Armor & Shields
+      "eq_helmet","eq_light_armor","eq_shield"
+    ],
+    overrides: {}
+  }
+};
+
+const ALL_EQUIP_LISTS = { ...OLS_EQUIP_LISTS, ...GF_EQUIP_LISTS, ...LOR_EQUIP_LISTS, ...MC_EQUIP_LISTS };
 
 
 /* =========================================================
@@ -761,6 +821,20 @@ const UNIT_EQUIP_LIST_ACCESS = {
   lor_grovefolk: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] },
   lor_thornbound: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] },
   lor_spirit_kin: { WEAPON:["lorathiir_equipment"], HELMET:["lorathiir_equipment"], ARMOR:["lorathiir_equipment"], SHIELD:["lorathiir_equipment"], OTHER:["special_equipment","lorathiir_equipment"] }
+
+
+  ,
+  // Mercenary Companies
+  mc_captain: { WEAPON:["mercenary_equipment"], HELMET:["mercenary_equipment"], ARMOR:["mercenary_equipment"], SHIELD:["mercenary_equipment"], OTHER:["special_equipment"] },
+  mc_lieutenant: { WEAPON:["mercenary_equipment"], HELMET:["mercenary_equipment"], ARMOR:["mercenary_equipment"], SHIELD:["mercenary_equipment"], OTHER:["special_equipment"] },
+  mc_veteran_duelist: { WEAPON:["mercenary_equipment"], HELMET:["mercenary_equipment"], ARMOR:["mercenary_equipment"], SHIELD:["mercenary_equipment"], OTHER:["special_equipment"] },
+  mc_veteran_sharpshooter: { WEAPON:["marksman_equipment"], HELMET:["marksman_equipment"], ARMOR:["marksman_equipment"], SHIELD:["marksman_equipment"], OTHER:["special_equipment"] },
+  mc_muscle: { WEAPON:["mercenary_equipment"], HELMET:["mercenary_equipment"], ARMOR:["mercenary_equipment"], SHIELD:["mercenary_equipment"], OTHER:["special_equipment"] },
+  mc_spotter: { WEAPON:["marksman_equipment"], HELMET:["marksman_equipment"], ARMOR:["marksman_equipment"], SHIELD:["marksman_equipment"], OTHER:["special_equipment"] },
+
+  mc_soldier: { WEAPON:["mercenary_equipment"], HELMET:["mercenary_equipment"], ARMOR:["mercenary_equipment"], SHIELD:["mercenary_equipment"], OTHER:["special_equipment"] },
+  mc_marksman: { WEAPON:["marksman_equipment"], HELMET:["marksman_equipment"], ARMOR:["marksman_equipment"], SHIELD:["marksman_equipment"], OTHER:["special_equipment"] },
+  mc_recruit: { WEAPON:["mercenary_equipment"], HELMET:["mercenary_equipment"], ARMOR:["mercenary_equipment"], SHIELD:["mercenary_equipment"], OTHER:["special_equipment"] }
 
 };
 
@@ -837,6 +911,23 @@ const WARBANDS = [
     ]
   }
 
+,
+  {
+    id: "mercenary_companies",
+    name: "Mercenary Companies",
+    description: "Professional soldiers and hired blades. Veterans specialize as Duelists or Sharpshooters. Duties are unique—each model may know only one, and a warband may not include duplicate Duties.",
+    archetypes: [
+      {
+        id: "mercenary_company",
+        name: "Mercenary Company",
+        description: "A pragmatic company built around discipline, specialists, and ranged support.",
+        leaders: ["mc_captain"],
+        heroes: ["mc_lieutenant","mc_veteran_duelist","mc_veteran_sharpshooter","mc_muscle","mc_spotter"],
+        henchmen: ["mc_soldier","mc_marksman","mc_recruit"],
+        sellswords: ["sell_blade_for_hire"]
+      }
+    ]
+  }
 ];
 
 /* =========================================================
