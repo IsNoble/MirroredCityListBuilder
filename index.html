@@ -325,7 +325,7 @@
       </div>
 
       <div class="tiny">
-        Equipment slots per Stat Card: <strong>3 Weapons</strong>, <strong>1 Helmet</strong>, <strong>1 Armor</strong>, <strong>1 Shield</strong>, <strong>3 Everything Else</strong>.
+        Equipment slots per Stat Card: <strong>3 Weapons</strong>, <strong>1 Helmet</strong>, <strong>1 Armor</strong>, <strong>1 Shield</strong>, <strong>3 Universal</strong>.
       </div>
 
       <div class="cards" id="cards"></div>
@@ -565,6 +565,17 @@ eq_hand_crossbow: { id:"eq_hand_crossbow", name:"Hand Crossbow", tags:["WEAPON",
   eq_essence_vessel: { id:"eq_essence_vessel", name:"Essence Vessel", tags:["UNIVERSAL","UNIQUE"], cost:20, uniqueToFaction:"the_lorathiir" },
 };
 
+const UNIVERSAL_EQUIPMENT_LIST = {
+  id: "universal_equipment",
+  name: "Universal Equipment",
+  items: Object.values(EQUIPMENT_CATALOG)
+    .filter(eq => Array.isArray(eq.tags) && eq.tags.includes("UNIVERSAL") && !eq.tags.includes("UNIQUE"))
+    .map(eq => eq.id),
+  overrides: {}
+};
+
+
+
 /* =========================================================
    ORDER OF THE LAST SUN - EQUIPMENT LISTS
    ========================================================= */
@@ -766,7 +777,7 @@ const MC_EQUIP_LISTS = {
   }
 };
 
-const ALL_EQUIP_LISTS = { ...OLS_EQUIP_LISTS, ...GF_EQUIP_LISTS, ...LOR_EQUIP_LISTS, ...MC_EQUIP_LISTS };
+const ALL_EQUIP_LISTS = { ...OLS_EQUIP_LISTS, ...GF_EQUIP_LISTS, ...LOR_EQUIP_LISTS, ...MC_EQUIP_LISTS, universal_equipment: UNIVERSAL_EQUIPMENT_LIST };
 
 
 /* =========================================================
@@ -998,6 +1009,8 @@ let state = {
   archetypeId: "",
   leaderUnitId: "",
   leaderEquipment: null,
+  leaderCustomName: "",
+  leaderDutyId: "",
   cards: []
 };
 
@@ -1087,7 +1100,11 @@ function isFactionLocked(eq, factionId){
 function getUnitAllowedLists(unitId, slotType){
   const access = UNIT_EQUIP_LIST_ACCESS[unitId];
   if (!access) return [];
-  return (access[slotType] || []).slice();
+  const lists = (access[slotType] || []).slice();
+  if (slotType === "OTHER"){
+    if (!lists.includes("universal_equipment")) lists.unshift("universal_equipment");
+  }
+  return lists;
 }
 function getList(listId){ return ALL_EQUIP_LISTS[listId] || null; }
 function getEffectiveRulesFromList(listObj, eqId){
@@ -1669,6 +1686,7 @@ function renderLeaderStatCard(){
     <div class="card-top">
       <div class="card-title">
         <span>LEADER Stat Card</span>
+        ${state.leaderCustomName ? `<span class="pill good">${state.leaderCustomName}</span>` : ""}
         <span class="pill">Counts as 1 Card</span>
         <span class="pill">Cost: ${total}${eq.hasVariable ? "+" : ""}</span>
       </div>
@@ -1677,11 +1695,75 @@ function renderLeaderStatCard(){
 
     <div class="muted">Leader: <strong>${leaderUnit ? leaderUnit.name : "—"}</strong></div>
 
+    <div class="row two">
+      <div>
+        <label>Custom Name</label>
+        <input id="leaderCustomName" type="text" placeholder="Name this model" />
+      </div>
+      <div>
+        <label>Duty</label>
+        <select id="leaderDutySel"></select>
+        <div class="tiny muted" id="leaderDutyHelp"></div>
+      </div>
+    </div>
+
     <div id="leaderEquipHost"></div>
   `;
 
   const host = wrap.querySelector("#leaderEquipHost");
   renderEquipmentSlotsUI(host, leaderCard, "LEADER");
+
+  const leaderNameInput = wrap.querySelector("#leaderCustomName");
+  if (leaderNameInput){
+    leaderNameInput.value = state.leaderCustomName || "";
+    leaderNameInput.addEventListener("input", () => {
+      state.leaderCustomName = leaderNameInput.value;
+      render();
+    });
+  }
+
+  const leaderDutySel = wrap.querySelector("#leaderDutySel");
+  const leaderDutyHelp = wrap.querySelector("#leaderDutyHelp");
+  const leaderIsMerc = state.warbandId === "mercenary_companies" && (state.leaderUnitId || "").startsWith("mc_");
+  if (leaderDutySel){
+    leaderDutySel.innerHTML = "";
+    const optNone = document.createElement("option");
+    optNone.value = "";
+    optNone.textContent = leaderIsMerc ? "(No Duty)" : "(N/A)";
+    leaderDutySel.appendChild(optNone);
+    leaderDutySel.disabled = !leaderIsMerc || !state.leaderUnitId;
+    if (leaderDutyHelp) leaderDutyHelp.textContent = leaderIsMerc ? "Leader may know only one Duty. Warband may not include duplicate Duties." : "";
+
+    if (leaderIsMerc && state.leaderUnitId){
+      const eligible = new Set(getMercEligibleDutyIdsForUnit(state.leaderUnitId));
+      const taken = new Set(state.cards
+        .filter(x => x && (x.unitId||"").startsWith("mc_") && x.dutyId)
+        .map(x => x.dutyId));
+
+      MERCENARY_DUTIES.forEach(d => {
+        if (!eligible.has(d.id)) return;
+        const o = document.createElement("option");
+        o.value = d.id;
+        o.textContent = `${d.name} (${d.cost})`;
+        if (taken.has(d.id)) o.disabled = true;
+        leaderDutySel.appendChild(o);
+      });
+    }
+
+    leaderDutySel.value = state.leaderDutyId || "";
+    leaderDutySel.addEventListener("change", () => {
+      const v = leaderDutySel.value || "";
+      if (!v){ state.leaderDutyId = ""; render(); return; }
+      const dupe = state.cards.some(x => x && (x.unitId||"").startsWith("mc_") && x.dutyId === v);
+      if (dupe){
+        leaderDutySel.value = state.leaderDutyId || "";
+        alert("That Duty is already taken in this warband.");
+        return;
+      }
+      state.leaderDutyId = v;
+      render();
+    });
+  }
 
   return wrap;
 }
@@ -1786,6 +1868,7 @@ function renderStatCard(card, warbandBase){
       const taken = new Set(state.cards
         .filter(x => x && x.id !== card.id && (x.unitId||"").startsWith("mc_") && x.dutyId)
         .map(x => x.dutyId));
+      if (state.leaderDutyId) taken.add(state.leaderDutyId);
 
       MERCENARY_DUTIES.forEach(d => {
         if (!eligible.has(d.id)) return;
@@ -1999,7 +2082,7 @@ function renderEquipmentSlotsUI(host, card, cardKind){
     { key:"HELMET", label:"Helmet", hint:`${RULES.equipSlots.HELMET}`, multi:false },
     { key:"ARMOR",  label:"Armor",  hint:`${RULES.equipSlots.ARMOR}`, multi:false },
     { key:"SHIELD", label:"Shield", hint:`${RULES.equipSlots.SHIELD}`, multi:false },
-    { key:"OTHER",  label:"Everything Else", hint:`Up to ${RULES.equipSlots.OTHER}`, multi:true }
+    { key:"OTHER",  label:"Universal", hint:`Up to ${RULES.equipSlots.OTHER}`, multi:true }
   ];
 
   const slotGrid = document.createElement("div");
