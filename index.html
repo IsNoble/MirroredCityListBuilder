@@ -271,12 +271,7 @@
   <main>
     <!-- LEFT -->
     <section class="panel">
-      <div>
-        <label>Name</label>
-        <input id="name_${card.id}" type="text" placeholder="Optional custom name" />
-      </div>
-
-      <div class="row two">
+<div class="row two">
         <div>
           <label>Roster Name</label>
           <input id="rosterName" type="text" placeholder="e.g., Jeff's cool list" />
@@ -842,6 +837,34 @@ const UNIT_EQUIP_LIST_ACCESS = {
    WARBANDS + ARCHETYPES
    ========================================================= */
 
+const MERCENARY_DUTIES = [
+  { id:"armorer", name:"Armorer", cost:25, rarity:4, allowed:["Muscle"], rules:"Once per battle, when a friendly model makes an Armor roll, you may improve that model\u2019s Armor value by 1 for that roll. In Campaign Play, when one piece of armor would be destroyed by a successful Injury Save, it may instead be repaired after the battle at half its normal cost." },
+  { id:"cook", name:"Cook", cost:30, rarity:4, allowed:["Veteran"], rules:"At the start of the battle, choose one friendly model. That model gains Focused. In Campaign Play, if the warband cannot pay the full upkeep cost of a SELLSWORD, it may pay as many Lumens as it has available. The Sellsword remains for the next battle. Any remaining Lumens owed must be paid after that battle or the Sellsword leaves as normal." },
+  { id:"field_chirurgeon", name:"Field Chirurgeon", cost:40, rarity:4, allowed:["Lieutenant", "Veteran"], rules:"This models rolls 1 additional die when performing a Mend action. In Campaign Play, you may attempt to treat one friendly model with a Serious Injury that was not Slain. Roll 3D6 and pay Lumens equal to the result. On a 16+, if all three dice match, or if you cannot pay the cost, the model is Slain; otherwise, ignore the Serious Injury result." },
+  { id:"lookout", name:"Lookout", cost:30, rarity:4, allowed:["Spotter"], rules:"While this model is on the battlefield, you add 1 to Initiative rolls." },
+  { id:"quartermaster", name:"Quartermaster", cost:40, rarity:4, allowed:["Captain", "Lieutenant"], rules:"Once per battle, when a friendly model performs an action that can be Boosted, it may Boost that action without spending a Command Point. When purchasing equipment, you may choose one of the following: reduce the cost of a single item by D6 Lumens (to a minimum of half its listed cost), or re-roll the Rarity check for a single item." },
+  { id:"sapper", name:"Sapper", cost:35, rarity:4, allowed:["Veteran Sharpshooter", "Spotter"], rules:"When this Duty is taken, the warband gains one Blastpowder Bomb for free. Between battles, the warband may purchase up to D3 Blastpowder Bombs. Once per battle, when a friendly model uses a Blastpowder weapon, you may ignore the effects of a Misfire result." },
+  { id:"weaponsmith", name:"Weaponsmith", cost:25, rarity:4, allowed:["Muscle", "Veteran Duelist"], rules:"Once per battle, when a friendly model attacks with a melee weapon, add 1 to the Hit roll. In Campaign Play, when resolving the loss of a weapon, you may add 1 to the roll to determine whether that weapon is recovered." },
+];
+
+const MERCENARY_ROLE_UNITS = {
+  "Captain": ["mc_captain"],
+  "Lieutenant": ["mc_lieutenant"],
+  "Veteran": ["mc_veteran_duelist","mc_veteran_sharpshooter"],
+  "Veteran Duelist": ["mc_veteran_duelist"],
+  "Veteran Sharpshooter": ["mc_veteran_sharpshooter"],
+  "Muscle": ["mc_muscle"],
+  "Spotter": ["mc_spotter"]
+};
+
+function getMercEligibleDutyIdsForUnit(unitId){
+  if (!unitId) return [];
+  const roles = Object.keys(MERCENARY_ROLE_UNITS).filter(r => (MERCENARY_ROLE_UNITS[r]||[]).includes(unitId));
+  return MERCENARY_DUTIES
+    .filter(d => (d.allowed||[]).some(req => roles.includes(req)))
+    .map(d => d.id);
+}
+
 const WARBANDS = [
   {
     id: "order_of_the_last_sun",
@@ -962,6 +985,9 @@ let state = {
 
 function ensureEquipObj(obj){
   if (!obj) return { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
+
+  if (obj.customName === undefined) obj.customName = "";
+  if (obj.dutyId === undefined) obj.dutyId = "";
 
   if (!obj.equipment){
     obj.equipment = { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
@@ -1667,6 +1693,18 @@ function renderStatCard(card, warbandBase){
     </div>
 
     <div class="row two">
+  <div>
+    <label>Custom Name</label>
+    <input id="customName_${card.id}" type="text" placeholder="Name this model" />
+  </div>
+  <div>
+    <label>Duty</label>
+    <select id="duty_${card.id}"></select>
+    <div class="tiny muted" id="dutyHelp_${card.id}"></div>
+  </div>
+</div>
+
+<div class="row two">
       <div>
         <label>Unit</label>
         <select id="unit_${card.id}"></select>
@@ -1695,6 +1733,60 @@ function renderStatCard(card, warbandBase){
     });
   }
 
+  const customNameInput = wrap.querySelector(`#customName_${card.id}`);
+  if (customNameInput){
+    customNameInput.value = card.customName || "";
+    customNameInput.addEventListener("input", () => {
+      card.customName = customNameInput.value;
+      render();
+    });
+  }
+
+  const dutySel = wrap.querySelector(`#duty_${card.id}`);
+  const dutyHelp = wrap.querySelector(`#dutyHelp_${card.id}`);
+  const isMerc = state.warbandId === "mercenary_companies" && (card.unitId || "").startsWith("mc_");
+  if (dutySel){
+    dutySel.innerHTML = "";
+    const optNone = document.createElement("option");
+    optNone.value = "";
+    optNone.textContent = isMerc ? "(No Duty)" : "(N/A)";
+    dutySel.appendChild(optNone);
+
+    dutySel.disabled = !isMerc || !card.unitId;
+    if (dutyHelp) dutyHelp.textContent = isMerc ? "Each model may know only one Duty. Warband may not include duplicate Duties." : "";
+
+    if (isMerc && card.unitId){
+      const eligible = new Set(getMercEligibleDutyIdsForUnit(card.unitId));
+      const taken = new Set(state.cards
+        .filter(x => x && x.id !== card.id && (x.unitId||"").startsWith("mc_") && x.dutyId)
+        .map(x => x.dutyId));
+
+      MERCENARY_DUTIES.forEach(d => {
+        if (!eligible.has(d.id)) return;
+        const o = document.createElement("option");
+        o.value = d.id;
+        o.textContent = `${d.name} (${d.cost})`;
+        if (taken.has(d.id)) o.disabled = true;
+        dutySel.appendChild(o);
+      });
+    }
+
+    dutySel.value = card.dutyId || "";
+    dutySel.addEventListener("change", () => {
+      const v = dutySel.value || "";
+      if (!v){ card.dutyId = ""; render(); return; }
+      // enforce no duplicates
+      const dupe = state.cards.some(x => x && x.id !== card.id && (x.unitId||"").startsWith("mc_") && x.dutyId === v);
+      if (dupe){
+        dutySel.value = card.dutyId || "";
+        alert("That Duty is already taken in this warband.");
+        return;
+      }
+      card.dutyId = v;
+      render();
+    });
+  }
+
   const unitSel = wrap.querySelector(`#unit_${card.id}`);
   unitSel.innerHTML = "";
   const allowedIds = allowedUnitIdsForKind(warbandBase, card.kind);
@@ -1717,6 +1809,16 @@ function renderStatCard(card, warbandBase){
   unitSel.addEventListener("change", () => {
     card.unitId = unitSel.value;
 
+    // Clear duty if no longer valid
+    if (card.dutyId){
+      const isMercNow = state.warbandId === "mercenary_companies" && (card.unitId||"").startsWith("mc_");
+      if (!isMercNow) {
+        card.dutyId = "";
+      } else {
+        const eligibleNow = new Set(getMercEligibleDutyIdsForUnit(card.unitId));
+        if (!eligibleNow.has(card.dutyId)) card.dutyId = "";
+      }
+    }
     const u = getUnit(card.unitId);
     const horde = u && (u.tags||[]).includes("HORDE");
     const max = (card.kind === "HENCHMAN") ? (horde ? 4 : 3) : 1;
@@ -2240,6 +2342,8 @@ function safeExportState(){
         unitId: c.unitId,
         count: c.count,
         customName: c.customName || "",
+        dutyId: c.dutyId || "",
+        customName: c.customName || "",
         equipment: ensureEquipObj(c) && c.equipment
       }))
     }
@@ -2264,6 +2368,8 @@ function applyImported(obj){
       kind: c.kind,
       unitId: c.unitId || "",
       count: c.count || 1,
+      customName: c.customName || "",
+      dutyId: c.dutyId || "",
       customName: c.customName || "",
       equipment: c.equipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] }
     };
