@@ -837,6 +837,24 @@ const UNIT_EQUIP_LIST_ACCESS = {
    WARBANDS + ARCHETYPES
    ========================================================= */
 
+const GREAT_FEAST_HALF_BLOOD_QUIRKS = [
+  { id:"smells_bad", roll:2, name:"Smells Bad", cost:20, rarity:4, rules:"A reeking musk clings to this half-blood, making even seasoned warriors gag. Enemy models engaged with this model subtract 1 from hit rolls." },
+  { id:"wings", roll:3, name:"Wings", cost:8, rarity:4, rules:"Leathery or feathered wings jut from the half-blood\u2019s back. Roll a D6 for each point of damage suffered from falling; on a 3+, that point of damage is ignored." },
+  { id:"tail", roll:4, name:"Tail", cost:5, rarity:4, rules:"A sinewy tail flicks and coils with instinctive precision. The model adds 1 to Climb and Jump Checks." },
+  { id:"hairy", roll:5, name:"Hairy", cost:10, rarity:4, rules:"A heavy coat of coarse fur covers the half-blood\u2019s body. The model subtracts 1 from its Armor characteristic." },
+  { id:"horns", roll:6, name:"Horns", cost:5, rarity:4, rules:"Gnarled horns twist from the half-blood\u2019s skull. The model adds 1 to Might when performing a Charge." },
+  { id:"ugly", roll:7, name:"Ugly", cost:15, rarity:4, rules:"The half-blood is profoundly unpleasant to look upon. This model is Fearsome." },
+  { id:"hooves", roll:8, name:"Hooves", cost:10, rarity:4, rules:"Hardened hooves replace the half-blood\u2019s feet, driving it forward with brutal force. The model adds 2 to its Speed characteristic." },
+  { id:"third_eye", roll:9, name:"Third Eye", cost:10, rarity:4, rules:"Multi-layered vision sharpens the half-blood\u2019s aim beyond natural limits. The model adds 1 to its Shoot characteristic." },
+  { id:"exoskeleton", roll:10, name:"Exoskeleton", cost:10, rarity:4, rules:"A hardened shell of bone and chitin covers much of the half-blood\u2019s body. When making an Injury Roll against this model, subtract 1 from the result." },
+  { id:"enraged", roll:11, name:"Enraged", cost:15, rarity:4, rules:"Always on edge, this half-blood lashes out at any who oppose it. This model has Hatred (Enemy Models)." },
+  { id:"second_head", roll:12, name:"Second Head", cost:25, rarity:4, rules:"A second head sprouts from the half-blood, muttering and bickering without pause. When this model activates, it gains 1 additional Action Point." },
+];
+
+function isGreatFeastHalfBloodUnit(unitId){
+  return state.warbandId === "the_great_feast" && (unitId||"").startsWith("gf_half_blood");
+}
+
 const MERCENARY_DUTIES = [
   { id:"armorer", name:"Armorer", cost:25, rarity:4, allowed:["Muscle"], rules:"Once per battle, when a friendly model makes an Armor roll, you may improve that model\u2019s Armor value by 1 for that roll. In Campaign Play, when one piece of armor would be destroyed by a successful Injury Save, it may instead be repaired after the battle at half its normal cost." },
   { id:"cook", name:"Cook", cost:30, rarity:4, allowed:["Veteran"], rules:"At the start of the battle, choose one friendly model. That model gains Focused. In Campaign Play, if the warband cannot pay the full upkeep cost of a SELLSWORD, it may pay as many Lumens as it has available. The Sellsword remains for the next battle. Any remaining Lumens owed must be paid after that battle or the Sellsword leaves as normal." },
@@ -988,6 +1006,7 @@ function ensureEquipObj(obj){
 
   if (obj.customName === undefined) obj.customName = "";
   if (obj.dutyId === undefined) obj.dutyId = "";
+  if (obj.quirkId === undefined) obj.quirkId = "";
 
   if (!obj.equipment){
     obj.equipment = { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] };
@@ -1703,6 +1722,13 @@ function renderStatCard(card, warbandBase){
     <div class="tiny muted" id="dutyHelp_${card.id}"></div>
   </div>
 </div>
+<div class="row">
+  <div>
+    <label>Half-Blood Quirk</label>
+    <select id="quirk_${card.id}"></select>
+    <div class="tiny muted" id="quirkHelp_${card.id}"></div>
+  </div>
+</div>
 
 <div class="row two">
       <div>
@@ -1776,13 +1802,40 @@ function renderStatCard(card, warbandBase){
       const v = dutySel.value || "";
       if (!v){ card.dutyId = ""; render(); return; }
       // enforce no duplicates
-      const dupe = state.cards.some(x => x && x.id !== card.id && (x.unitId||"").startsWith("mc_") && x.dutyId === v);
-      if (dupe){
-        dutySel.value = card.dutyId || "";
-        alert("That Duty is already taken in this warband.");
-        return;
-      }
-      card.dutyId = v;
+            card.dutyId = v;
+      render();
+    });
+  }
+
+  const quirkSel = wrap.querySelector(`#quirk_${card.id}`);
+  const quirkHelp = wrap.querySelector(`#quirkHelp_${card.id}`);
+  const isHB = isGreatFeastHalfBloodUnit(card.unitId);
+  if (quirkSel){
+    quirkSel.innerHTML = "";
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = isHB ? "(Select a Quirk)" : "(N/A)";
+    if (isHB) opt0.disabled = true;
+    quirkSel.appendChild(opt0);
+    quirkSel.disabled = !isHB || !card.unitId;
+
+    if (quirkHelp){
+      quirkHelp.textContent = isHB ? "Half-Bloods must take 1 Quirk." : "";
+    }
+
+    if (isHB && card.unitId){
+      GREAT_FEAST_HALF_BLOOD_QUIRKS.forEach(q => {
+        const o = document.createElement("option");
+        o.value = q.id;
+        o.textContent = `${q.roll} — ${q.name} (${q.cost})`;
+        quirkSel.appendChild(o);
+      });
+    }
+
+    quirkSel.value = card.quirkId || "";
+    quirkSel.addEventListener("change", () => {
+      const v = quirkSel.value || "";
+            card.quirkId = v;
       render();
     });
   }
@@ -1817,6 +1870,14 @@ function renderStatCard(card, warbandBase){
       } else {
         const eligibleNow = new Set(getMercEligibleDutyIdsForUnit(card.unitId));
         if (!eligibleNow.has(card.dutyId)) card.dutyId = "";
+      }
+    }
+
+    // Clear quirk if no longer valid
+    if (card.quirkId){
+      const isHBNow = isGreatFeastHalfBloodUnit(card.unitId);
+      if (!isHBNow) {
+        card.quirkId = "";
       }
     }
     const u = getUnit(card.unitId);
@@ -2343,6 +2404,7 @@ function safeExportState(){
         count: c.count,
         customName: c.customName || "",
         dutyId: c.dutyId || "",
+        quirkId: c.quirkId || "",
         customName: c.customName || "",
         equipment: ensureEquipObj(c) && c.equipment
       }))
