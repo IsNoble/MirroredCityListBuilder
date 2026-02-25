@@ -1695,12 +1695,12 @@ function renderLeaderStatCard(){
 
     <div class="muted">Leader: <strong>${leaderUnit ? leaderUnit.name : "—"}</strong></div>
 
-    <div class="row two" id="dutyRow_${card.id}">
+    <div class="row two" id="leaderDutyRow">
       <div>
         <label>Custom Name</label>
         <input id="leaderCustomName" type="text" placeholder="Name this model" />
       </div>
-      <div>
+      <div id="leaderDutyCol">
         <label>Duty</label>
         <select id="leaderDutySel"></select>
         <div class="tiny muted" id="leaderDutyHelp"></div>
@@ -1722,11 +1722,11 @@ function renderLeaderStatCard(){
     });
   }
 
-  const leaderDutyRow = wrap.querySelector("#leaderDutyRow");
+  const leaderDutyCol = wrap.querySelector("#leaderDutyCol");
   const leaderDutySel = wrap.querySelector("#leaderDutySel");
   const leaderDutyHelp = wrap.querySelector("#leaderDutyHelp");
   const leaderIsMerc = state.warbandId === "mercenary_companies" && (state.leaderUnitId || "").startsWith("mc_");
-  if (leaderDutyRow){ leaderDutyRow.style.display = leaderIsMerc ? "" : "none"; }
+  if (leaderDutyCol){ leaderDutyCol.style.display = leaderIsMerc ? "" : "none"; }
   if (leaderDutySel){
     leaderDutySel.innerHTML = "";
     const optNone = document.createElement("option");
@@ -1800,7 +1800,7 @@ function renderStatCard(card, warbandBase){
     <label>Custom Name</label>
     <input id="customName_${card.id}" type="text" placeholder="Name this model" />
   </div>
-  <div>
+  <div id="dutyCol_${card.id}">
     <label>Duty</label>
     <select id="duty_${card.id}"></select>
     <div class="tiny muted" id="dutyHelp_${card.id}"></div>
@@ -1852,11 +1852,11 @@ function renderStatCard(card, warbandBase){
     });
   }
 
-  const dutyRow = wrap.querySelector(`#dutyRow_${card.id}`);
+  const dutyCol = wrap.querySelector(`#dutyCol_${card.id}`);
   const dutySel = wrap.querySelector(`#duty_${card.id}`);
   const dutyHelp = wrap.querySelector(`#dutyHelp_${card.id}`);
   const isMerc = state.warbandId === "mercenary_companies" && (card.unitId || "").startsWith("mc_");
-  if (dutyRow){ dutyRow.style.display = isMerc ? "" : "none"; }
+  if (dutyCol){ dutyCol.style.display = isMerc ? "" : "none"; }
   if (dutySel){
     dutySel.innerHTML = "";
     const optNone = document.createElement("option");
