@@ -263,6 +263,7 @@
     <div class="hdr-actions">
       <button id="btnExport">Export</button>
       <button id="btnImport">Import</button>
+      <button id="btnExportCards">Export Stat Cards</button>
       <button id="btnPrint">Print</button>
       <button id="btnReset">Reset</button>
     </div>
@@ -467,53 +468,131 @@ const UNITS = [
    ========================================================= */
 
 const EQUIPMENT_CATALOG = {
-  eq_axe: { id:"eq_axe", name:"Axe", tags:["WEAPON","MELEE"], cost:8 },
+  eq_axe: { id:"eq_axe", name:"Axe", tags: ["MELEE", "WEAPON"], cost:8,
+    stats: {"type": "weapon", "range": "1”", "hit": "User", "might": "User", "ap": "1", "damage": "1", "traits": ["Crit (+1 damage)", "Thrown (Improvised)"]}
+},
   
-  eq_billhook: { id:"eq_billhook", name:"Billhook", tags:["WEAPON","MELEE"], cost:10 },
-eq_dagger: { id:"eq_dagger", name:"Dagger", tags:["WEAPON","MELEE"], cost:2 },
-  eq_flail: { id:"eq_flail", name:"Flail", tags:["WEAPON","MELEE"], cost:18 },
-  eq_great_weapon: { id:"eq_great_weapon", name:"Great Weapon", tags:["WEAPON","MELEE","TWO_HANDED"], cost:25 },
-  eq_halberd: { id:"eq_halberd", name:"Halberd", tags:["WEAPON","MELEE","TWO_HANDED"], cost:12 },
-  eq_hammer: { id:"eq_hammer", name:"Hammer", tags:["WEAPON","MELEE"], cost:8 },
-  eq_mace: { id:"eq_mace", name:"Mace", tags:["WEAPON","MELEE"], cost:6 },
+  eq_billhook: { id:"eq_billhook", name:"Billhook", tags: ["MELEE", "WEAPON"], cost:10,
+    stats: {"type": "weapon", "range": "2”", "hit": "User", "might": "User", "ap": "-", "damage": "1", "traits": ["Disarm", "Crit (Pull)", "Reach", "Two-Handed"]}
+},
+eq_dagger: { id:"eq_dagger", name:"Dagger", tags: ["MELEE", "WEAPON"], cost:2,
+    stats: {"type": "weapon", "range": "1”", "hit": "User", "might": "User", "ap": "-", "damage": "1", "traits": ["Thrown (Improvised)", "Lightweight", "Quick (1)"]}
+},
+  eq_flail: { id:"eq_flail", name:"Flail", tags: ["MELEE", "WEAPON"], cost:18,
+    stats: {"type": "weapon", "range": "3”", "hit": "User", "might": "User", "ap": "1", "damage": "2", "traits": ["Anti-Flank", "Clash (+2 Might)", "Two-Handed"]}
+},
+  eq_great_weapon: { id:"eq_great_weapon", name:"Great Weapon", tags: ["MELEE", "TWO_HANDED", "WEAPON"], cost:25,
+    stats: {"type":"other"}
+},
+  eq_halberd: { id:"eq_halberd", name:"Halberd", tags: ["MELEE", "TWO_HANDED", "WEAPON"], cost:12,
+    stats: {"type": "weapon", "range": "2”", "hit": "User", "might": "User", "ap": "+1", "damage": "1", "traits": ["1 Two-Handed"]}
+},
+  eq_hammer: { id:"eq_hammer", name:"Hammer", tags: ["MELEE", "WEAPON"], cost:8,
+    stats: {"type": "weapon", "range": "1”", "hit": "User", "might": "User", "ap": "1", "damage": "1", "traits": ["Crushing Blow", "Ignore Helmet"]}
+},
+  eq_mace: { id:"eq_mace", name:"Mace", tags: ["MELEE", "WEAPON"], cost:6,
+    stats: {"type": "weapon", "range": "1”", "hit": "User", "might": "User", "ap": "1", "damage": "1", "traits": ["Concussive", "Crit (Knockdown)"]}
+},
   
-  eq_mace_and_chain: { id:"eq_mace_and_chain", name:"Mace and Chain", tags:["WEAPON","MELEE"], cost:20 },
-eq_mace_chain: { id:"eq_mace_chain", name:"Mace and Chain", tags:["WEAPON","MELEE"], cost:20 },
-  eq_sword: { id:"eq_sword", name:"Sword", tags:["WEAPON","MELEE"], cost:15 },
-  eq_club: { id:"eq_club", name:"Club", tags:["WEAPON","MELEE"], cost:3 },
-  eq_staff: { id:"eq_staff", name:"Staff", tags:["WEAPON","MELEE","TWO_HANDED"], cost:8 },
-  eq_rapier: { id:"eq_rapier", name:"Rapier", tags:["WEAPON","MELEE"], cost:10 },
-  eq_whip: { id:"eq_whip", name:"Whip", tags:["WEAPON","MELEE"], cost:5 },
-  eq_spear: { id:"eq_spear", name:"Spear", tags:["WEAPON","MELEE","TWO_HANDED"], cost:10 },
+  eq_mace_and_chain: { id:"eq_mace_and_chain", name:"Mace and Chain", tags: ["MELEE", "WEAPON"], cost:20,
+    stats: {"type": "weapon", "range": "2”", "hit": "User", "might": "User", "ap": "1", "damage": "2", "traits": ["Clash (+1 Might)", "Ignore Parry & Shield", "Pair (Buckler", "Shield)"]}
+},
+eq_mace_chain: { id:"eq_mace_chain", name:"Mace and Chain", tags: ["MELEE", "WEAPON"], cost:20,
+    stats: {"type": "weapon", "range": "2”", "hit": "User", "might": "User", "ap": "1", "damage": "2", "traits": ["Clash (+1 Might)", "Ignore Parry & Shield", "Pair (Buckler", "Shield)"]}
+},
+  eq_sword: { id:"eq_sword", name:"Sword", tags: ["MELEE", "WEAPON"], cost:15,
+    stats: {"type": "weapon", "range": "1”", "hit": "User", "might": "User", "ap": "1", "damage": "1", "traits": ["Crit (Extra Attack)", "Parry"]}
+},
+  eq_club: { id:"eq_club", name:"Club", tags: ["MELEE", "WEAPON"], cost:3,
+    stats: {"type": "weapon", "range": "1”", "hit": "User", "might": "User", "ap": "-", "damage": "1", "traits": ["Concussive", "Thrown (Improvised)"]}
+},
+  eq_staff: { id:"eq_staff", name:"Staff", tags: ["MELEE", "TWO_HANDED", "WEAPON"], cost:8,
+    stats: {"type": "weapon", "range": "2”", "hit": "User", "might": "User", "ap": "-", "damage": "1", "traits": ["Anti-Flank", "Concussive", "Quick (1)", "Two-Handed"]}
+},
+  eq_rapier: { id:"eq_rapier", name:"Rapier", tags: ["MELEE", "WEAPON"], cost:10,
+    stats: {"type": "weapon", "range": "1”", "hit": "User", "might": "User", "ap": "-1", "damage": "-", "traits": ["1 Expanded Crit (5+)", "Quick (1)"]}
+},
+  eq_whip: { id:"eq_whip", name:"Whip", tags: ["MELEE", "WEAPON"], cost:5,
+    stats: {"type": "weapon", "range": "3”", "hit": "User", "might": "User", "ap": "-", "damage": "1", "traits": ["Beastbane", "Blunt (2)", "Crit (Pull or Disarm)", "Ignore Parry", "Quick (1)"]}
+},
+  eq_spear: { id:"eq_spear", name:"Spear", tags: ["MELEE", "TWO_HANDED", "WEAPON"], cost:10,
+    stats: {"type": "weapon", "range": "3”", "hit": "User", "might": "User", "ap": "-", "damage": "1", "traits": ["Thrown (Improvised)", "Pair (Buckler", "Net", "Shield)", "Reach"]}
+},
 
-  eq_crossbow: { id:"eq_crossbow", name:"Crossbow", tags:["WEAPON","RANGED"], cost:25 },
+  eq_crossbow: { id:"eq_crossbow", name:"Crossbow", tags: ["RANGED", "WEAPON"], cost:25,
+    stats: {"type": "weapon", "range": "24”", "hit": "User", "might": "4", "ap": "1", "damage": "1", "traits": ["Static Shot", "Two-Handed"]}
+},
   
-  eq_repeating_crossbow: { id:"eq_repeating_crossbow", name:"Repeating Crossbow", tags:["WEAPON","RANGED","TWO_HANDED"], cost:30 },
-eq_hand_crossbow: { id:"eq_hand_crossbow", name:"Hand Crossbow", tags:["WEAPON","RANGED"], cost:15 },
-  eq_short_bow: { id:"eq_short_bow", name:"Short Bow", tags:["WEAPON","RANGED"], cost:10 },
-  eq_long_bow: { id:"eq_long_bow", name:"Long Bow", tags:["WEAPON","RANGED"], cost:15 },
-  eq_sling: { id:"eq_sling", name:"Sling", tags:["WEAPON","RANGED"], cost:9 },
-  eq_javelin: { id:"eq_javelin", name:"Javelin", tags:["WEAPON","RANGED","THROWN"], cost:15 },
-  eq_throwing_axe: { id:"eq_throwing_axe", name:"Throwing Axe", tags:["WEAPON","RANGED","THROWN"], cost:10 },
-  eq_throwing_knives: { id:"eq_throwing_knives", name:"Throwing Knives", tags:["WEAPON","RANGED","THROWN"], cost:8 },
+  eq_repeating_crossbow: { id:"eq_repeating_crossbow", name:"Repeating Crossbow", tags: ["RANGED", "TWO_HANDED", "WEAPON"], cost:30,
+    stats: {"type": "weapon", "range": "16”", "hit": "User", "might": "3", "ap": "-", "damage": "1", "traits": ["Extra Shot", "Two-Handed"]}
+},
+eq_hand_crossbow: { id:"eq_hand_crossbow", name:"Hand Crossbow", tags: ["RANGED", "WEAPON"], cost:15,
+    stats: {"type": "weapon", "range": "12”", "hit": "User", "might": "3", "ap": "-", "damage": "1", "traits": ["Brace", "Sidearm", "Silent"]}
+},
+  eq_short_bow: { id:"eq_short_bow", name:"Short Bow", tags: ["RANGED", "WEAPON"], cost:10,
+    stats: {"type": "weapon", "range": "16”", "hit": "User", "might": "3", "ap": "-", "damage": "1", "traits": ["Two-Handed"]}
+},
+  eq_long_bow: { id:"eq_long_bow", name:"Long Bow", tags: ["RANGED", "WEAPON"], cost:15,
+    stats: {"type": "weapon", "range": "24”", "hit": "User", "might": "3", "ap": "-", "damage": "1", "traits": ["Two-Handed"]}
+},
+  eq_sling: { id:"eq_sling", name:"Sling", tags: ["RANGED", "WEAPON"], cost:9,
+    stats: {"type": "weapon", "range": "18”", "hit": "User", "might": "2", "ap": "-", "damage": "1", "traits": ["Blunt (1)", "Extra Shot (Half)"]}
+},
+  eq_javelin: { id:"eq_javelin", name:"Javelin", tags: ["RANGED", "THROWN", "WEAPON"], cost:15,
+    stats: {"type": "weapon", "range": "12”", "hit": "User", "might": "User", "ap": "-", "damage": "1", "traits": ["Thrown", "Penetrating (1)"]}
+},
+  eq_throwing_axe: { id:"eq_throwing_axe", name:"Throwing Axe", tags: ["RANGED", "THROWN", "WEAPON"], cost:10,
+    stats: {"type": "weapon", "range": "6”", "hit": "User", "might": "User", "ap": "+1", "damage": "-", "traits": ["1 Thrown"]}
+},
+  eq_throwing_knives: { id:"eq_throwing_knives", name:"Throwing Knives", tags: ["RANGED", "THROWN", "WEAPON"], cost:8,
+    stats: {"type": "weapon", "range": "8”", "hit": "User", "might": "User", "ap": "-1", "damage": "-", "traits": ["1 Silent", "Thrown", "Volley (2)"]}
+},
 
-  eq_pistol: { id:"eq_pistol", name:"Pistol", tags:["WEAPON","BLASTPOWDER","RANGED"], cost:20 },
-  eq_dueling_pistol: { id:"eq_dueling_pistol", name:"Dueling Pistol", tags:["WEAPON","BLASTPOWDER","RANGED"], cost:35 },
-  eq_volley_pistol: { id:"eq_volley_pistol", name:"Volley Pistol", tags:["WEAPON","BLASTPOWDER","RANGED"], cost:30 },
-  eq_blunderbuss: { id:"eq_blunderbuss", name:"Blunderbuss", tags:["WEAPON","BLASTPOWDER","RANGED"], cost:30 },
-  eq_musket: { id:"eq_musket", name:"Musket", tags:["WEAPON","BLASTPOWDER","RANGED"], cost:40 },
-  eq_long_rifle: { id:"eq_long_rifle", name:"Long Rifle", tags:["WEAPON","BLASTPOWDER","RANGED"], cost:100 },
+  eq_pistol: { id:"eq_pistol", name:"Pistol", tags: ["BLASTPOWDER", "RANGED", "WEAPON"], cost:20,
+    stats: {"type": "weapon", "range": "10”", "hit": "User", "might": "3", "ap": "1", "damage": "1", "traits": ["Accurate", "Brace", "Misfire (1)", "Penetrating (1)", "Reload (1)", "Sidearm"]}
+},
+  eq_dueling_pistol: { id:"eq_dueling_pistol", name:"Dueling Pistol", tags: ["BLASTPOWDER", "RANGED", "WEAPON"], cost:35,
+    stats: {"type": "weapon", "range": "12”", "hit": "User", "might": "4", "ap": "1", "damage": "2", "traits": ["Accurate", "Brace", "Expanded Crit (5+)", "Penetrating (1)", "Reload (1)", "Sidearm"]}
+},
+  eq_volley_pistol: { id:"eq_volley_pistol", name:"Volley Pistol", tags: ["BLASTPOWDER", "RANGED", "WEAPON"], cost:30,
+    stats: {"type": "weapon", "range": "10”", "hit": "User", "might": "3", "ap": "-", "damage": "1", "traits": ["Brace", "Misfire (2)", "Reload (1)", "Sidearm", "Volatile (1)", "Volley (2)"]}
+},
+  eq_blunderbuss: { id:"eq_blunderbuss", name:"Blunderbuss", tags: ["BLASTPOWDER", "RANGED", "WEAPON"], cost:30,
+    stats: {"type": "weapon", "range": "*", "hit": "*", "might": "3", "ap": "1", "damage": "1", "traits": ["Knockback (D3)", "Line (8)", "Misfire (2)", "Once per Game", "Two-Handed"]}
+},
+  eq_musket: { id:"eq_musket", name:"Musket", tags: ["BLASTPOWDER", "RANGED", "WEAPON"], cost:40,
+    stats: {"type": "weapon", "range": "24”", "hit": "User", "might": "4", "ap": "1", "damage": "2", "traits": ["Accurate", "Misfire (1)", "Penetrating (1)", "Reload (1)", "Static Shot", "Two-Handed"]}
+},
+  eq_long_rifle: { id:"eq_long_rifle", name:"Long Rifle", tags: ["BLASTPOWDER", "RANGED", "WEAPON"], cost:100,
+    stats: {"type":"other"}
+},
 
-  eq_helmet: { id:"eq_helmet", name:"Helmet", tags:["HELMET"], cost:5 },
-  eq_great_helmet: { id:"eq_great_helmet", name:"Great Helmet", tags:["HELMET"], cost:8 },
+  eq_helmet: { id:"eq_helmet", name:"Helmet", tags: ["ARMOR", "HELMET"], cost:5,
+    stats: {"type": "armor", "armorValue": "-", "injurySave": "+1", "armorPenalty": "-", "traits": ["Ignore Dazed (4+)"]}
+},
+  eq_great_helmet: { id:"eq_great_helmet", name:"Great Helmet", tags: ["ARMOR", "HELMET"], cost:8,
+    stats: {"type": "armor", "armorValue": "-", "injurySave": "+1", "armorPenalty": "-1", "traits": ["Ignore Dazed (2+)", "Limited Vision (1)"]}
+},
 
-  eq_light_armor: { id:"eq_light_armor", name:"Light Armor", tags:["ARMOR"], cost:10 },
-  eq_medium_armor: { id:"eq_medium_armor", name:"Medium Armor", tags:["ARMOR"], cost:25 },
-  eq_heavy_armor: { id:"eq_heavy_armor", name:"Heavy Armor", tags:["ARMOR"], cost:45 },
+  eq_light_armor: { id:"eq_light_armor", name:"Light Armor", tags: ["ARMOR", "BODY"], cost:10,
+    stats: {"type": "armor", "armorValue": "-1", "injurySave": "6+", "armorPenalty": "-", "traits": []}
+},
+  eq_medium_armor: { id:"eq_medium_armor", name:"Medium Armor", tags: ["ARMOR", "BODY"], cost:25,
+    stats: {"type": "armor", "armorValue": "-2", "injurySave": "5+", "armorPenalty": "-1", "traits": []}
+},
+  eq_heavy_armor: { id:"eq_heavy_armor", name:"Heavy Armor", tags: ["ARMOR", "BODY"], cost:45,
+    stats: {"type": "armor", "armorValue": "-3", "injurySave": "4+", "armorPenalty": "-2", "traits": ["Cannot Hide", "Difficult to Injure (-1)", "Slowed Run (1)"]}
+},
 
-  eq_shield: { id:"eq_shield", name:"Shield", tags:["SHIELD"], cost:10 },
-  eq_tower_shield: { id:"eq_tower_shield", name:"Tower Shield", tags:["SHIELD"], cost:18 },
-  eq_buckler: { id:"eq_buckler", name:"Buckler", tags:["SHIELD"], cost:5 },
+  eq_shield: { id:"eq_shield", name:"Shield", tags: ["ARMOR", "SHIELD"], cost:10,
+    stats: {"type": "armor", "armorValue": "-1", "injurySave": "-", "armorPenalty": "-", "traits": ["Push (+1)", "Shield"]}
+},
+  eq_tower_shield: { id:"eq_tower_shield", name:"Tower Shield", tags: ["ARMOR", "SHIELD"], cost:18,
+    stats: {"type": "armor", "armorValue": "-2", "injurySave": "-", "armorPenalty": "-1", "traits": ["Bulky", "Push (+2)", "Shield", "Slowed Run (1)"]}
+},
+  eq_buckler: { id:"eq_buckler", name:"Buckler", tags: ["ARMOR", "SHIELD"], cost:5,
+    stats: {"type": "armor", "armorValue": "-", "injurySave": "-", "armorPenalty": "-", "traits": ["Parry", "Shield"]}
+},
 
   // Universal Equipment
   eq_holy_symbol: { id:"eq_holy_symbol", name:"Holy Symbol", tags:["UNIVERSAL","RARE"], cost:25 },
@@ -2053,6 +2132,267 @@ function pruneIllegalEquipmentForLeader(){
    EQUIPMENT UI
    ========================================================= */
 
+
+
+function escapeHtml(str){
+  return String(str ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function getWarbandNameById(id){
+  const w = (WARBANDS || []).find(x => x.id === id);
+  return w ? w.name : "";
+}
+
+function getUnitById(id){
+  return (UNITS || []).find(u => u.id === id) || null;
+}
+
+function getEqById(id){
+  return EQUIPMENT_CATALOG[id] || null;
+}
+
+function getDutyById(id){
+  return (typeof MERCENARY_DUTIES !== "undefined" ? MERCENARY_DUTIES : []).find(d => d.id === id) || null;
+}
+
+function getQuirkById(id){
+  return (typeof GREAT_FEAST_HALF_BLOOD_QUIRKS !== "undefined" ? GREAT_FEAST_HALF_BLOOD_QUIRKS : []).find(q => q.id === id) || null;
+}
+
+function renderWeaponRows(weaponIds){
+  const ids = Array.isArray(weaponIds) ? weaponIds : [];
+  if (!ids.length) return `<tr><td colspan="6" class="muted">No weapons selected</td></tr>`;
+  return ids.map(id => {
+    const eq = getEqById(id);
+    if (!eq) return "";
+    const st = eq.stats || {};
+    const traits = Array.isArray(st.traits) ? st.traits.join(", ") : "";
+    return `<tr>
+      <td>${escapeHtml(eq.name)}</td>
+      <td class="c">${escapeHtml(st.range ?? "—")}</td>
+      <td class="c">${escapeHtml(st.hit ?? "—")}</td>
+      <td class="c">${escapeHtml(st.might ?? "—")}</td>
+      <td class="c">${escapeHtml(st.ap ?? "—")}</td>
+      <td>${escapeHtml(traits || st.rules || "")}</td>
+    </tr>`;
+  }).join("");
+}
+
+function renderArmorRows(helmetId, armorId, shieldId){
+  const parts = [
+    {label:"Helmet", id:helmetId},
+    {label:"Armor", id:armorId},
+    {label:"Shield", id:shieldId},
+  ].filter(p => p.id);
+
+  if (!parts.length) return `<tr><td colspan="5" class="muted">No armor selected</td></tr>`;
+
+  return parts.map(p => {
+    const eq = getEqById(p.id);
+    if (!eq) return "";
+    const st = eq.stats || {};
+    const traits = Array.isArray(st.traits) ? st.traits.join(", ") : "";
+    return `<tr>
+      <td>${escapeHtml(eq.name)}</td>
+      <td class="c">${escapeHtml(st.armorValue ?? st.armor ?? "—")}</td>
+      <td class="c">${escapeHtml(st.injurySave ?? "—")}</td>
+      <td class="c">${escapeHtml(st.armorPenalty ?? st.penalty ?? "—")}</td>
+      <td>${escapeHtml(traits || st.rules || "")}</td>
+    </tr>`;
+  }).join("");
+}
+
+function buildOneCardModel(cardLike){
+  // cardLike: { kind, unitId, customName, dutyId, quirkId, equipment:{...}, count }
+  const unit = getUnitById(cardLike.unitId);
+  const warbandName = getWarbandNameById(state.warbandId);
+  const displayName = cardLike.customName ? cardLike.customName : (unit ? unit.name : "—");
+  const duty = cardLike.dutyId ? getDutyById(cardLike.dutyId) : null;
+  const quirk = cardLike.quirkId ? getQuirkById(cardLike.quirkId) : null;
+
+  const equip = cardLike.equipment || {};
+  const weaponIds = equip.weaponIds || [];
+  const helmetId = equip.helmetId || "";
+  const armorId = equip.armorId || "";
+  const shieldId = equip.shieldId || "";
+  const otherIds = equip.otherIds || [];
+
+  const otherText = otherIds.map(id => {
+    const eq = getEqById(id);
+    if (!eq) return "";
+    const st = eq.stats || {};
+    const bits = [];
+    if (st.rules) bits.push(st.rules);
+    const traits = Array.isArray(st.traits) ? st.traits.join(", ") : "";
+    if (traits) bits.push(`Traits: ${traits}`);
+    const line = bits.length ? ` — ${bits.join(" | ")}` : "";
+    return `• ${eq.name}${line}`;
+  }).filter(Boolean).join("\n");
+
+  const ruleBlocks = [];
+  if (duty) ruleBlocks.push(`Duty — ${duty.name}: ${duty.rules}`);
+  if (quirk) ruleBlocks.push(`Quirk — ${quirk.name}: ${quirk.rules}`);
+  if (otherText) ruleBlocks.push(`Wargear/Other:\n${otherText}`);
+
+  return {
+    kind: cardLike.kind || "CARD",
+    unitType: unit ? unit.name : "—",
+    warbandName,
+    displayName,
+    cost: unit ? unit.cost : "",
+    weaponsHtml: renderWeaponRows(weaponIds),
+    armorHtml: renderArmorRows(helmetId, armorId, shieldId),
+    rulesText: ruleBlocks.join("\n\n")
+  };
+}
+
+function buildStatCardHTML(models){
+  const css = `
+    :root{ --ink:#0b2f38; --panel:#e9eef0; --line:#0b2f38; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#111; background:#fff; }
+    .page{ padding:18px; display:flex; flex-direction:column; gap:16px; }
+    .card{
+      border:3px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+      page-break-inside: avoid;
+    }
+    .hdr{
+      display:flex;
+      align-items:stretch;
+      background:var(--ink);
+      color:#fff;
+      padding:10px 12px;
+      gap:12px;
+    }
+    .hdr .badge{
+      font-weight:800;
+      letter-spacing:0.08em;
+      font-size:18px;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .hdr .meta{
+      flex:1;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px 12px;
+      align-content:center;
+    }
+    .kv{ display:flex; gap:8px; align-items:center; }
+    .k{ font-size:12px; opacity:0.9; text-transform:uppercase; letter-spacing:.06em; }
+    .v{ font-size:16px; font-weight:700; }
+    .body{ padding:12px; background:var(--panel); }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
+    .box{ background:#fff; border:2px solid var(--line); border-radius:8px; overflow:hidden; }
+    .box .ttl{ background:var(--ink); color:#fff; padding:6px 10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    th, td{ border-top:1px solid #cfd7da; padding:6px 8px; vertical-align:top; }
+    th{ text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.06em; background:#f5f8f9; }
+    td.c, th.c{ text-align:center; white-space:nowrap; }
+    .muted{ color:#6b7780; }
+    pre{ margin:0; white-space:pre-wrap; font-family:inherit; font-size:13px; line-height:1.25; }
+    @media print{
+      .noPrint{ display:none !important; }
+      body{ background:#fff; }
+      .page{ padding:0; }
+      .card{ break-inside: avoid; }
+    }
+    .toolbar{ padding:10px 18px; border-bottom:1px solid #ddd; display:flex; gap:10px; align-items:center; }
+    .toolbar button{ padding:8px 10px; border-radius:8px; border:1px solid #bbb; background:#fff; cursor:pointer; }
+  `;
+  const cards = models.map(m => `
+    <div class="card">
+      <div class="hdr">
+        <div class="badge">${escapeHtml(m.kind)}</div>
+        <div class="meta">
+          <div class="kv"><div class="k">Name</div><div class="v">${escapeHtml(m.displayName)}</div></div>
+          <div class="kv"><div class="k">Warband</div><div class="v">${escapeHtml(m.warbandName)}</div></div>
+          <div class="kv"><div class="k">Type</div><div class="v">${escapeHtml(m.unitType)}</div></div>
+          <div class="kv"><div class="k">Cost</div><div class="v">${escapeHtml(m.cost)}</div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid">
+          <div class="box">
+            <div class="ttl">Armor</div>
+            <table>
+              <thead><tr><th>Item</th><th class="c">Armor</th><th class="c">Injury</th><th class="c">Penalty</th><th>Traits</th></tr></thead>
+              <tbody>${m.armorHtml}</tbody>
+            </table>
+          </div>
+          <div class="box">
+            <div class="ttl">Weapons</div>
+            <table>
+              <thead><tr><th>Weapon</th><th class="c">Rng</th><th class="c">Hit</th><th class="c">Mgt</th><th class="c">AP</th><th>Traits</th></tr></thead>
+              <tbody>${m.weaponsHtml}</tbody>
+            </table>
+          </div>
+          <div class="box">
+            <div class="ttl">Wargear / Abilities</div>
+            <div style="padding:10px;"><pre>${escapeHtml(m.rulesText || "")}</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Stat Cards</title><style>${css}</style></head>
+  <body>
+    <div class="toolbar noPrint">
+      <button onclick="window.print()">Print / Save PDF</button>
+      <span class="muted">Tip: Use your browser print dialog to save as PDF.</span>
+    </div>
+    <div class="page">${cards}</div>
+  </body></html>`;
+}
+
+function exportStatCards(){
+  const models = [];
+
+  // Leader card
+  if (state.leaderUnitId){
+    const leaderLike = {
+      kind: "LEADER",
+      unitId: state.leaderUnitId,
+      customName: state.leaderCustomName || "",
+      dutyId: state.leaderDutyId || "",
+      quirkId: "", // leaders don't use half-blood quirks
+      equipment: state.leaderEquipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] }
+    };
+    models.push(buildOneCardModel(leaderLike));
+  }
+
+  // Other stat cards
+  (state.cards || []).forEach(c => {
+    if (!c || !c.unitId) return;
+    const copies = Math.max(1, Number(c.count || 1));
+    for (let i=0;i<copies;i++){
+      models.push(buildOneCardModel({
+        kind: c.kind || "CARD",
+        unitId: c.unitId,
+        customName: c.customName || "",
+        dutyId: c.dutyId || "",
+        quirkId: c.quirkId || "",
+        equipment: c.equipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] }
+      }));
+    }
+  });
+
+  const doc = buildStatCardHTML(models);
+  const w = window.open("", "_blank");
+  if (!w){ alert("Popup blocked. Allow popups for this page to export stat cards."); return; }
+  w.document.open();
+  w.document.write(doc);
+  w.document.close();
+}
+
 function formatCostLabel(eq, cardKind){
   const c = costForCardEquip(eq, cardKind);
   const star = isUniqueEquipment(eq) ? "*" : "";
@@ -2472,6 +2812,8 @@ byId("btnReset").addEventListener("click", () => {
 });
 
 byId("btnPrint").addEventListener("click", () => window.print());
+byId("btnExportCards").addEventListener("click", exportStatCards);
+
 byId("btnExport").addEventListener("click", () => exportRoster());
 byId("btnImport").addEventListener("click", () => importRoster());
 
