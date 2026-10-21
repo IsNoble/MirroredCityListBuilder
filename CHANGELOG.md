@@ -1,0 +1,42 @@
+# Changelog
+
+## 2026-10-20 — Mirrored City Beta v2.9
+
+Large rules update. Everything that was based on Beta v1.1 has been replaced with Beta v2.9 values. Old saved rosters still load, but unit costs and equipment will change.
+
+### Rules and data
+- All units for the Order of the Last Sun, The Great Feast, The Lorathiir and Mercenary Companies now use v2.9 stats (SPD STR TGH WIL HP ATK FGT SHT ARM XP), tags, costs, limits, innate weapons and special rules.
+- Starting budget is 1000 lumens with a 100 unspent cap. A starting warband may have at most 3 Hero Cards; the Leader Card is separate.
+- Henchmen cards hold 1–3 models, ELITE 1–2, HORDE 1–4.
+- Full v2.9 wargear and Universal Equipment catalog with weapon profiles (RNG/HIT/STR/AP/DMG/Traits) and armor profiles (Armor Value / Injury Save / Mobility / Move Check). Medium Armor and the free-dagger rule are gone.
+- Every faction equipment list follows the rulebook, including printed restrictions (JUSTICAR only, DAWNERS only, HALF-BLOOD only, TASKMASTER only, etc.) and list-specific prices (Halberd 20 on Knight's Equipment, Holy Symbol 20 for the Order, Bola 15 for the Lorathiir).
+- Rare equipment is hidden at creation unless it appears on the warband's own list or is Common for the unit's tags (Elven Boots/Cloak for ELF heroes).
+- Universal equipment restrictions are enforced by tag: HERO only, WIZARD only, PRIEST only, LEADER only, Blackblood Tribe only.
+- Half-Blood Brutes and Bladedancers are Hero cards. Pathfinder is now Wayfinder. Purifiers are available to both Order archetypes.
+
+### Slots and costs
+- 3 Weapon slots plus 1 Lightweight slot, detected from the Lightweight trait. A second Lightweight weapon uses a normal slot. Bulky weapons (Boom-Boom) take 2 slots.
+- Separate limit of 3 pieces of Equipment per Stat Card.
+- Hero / Henchmen (X / Y) equipment pricing. Weapons and armor on a Henchmen card are bought per model (p.60); Equipment is priced once per card (p.37). Controlled by `RULES.henchmenWargearPerModel`.
+- Duty and Quirk costs are included in card and warband totals.
+
+### Mercenary Duties, Quirks, Spells and Prayers
+- Duties use v2.9 costs and are tag-driven (CAPTAIN, LIEUTENANT, VETERAN, DUELIST, SHARPSHOOTER, SPOTTER, MUSCLE). One per model, no duplicates warband-wide, Leader included.
+- Complete 2D6 Half-Blood Quirk table with costs. A Half-Blood may take several Quirks and must take at least one. Roll 2D6 or choose.
+- Spell and Prayer lists (Blackblood Hexes, Brute Sorcery, Glimmers of the Thornwood, Hedgecraft, Prayers of the Last Sun). The Signature entry is known automatically; the second is generated with a Roll D6 button (6 = choose). Extra entries can be recorded for Spellbooks, Prayer Scrolls and campaign play.
+
+### UI and export
+- Custom Name (Leader, Hero, Henchmen) and Roster Name update without re-rendering, so typing keeps focus and caret, including on mobile.
+- Cards show stat lines and tag pills (HORDE, ELITE, WIZARD, PRIEST, HALF-BLOOD, LARGE, FEARSOME, BEAST). Duty, Quirk and Spell/Prayer controls appear only where eligible.
+- Equipment dropdowns are grouped by rulebook category with Unique / Faction groups.
+- Lumen symbol rendered with MIRROREDCITYICONS.TTF (the font file must be deployed next to index.html).
+- Stat Card export rebuilt for v2.9: one card per Stat Card with model count, stats, tags, weapons (including innate attacks and equipment profiles), armor, equipment, special rules, Duty, Quirks and known Spells/Prayers.
+- Import migrates older rosters (renamed unit ids, single `quirkId`, Brute cards converted to Hero cards) and prunes equipment that no longer exists.
+
+### Not yet supported
+- Sellsword profiles (none published in v2.9; the "Blade for Hire" placeholder remains unselectable).
+- Special materials: Spiritwood, Mithril, Sunsteel, Adamantite, including the Lorathiir two-Spiritwood-weapon allowance.
+- Campaign play beyond recording extra Spells/Prayers.
+
+## Earlier
+See the git history for the Beta v1.1-era changes (mercenaries, duties, quirks, custom names, card export prototype).
