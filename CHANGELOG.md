@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-23 — Sellswords (Appendix C)
+
+- Added the five v2.9 Sellswords: Blackhand, Cutthroat, Pit Fighter, Spellwright (Hedgecraft WIZARD) and Strongarm, with stats, retainer fees, fixed wargear and special rules.
+- Sellswords are offered to every warband on Henchmen cards, one model per card, with wargear included in the hire cost (no equipment slots).
+- Warband creation: no Sellswords unless the warband allows it. Mercenary Companies may hire 1 (Old Contacts); the Summary pill shows the count. A Sellsword does not satisfy the required Henchmen Card.
+- Great Feast Hazard Pay adds 25 to the hire cost (retainer +10). The Order of the Last Sun cannot employ WIZARD or PRIEST Sellswords.
+- Stat Card export shows the SELLSWORD badge, fixed weapons and armor, and the retainer fee.
+- Removed the old "Blade for Hire" placeholder; rosters that referenced it load with that card emptied.
+
 ## 2026-10-20 — Mirrored City Beta v2.9
 
 Large rules update. Everything that was based on Beta v1.1 has been replaced with Beta v2.9 values. Old saved rosters still load, but unit costs and equipment will change.
@@ -34,7 +43,6 @@ Large rules update. Everything that was based on Beta v1.1 has been replaced wit
 - Import migrates older rosters (renamed unit ids, single `quirkId`, Brute cards converted to Hero cards) and prunes equipment that no longer exists.
 
 ### Not yet supported
-- Sellsword profiles (none published in v2.9; the "Blade for Hire" placeholder remains unselectable).
 - Special materials: Spiritwood, Mithril, Sunsteel, Adamantite, including the Lorathiir two-Spiritwood-weapon allowance.
 - Campaign play beyond recording extra Spells/Prayers.
 

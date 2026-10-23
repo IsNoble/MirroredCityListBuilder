@@ -525,9 +525,52 @@ const UNITS = [
     specialRules:[]
   },
 
-  // Placeholder Sellsword (no Sellsword profiles are published in Beta v2.9; cannot be hired at creation)
-  { id:"sell_blade_for_hire", name:"Blade for Hire", faction:"", type:"SELLSWORD", cost:60, limit:"",
-    tags:["SELLSWORD","HENCHMEN"], stats:{}, equipLists:[], specialRules:[] },
+  // =========================================================
+  // SELLSWORDS (Appendix C, p.85) — hired Henchmen, one model per Henchmen Card, wargear included in cost.
+  // Normally not available during warband creation (p.59); Mercenary Companies may hire 1 (Old Contacts).
+  // =========================================================
+  { id:"ss_blackhand", name:"Blackhand", faction:"", type:"SELLSWORD", cost:70, retainer:20, limit:"",
+    tags:["SELLSWORD","ELITE","BLACKHAND"],
+    stats:{spd:5,str:3,tgh:3,wil:"6+",hp:3,atk:2,fgt:2,sht:"3+",arm:"6+",xp:0},
+    equipLists:[], noEquipment:true, fixedWargear:["eq_musket","eq_pistol","eq_dagger"],
+    specialRules:[
+      {name:"Longshot", text:"Blastpowder weapons used by this model ignore the additional Long Range penalty from Short-Ranged."},
+      {name:"Old Hand", text:"When resolving a Misfire, a Blackhand may reroll the result."}
+    ]
+  },
+  { id:"ss_cutthroat", name:"Cutthroat", faction:"", type:"SELLSWORD", cost:80, retainer:20, limit:"",
+    tags:["SELLSWORD","ELITE","CUTTHROAT"],
+    stats:{spd:6,str:3,tgh:3,wil:"8+",hp:3,atk:2,fgt:4,sht:"3+",arm:"5+",xp:0},
+    equipLists:[], noEquipment:true, fixedWargear:["eq_rapier","eq_dagger","eq_hand_crossbow","eq_light_armor"],
+    specialRules:[
+      {name:"Flash Bomb", text:"The Cutthroat begins each battle with one Flash Bomb."},
+      {name:"Sneak Attack", text:"When making an attack against an enemy model that is outnumbered, add 1 attack die."},
+      {name:"Marked for Death", text:"After deployment has been completed, choose 1 enemy model. The Cutthroat's attacks against that model have the Crit (Mortal) trait."}
+    ]
+  },
+  { id:"ss_pit_fighter", name:"Pit Fighter", faction:"", type:"SELLSWORD", cost:60, retainer:15, limit:"",
+    tags:["SELLSWORD","ELITE","PIT FIGHTER"],
+    stats:{spd:5,str:4,tgh:4,wil:"7+",hp:3,atk:2,fgt:4,sht:"4+",arm:"5+",xp:0},
+    equipLists:[], noEquipment:true, fixedWargear:["eq_trident","eq_net","eq_dagger","eq_helmet","eq_light_armor"],
+    specialRules:[
+      {name:"Win the Crowd", text:"When this model defeats an enemy with a Coup de Grâce, it gains Blessed for the remainder of the battle."}
+    ]
+  },
+  { id:"ss_spellwright", name:"Spellwright", faction:"", type:"SELLSWORD", cost:90, retainer:25, limit:"",
+    tags:["SELLSWORD","ELITE","WIZARD","SPELLWRIGHT"],
+    stats:{spd:5,str:3,tgh:3,wil:"7+",hp:3,atk:1,fgt:2,sht:"5+",arm:"6+",xp:0},
+    equipLists:[], noEquipment:true, fixedWargear:["eq_staff","eq_dagger"],
+    spellPrayerList:"hedgecraft",
+    specialRules:[
+      {name:"Wizard", text:"A Spellwright is a WIZARD and may cast Hedgecraft Spells."}
+    ]
+  },
+  { id:"ss_strongarm", name:"Strongarm", faction:"", type:"SELLSWORD", cost:160, retainer:40, limit:"",
+    tags:["SELLSWORD","ELITE","STRONGARM","FEARSOME","LARGE","SLOW LEARNER 2"],
+    stats:{spd:6,str:5,tgh:5,wil:"7+",hp:5,atk:3,fgt:3,sht:"5+",arm:"5+",xp:0},
+    equipLists:[], noEquipment:true, fixedWargear:["eq_mace","eq_dagger","eq_tower_shield"],
+    specialRules:[]
+  },
 
   // =========================================================
   // THE GREAT FEAST (Faction Tag: GREAT FEAST)
@@ -1329,6 +1372,8 @@ const WARBANDS = [
     name: "Order of the Last Sun",
     factionTag: "SOLMIRIC",
     description: "A sanctioned strike force of Solmir. Archetype dictates allowed units. Cannot employ WIZARD or PRIEST Sellswords unless they are SOLMIRIC.",
+    // Untouched by the Light (p.73)
+    sellswordBan: { tags: ["WIZARD","PRIEST"], unlessTag: "SOLMIRIC" },
     archetypes: [
       {
         id: "purifier_conclave",
@@ -1336,8 +1381,7 @@ const WARBANDS = [
         description: "Militant hunters of corruption led by a Justicar (or a Vindicator). Chaplains and Warhounds are Conclave-only.",
         leaders: ["ols_justicar", "ols_vindicator"],
         heroes: ["ols_purifier", "ols_chaplain", "ols_sunward_initiate", "ols_suntouched_vessel"],
-        henchmen: ["ols_warhound", "ols_man_at_arms", "ols_vigilant"],
-        sellswords: ["sell_blade_for_hire"]
+        henchmen: ["ols_warhound", "ols_man_at_arms", "ols_vigilant"]
       },
       {
         id: "solmiric_clergy",
@@ -1345,8 +1389,7 @@ const WARBANDS = [
         description: "A sanctified expedition led by a Dawnfather/Dawnmother (or a Vindicator). Dawnguard and Dawners are Clergy-only. Rite of Consecration: 1 free Holy Water each battle.",
         leaders: ["ols_dawnfather", "ols_vindicator"],
         heroes: ["ols_dawnguard", "ols_purifier", "ols_sunward_initiate", "ols_suntouched_vessel"],
-        henchmen: ["ols_dawner", "ols_man_at_arms", "ols_vigilant"],
-        sellswords: ["sell_blade_for_hire"]
+        henchmen: ["ols_dawner", "ols_man_at_arms", "ols_vigilant"]
       }
     ]
   },
@@ -1355,6 +1398,9 @@ const WARBANDS = [
     name: "The Great Feast",
     factionTag: "GREAT FEAST",
     description: "A brutal hierarchy of ogres and trolls. Who's Cooking?: start each battle with at least 4 HORDE Henchmen or a non-Leader HERO (the Taskmaster, if present) must sit out. Hazard Pay: Sellswords cost +25 (retainer +10).",
+    // Hazard Pay (p.66)
+    sellswordCostModifier: 25,
+    sellswordRetainerModifier: 10,
     archetypes: [
       {
         id: "glutton_host",
@@ -1362,8 +1408,7 @@ const WARBANDS = [
         description: "Ogre-led host. Half-Bloods use the Ogre Equipment list and gain the OGRE tag.",
         leaders: ["gf_colossal","gf_ogre_bully"],
         heroes: ["gf_half_blood_brute","gf_half_blood_taskmaster","gf_ogre_mage","gf_ogre_chef"],
-        henchmen: ["gf_ogre_youngun","gf_scraplings","gf_thralls"],
-        sellswords: ["sell_blade_for_hire"]
+        henchmen: ["gf_ogre_youngun","gf_scraplings","gf_thralls"]
       },
       {
         id: "blackblood_tribe",
@@ -1371,8 +1416,7 @@ const WARBANDS = [
         description: "Troll-led procession from the caves around Velthynor. Half-Bloods use the Troll Equipment list and gain the TROLL and VULNERABLE FIRE tags.",
         leaders: ["gf_colossal","gf_troll_warchief"],
         heroes: ["gf_half_blood_brute","gf_half_blood_taskmaster","gf_troll_hag","gf_two_headed_troll"],
-        henchmen: ["gf_troll_whelps","gf_scraplings","gf_thralls"],
-        sellswords: ["sell_blade_for_hire"]
+        henchmen: ["gf_troll_whelps","gf_scraplings","gf_thralls"]
       }
     ]
   },
@@ -1388,8 +1432,7 @@ const WARBANDS = [
         description: "A Voice of the Veil leading Bladedancers, Wayfinders, a Troupe Mother, Grovefolk, Thornbound, and Spirit-kin.",
         leaders: ["lor_voice_of_the_veil"],
         heroes: ["lor_troupe_mother","lor_bladedancer","lor_wayfinder"],
-        henchmen: ["lor_grovefolk","lor_thornbound","lor_spirit_kin"],
-        sellswords: ["sell_blade_for_hire"]
+        henchmen: ["lor_grovefolk","lor_thornbound","lor_spirit_kin"]
       }
     ]
   },
@@ -1398,6 +1441,8 @@ const WARBANDS = [
     name: "Mercenary Companies",
     factionTag: "MERCENARY",
     description: "Professional soldiers and hired blades. Veterans specialize as Duelists or Sharpshooters. Duties are unique: each model may know only one, and a warband may not include duplicate Duties. Old Contacts: may hire 1 Sellsword during Warband Generation.",
+    // Old Contacts (p.63)
+    sellswordsAtCreation: 1,
     archetypes: [
       {
         id: "mercenary_company",
@@ -1405,8 +1450,7 @@ const WARBANDS = [
         description: "A pragmatic company built around discipline, specialists, and ranged support.",
         leaders: ["mc_captain"],
         heroes: ["mc_lieutenant","mc_veteran_duelist","mc_veteran_sharpshooter","mc_spotter","mc_muscle"],
-        henchmen: ["mc_soldier","mc_marksman","mc_recruit"],
-        sellswords: ["sell_blade_for_hire"]
+        henchmen: ["mc_soldier","mc_marksman","mc_recruit"]
       }
     ]
   }
@@ -1443,6 +1487,8 @@ function unitHasTag(unitId, tag){ return unitTags(unitId).includes(tag); }
 
 // Henchmen per card: HORDE 1–4, ELITE 1–2, otherwise 1–3 (p.59)
 function maxModelsPerCard(unitId){
+  const u = getUnit(unitId);
+  if (u && u.type === "SELLSWORD") return 1;   // p.59: a Sellsword claims an entire Henchmen Card for a single model
   const tags = unitTags(unitId);
   if (tags.includes("HORDE")) return RULES.henchmenPerCard.HORDE;
   if (tags.includes("ELITE")) return RULES.henchmenPerCard.ELITE;
@@ -1968,7 +2014,9 @@ function cardCost(card){
   if (!unit) return { sum:0, hasVariable:false, recruit:0, equipment:0, extras:0 };
 
   const modelCount = (card.kind === "HENCHMAN") ? (card.count || 1) : 1;
-  const recruit = (unit.cost || 0) * modelCount;
+  // Sellswords: wargear is included in the hire cost; some warbands pay extra (Great Feast Hazard Pay).
+  const perModel = (unit.cost || 0) + (unit.type === "SELLSWORD" ? sellswordCostModifier(getWarbandBase()) : 0);
+  const recruit = perModel * modelCount;
 
   const eq = equipmentTotalForCard(getCardEquip(card), card.kind, card.unitId, modelCount);
   const extras = dutyCostForId(card.dutyId) + quirksCostForCard(card);
@@ -2011,16 +2059,43 @@ function allowedLeaderIds(warbandBase){
   const arch = getArchetype(warbandBase);
   return arch ? (arch.leaders || []).slice() : (warbandBase.leaders || []).slice();
 }
+// Sellswords a warband may employ (e.g. the Order cannot hire WIZARD/PRIEST Sellswords unless SOLMIRIC).
+function warbandAllowsSellsword(warbandBase, unit){
+  const ban = warbandBase && warbandBase.sellswordBan;
+  if (!ban) return true;
+  const tags = unit.tags || [];
+  if (ban.unlessTag && tags.includes(ban.unlessTag)) return true;
+  return !(ban.tags || []).some(t => tags.includes(t));
+}
+function allowedSellswordIds(warbandBase){
+  return UNITS.filter(u => u.type === "SELLSWORD" && warbandAllowsSellsword(warbandBase, u)).map(u => u.id);
+}
+function isSellswordUnit(unitId){
+  const u = getUnit(unitId);
+  return !!(u && u.type === "SELLSWORD");
+}
+// Number of Sellswords this warband may hire during warband creation (p.59: normally none; Mercenaries: 1).
+function sellswordsAllowedAtCreation(warbandBase){
+  if (RULES.sellswordsAllowedAtCreation) return Infinity;
+  return (warbandBase && warbandBase.sellswordsAtCreation) || 0;
+}
+function sellswordCostModifier(warbandBase){
+  return (warbandBase && warbandBase.sellswordCostModifier) || 0;
+}
+
 function allowedUnitIdsForKind(warbandBase, kind){
   const arch = getArchetype(warbandBase);
+  let ids = [];
   if (arch){
-    if (kind === "HERO") return arch.heroes.slice();
-    if (kind === "HENCHMAN") return arch.henchmen.slice();
-    return [];
+    if (kind === "HERO") ids = arch.heroes.slice();
+    if (kind === "HENCHMAN") ids = arch.henchmen.slice();
+  } else {
+    if (kind === "HERO") ids = (warbandBase.heroes || []).slice();
+    if (kind === "HENCHMAN") ids = (warbandBase.henchmen || []).slice();
   }
-  if (kind === "HERO") return (warbandBase.heroes || []).slice();
-  if (kind === "HENCHMAN") return (warbandBase.henchmen || []).slice();
-  return [];
+  // Sellswords use Henchmen Cards (p.59)
+  if (kind === "HENCHMAN") ids = ids.concat(allowedSellswordIds(warbandBase));
+  return ids;
 }
 
 /* =========================================================
@@ -2084,17 +2159,16 @@ function validate(){
   const filledNonLeaderCards = state.cards.length;
   const filledCards = (hasLeader ? 1 : 0) + filledNonLeaderCards;
 
-  const hasHenchmanCard = state.cards.some(c => c.kind === "HENCHMAN");
+  // The required Henchmen Card must come from the warband's own ranks; a hired Sellsword does not satisfy it.
+  const hasHenchmanCard = state.cards.some(c => c.kind === "HENCHMAN" && !isSellswordUnit(c.unitId));
   const hasOneMore = filledCards >= 3;
 
   // p.60: a starting warband may include no more than three Hero Cards (the Leader Card is a separate card type).
   const heroCards = state.cards.filter(c => c.kind === "HERO").length;
 
-  let hasSellsword = false;
-  for (const c of state.cards){
-    const u = getUnit(c.unitId);
-    if (u && u.type === "SELLSWORD") hasSellsword = true;
-  }
+  const sellswordCards = state.cards.filter(c => isSellswordUnit(c.unitId)).length;
+  const sellswordsAllowed = sellswordsAllowedAtCreation(warbandBase);
+  const hasSellsword = sellswordCards > sellswordsAllowed;
 
   const spentObj = totalLumens();
   const spent = spentObj.total;
@@ -2109,7 +2183,16 @@ function validate(){
   if (!hasHenchmanCard) errs.push("Starting warband must include at least one Henchmen Card.");
   if (!hasOneMore) errs.push("Starting warband must include Leader + Henchmen + one additional Stat Card (minimum 3 cards; Leader counts).");
   if (heroCards > RULES.startingMaxHeroCards) errs.push(`Too many Hero Cards: ${heroCards} / ${RULES.startingMaxHeroCards} (Leader Card not included).`);
-  if (!RULES.sellswordsAllowedAtCreation && hasSellsword) errs.push("Sellswords cannot be hired during warband creation.");
+  if (hasSellsword){
+    errs.push(sellswordsAllowed > 0
+      ? `Too many Sellswords: ${sellswordCards} / ${sellswordsAllowed} allowed during warband creation (Old Contacts).`
+      : "Sellswords cannot be hired during warband creation (Mercenary Companies may hire 1 via Old Contacts).");
+  }
+  for (const c of state.cards){
+    if (isSellswordUnit(c.unitId) && !warbandAllowsSellsword(warbandBase, getUnit(c.unitId))){
+      errs.push(`${getUnit(c.unitId).name}: this warband cannot employ that Sellsword.`);
+    }
+  }
 
   // Mercenary Duties: one per model, no duplicates in the warband (p.65)
   const dutyOwners = {};
@@ -2242,6 +2325,8 @@ function validate(){
       hasOneMore,
       meetsMinCards: filledCards >= RULES.startingStatCardsMinFilled,
       noSellswords: !hasSellsword,
+      sellswordCards,
+      sellswordsAllowed,
       filledCards,
       heroCards,
       spent,
@@ -2602,7 +2687,7 @@ function renderQuirkUI(rowEl, card){
 // Classification pills derived from the unit's tags (HORDE, ELITE, WIZARD, PRIEST, ...)
 function unitTagPills(unitId){
   const tags = unitTags(unitId);
-  const show = ["HORDE","ELITE","WIZARD","PRIEST","HALF-BLOOD","LARGE","FEARSOME","BEAST"].filter(t => tags.includes(t));
+  const show = ["SELLSWORD","HORDE","ELITE","WIZARD","PRIEST","HALF-BLOOD","LARGE","FEARSOME","BEAST"].filter(t => tags.includes(t));
   return show.map(t => `<span class="pill warn">${t}</span>`).join("");
 }
 
@@ -2674,11 +2759,13 @@ function renderStatCard(card, warbandBase){
   const wrap = document.createElement("div");
   wrap.className = "card";
 
-  const kindLabel = card.kind === "HERO" ? "HERO" : "HENCHMEN";
   const unit = getUnit(card.unitId);
+  const isSellsword = isSellswordUnit(card.unitId);
+  const kindLabel = card.kind === "HERO" ? "HERO" : (isSellsword ? "SELLSWORD" : "HENCHMEN");
   const maxCount = (card.kind === "HENCHMAN") ? (unit ? maxModelsPerCard(card.unitId) : RULES.henchmenPerCard.HORDE) : 1;
   const countHint = card.kind !== "HENCHMAN" ? "Heroes are always 1 model." :
-    !unit ? "Henchmen 1–3 per card; ELITE 1–2; HORDE 1–4." :
+    !unit ? "Henchmen 1–3 per card; ELITE 1–2; HORDE 1–4. Sellswords use a Henchmen Card." :
+    isSellsword ? `A Sellsword claims the whole Henchmen Card for 1 model. Retainer ${(unit.retainer || 0) + ((getWarbandBase() || {}).sellswordRetainerModifier || 0)} lumens after each battle.` :
     unitHasTag(card.unitId, "HORDE") ? "HORDE Henchmen: 1–4 models per card." :
     unitHasTag(card.unitId, "ELITE") ? "ELITE Henchmen: 1–2 models per card." : "Henchmen: 1–3 models per card.";
 
@@ -2750,16 +2837,27 @@ function renderStatCard(card, warbandBase){
   ph.textContent = "— Select Unit —";
   unitSel.appendChild(ph);
 
+  const regularGroup = document.createElement("optgroup");
+  regularGroup.label = card.kind === "HERO" ? "Heroes" : "Henchmen";
+  const sellswordGroup = document.createElement("optgroup");
+  sellswordGroup.label = "Sellswords (hired, wargear included)";
   for (const id of allowedIds){
     const u = getUnit(id);
     if (!u) continue;
     const opt = document.createElement("option");
     opt.value = id;
     const flags = ["HORDE","ELITE","WIZARD","PRIEST"].filter(t => (u.tags||[]).includes(t));
-    if (u.type === "SELLSWORD") flags.push("SELLSWORD");
-    opt.textContent = `${u.name} (${u.cost} lumens${flags.length ? ", " + flags.join(", ") : ""}${u.limit ? `, ${u.limit}` : ""})`;
-    unitSel.appendChild(opt);
+    if (u.type === "SELLSWORD"){
+      const cost = u.cost + sellswordCostModifier(warbandBase);
+      opt.textContent = `${u.name} (${cost} lumens, retainer ${(u.retainer || 0) + (warbandBase.sellswordRetainerModifier || 0)}${flags.length ? ", " + flags.join(", ") : ""})`;
+      sellswordGroup.appendChild(opt);
+    } else {
+      opt.textContent = `${u.name} (${u.cost} lumens${flags.length ? ", " + flags.join(", ") : ""}${u.limit ? `, ${u.limit}` : ""})`;
+      regularGroup.appendChild(opt);
+    }
   }
+  if (regularGroup.children.length) unitSel.appendChild(regularGroup);
+  if (sellswordGroup.children.length) unitSel.appendChild(sellswordGroup);
 
   unitSel.value = card.unitId || "";
   unitSel.addEventListener("change", () => {
@@ -2901,6 +2999,13 @@ function renderWeaponRows(cardLike){
   const equip = cardLike.equipment || {};
   const rows = [];
   for (const p of (unit?.weaponProfiles || [])) rows.push(weaponRowHtml(`${p.name} (innate)`, p));
+  // Fixed wargear (Sellswords): weapons and any equipment that carries a weapon profile
+  for (const id of (unit?.fixedWargear || [])){
+    const eq = getEqById(id);
+    if (!eq) continue;
+    if (eq.stats && eq.stats.type === "weapon") rows.push(weaponRowHtml(eq.name, eq.stats));
+    for (const p of (eq.weaponProfiles || [])) rows.push(weaponRowHtml(p.name, p));
+  }
   for (const id of (equip.weaponIds || [])){
     const eq = getEqById(id);
     if (!eq) continue;
@@ -2915,8 +3020,9 @@ function renderWeaponRows(cardLike){
 }
 
 // Armor profile row (Beta v2.9: Armor Value / Injury Save / Mobility / Move Check / Traits)
-function renderArmorRows(helmetId, armorId, shieldId){
-  const ids = [helmetId, armorId, shieldId].filter(Boolean);
+function renderArmorRows(helmetId, armorId, shieldId, fixedIds){
+  const fixedArmor = (fixedIds || []).filter(id => { const eq = getEqById(id); return eq && ["HELMET","ARMOR","SHIELD"].includes(classifyEquip(eq)); });
+  const ids = [...fixedArmor, helmetId, armorId, shieldId].filter(Boolean);
   if (!ids.length) return `<tr><td colspan="6" class="muted">No armor</td></tr>`;
   return ids.map(id => {
     const eq = getEqById(id);
@@ -2957,6 +3063,10 @@ function buildOneCardModel(cardLike){
     `• ${e.name}${e.signature ? " (Signature)" : ""} — ${magicCostLabel(e)}${e.tags?.length ? ` [${e.tags.join(", ")}]` : ""}${e.note ? ` (${e.note})` : ""}\n   ${e.effect || ""}`);
 
   const specialLines = (unit?.specialRules || []).map(r => `• ${r.name}: ${r.text}`);
+  if (unit && unit.type === "SELLSWORD"){
+    const wb = getWarbandBase() || {};
+    specialLines.unshift(`• Sellsword: retainer fee ${(unit.retainer || 0) + (wb.sellswordRetainerModifier || 0)} lumens after each battle or the model leaves. Fixed wargear: ${(unit.fixedWargear || []).map(id => getEqById(id)?.name || id).join(", ")}.`);
+  }
   const wargearRuleLines = [];
   for (const id of [...(equip.weaponIds || []), equip.helmetId, equip.armorId, equip.shieldId].filter(Boolean)){
     const eq = getEqById(id);
@@ -2964,7 +3074,7 @@ function buildOneCardModel(cardLike){
   }
 
   return {
-    kind: cardLike.kind === "HENCHMAN" ? "HENCHMEN" : (cardLike.kind || "CARD"),
+    kind: (unit && unit.type === "SELLSWORD") ? "SELLSWORD" : (cardLike.kind === "HENCHMAN" ? "HENCHMEN" : (cardLike.kind || "CARD")),
     unitType: unit ? unit.name : "—",
     warbandName,
     displayName,
@@ -2973,7 +3083,7 @@ function buildOneCardModel(cardLike){
     tags: tags.join(", "),
     stats: unit?.stats || {},
     weaponsHtml: renderWeaponRows(cardLike),
-    armorHtml: renderArmorRows(equip.helmetId || "", equip.armorId || "", equip.shieldId || ""),
+    armorHtml: renderArmorRows(equip.helmetId || "", equip.armorId || "", equip.shieldId || "", unit?.fixedWargear || []),
     equipmentText: equipmentLines.join("\n"),
     specialText: [...specialLines, ...wargearRuleLines].join("\n"),
     dutyText: duty ? `${duty.name} (${duty.cost} lumens): ${duty.rules}` : "",
@@ -3196,6 +3306,22 @@ function renderEquipmentSlotsUI(host, card, cardKind){
     const t = document.createElement("div");
     t.className = "tiny";
     t.style.marginTop = "10px";
+    const fixed = (getUnit(unitId)?.fixedWargear || []).map(getEquip).filter(Boolean);
+    if (fixed.length){
+      t.textContent = "Wargear (included in the hire cost, cannot be changed):";
+      host.appendChild(t);
+      const list = document.createElement("div");
+      list.className = "equipList";
+      for (const eq of fixed){
+        const chip = document.createElement("div");
+        chip.className = "equipChip";
+        chip.title = [(eq.stats && eq.stats.traits ? eq.stats.traits.join(", ") : ""), eq.rules || ""].filter(Boolean).join(" — ");
+        chip.innerHTML = `<span>${escapeHtml(eq.name)}</span>`;
+        list.appendChild(chip);
+      }
+      host.appendChild(list);
+      return;
+    }
     t.textContent = "This unit cannot take equipment.";
     host.appendChild(t);
     return;
@@ -3463,6 +3589,9 @@ function renderSummary(v){
   setReqPill("reqOneMore", v.meta.hasOneMore);
   setReqPill("reqMinCards", v.meta.meetsMinCards);
   setReqPill("reqNoSells", v.meta.noSellswords);
+  byId("reqNoSells").textContent = v.meta.sellswordsAllowed > 0 && v.meta.sellswordsAllowed !== Infinity
+    ? `Sellswords ${v.meta.sellswordCards} / ${v.meta.sellswordsAllowed}`
+    : (v.meta.sellswordsAllowed === Infinity ? "Sellswords" : "No Sellswords");
 
   const box = byId("messages");
   box.innerHTML = "";
