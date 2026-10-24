@@ -386,10 +386,12 @@ if (EX && EX.rulebook && EX.rulebook.file){
   if (/\s/.test(pdfCopy)) throw new Error(`rulebook copy path contains spaces, TTS cannot load it: ${pdfCopy}`);
   if (RB.pdf){
     base.ObjectStates.push({ GUID: guid(), Name: "Custom_PDF", Nickname: "Mirrored City rulebook", Description: "Pick up to read. Page buttons on the object turn pages.", GMNotes: "MC_RULEBOOK",
-      Transform: { posX: RB.pdf.x, posY: B.surfaceY + 0.5, posZ: RB.pdf.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: RB.pdf.scale, scaleY: 1, scaleZ: RB.pdf.scale },
+      Transform: { posX: RB.pdf.x, posY: B.surfaceY + 0.5, posZ: RB.pdf.z, rotX: 0, rotY: RB.pdf.rotY || 0, rotZ: 0, scaleX: RB.pdf.scale, scaleY: 1, scaleZ: RB.pdf.scale },
       ColorDiffuse: { r: 1, g: 1, b: 1 }, Locked: false, Grid: false, Snap: false, Tooltip: true,
       CustomPDF: { PDFUrl: fileUrl(pdfCopy), PDFPassword: "", PDFPage: 0, PDFPageOffset: 0 } });
-    base.ObjectStates.push(label3d(RB.pdf.label || "RULEBOOK", RB.pdf.x, RB.pdf.z - RB.pdf.scale * 1.9, { r: 0.9, g: 0.85, b: 0.7 }, 34));
+    const Fp = readerFrame(RB.pdf.readFrom || (RB.pdf.rotY === 90 ? "west" : "south"));
+    const lp = { x: RB.pdf.x + Fp.down.x * RB.pdf.scale * 1.9, z: RB.pdf.z + Fp.down.z * RB.pdf.scale * 1.9 };
+    const pl = label3d(RB.pdf.label || "RULEBOOK", lp.x, lp.z, { r: 0.9, g: 0.85, b: 0.7 }, 34); pl.Transform.rotY = Fp.rotY; base.ObjectStates.push(pl);
   }
   if (Array.isArray(RB.pages)){
     let missing = [];

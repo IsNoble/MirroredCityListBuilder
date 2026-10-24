@@ -72,7 +72,8 @@ A closer match to the list builder's printed cards would need card images, which
 In the strip right of the board (profile `extras`):
 
 - **Token dispensers:** one infinite bag per status or marker (Activated, Stunned, Dazed, Wounded, Bleeding, Burning, Hidden, Fleeing, Frightened, Rooted, Suffocating, Berserk, Blessed, Cursed, Reload, Shield, Strain, Faith, Objective, Initiative), labelled, laid out to read from the east edge so both players see them the same way. Drag a token out; it is a coloured checker with its short name on top. Edit the list in the profile.
-- **Tracker board:** a board read from the east edge with five numbered tracks of clickable cells, after the rulebook's Playboard: Round 1 to 10, Red and Blue Tempo 0 to 13, Red and Blue Victory Points 0 to 20. Click a number to set it; the current cell lights in the row's colour and the values are saved with the table. Rows are in the profile's `extras.tracker`; the table script (`setupTracker`) draws the cells.
+- **Score board:** five rows read from the board side, each a label, a minus button, a value box in the row's colour and a plus button: Round 1 to 10, Red and Blue Tempo 0 to 13, Red and Blue Victory Points 0 to 20. Values are saved with the table. Rows are in the profile's `extras.tracker`; the table script (`setupTracker`) draws the buttons.
+- **Rulebook:** the PDF book object sits to the right of the score board.
 - **Rulebook:** the PDF as a readable book object (pick it up; page buttons turn pages). A Quick reference notebook tab holds the round sequence and Tempo table as text.
 
 Objects that are read from a particular side use `readFrom` in the profile (`south`, `north`, `east`, `west`); the build turns that into the grid direction and the text rotation.

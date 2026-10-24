@@ -100,7 +100,7 @@
     "_comment": "Mirrored City table furniture in the strip right of the board: status token dispensers, Tempo / VP counters per seat, and the quick-reference slab. Token text and reference text live in Global.lua.",
     "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 76, "z": -36 }, { "x": 76, "z": 36 } ] },
     "tokens": { "_comment": "readFrom east: the grid runs along the table edge and the labels read from the east, the same for both players. x0/z0 is the first token (reader's top-left).",
-      "x0": 66, "stepX": 4.0, "z0": 31, "stepZ": -4.4, "perRow": 5, "readFrom": "west", "label": "TOKENS", "scale": 0.6,
+      "x0": 65, "stepX": 3.2, "z0": 30, "stepZ": -3.5, "perRow": 5, "readFrom": "west", "label": "TOKENS", "scale": 0.6,
       "list": [
         { "name": "Activated",  "short": "ACT",  "color": { "r": 0.25, "g": 0.25, "b": 0.25 } },
         { "name": "Stunned",    "short": "STUN", "color": { "r": 0.85, "g": 0.75, "b": 0.20 } },
@@ -125,8 +125,8 @@
       ]
     },
     "tracker": {
-      "_comment": "Clickable tracker board right of the board, read from the east edge. Rows run along z (rowLength), stacked toward the east (rowsDepth). Each row is a track of numbered buttons; clicking one sets the value and the table script remembers it. Like the rulebook's Playboard: shared Round track, Tempo and Victory Points per seat.",
-      "x": 60, "z": -3, "rowLength": 30, "rowsDepth": 11, "readFrom": "east",
+      "_comment": "Score board right of the battlefield, read from the board side like the tokens. One row per value: label, minus button, value box, plus button; the table script remembers the values. rowLength is the row's length in inches, rowsDepth the stack of rows.",
+      "x": 60, "z": -3, "rowLength": 15, "rowsDepth": 11, "readFrom": "west",
       "rows": [
         { "label": "ROUND",      "min": 1, "max": 10, "color": "White" },
         { "label": "RED TEMPO",  "min": 0, "max": 13, "color": "Red" },
@@ -138,7 +138,7 @@
     "rulebook": {
       "_comment": "The rulebook PDF (not in the repo; rights unconfirmed). The build copies it to tts/assets/local (gitignored, no spaces in the path: TTS does not decode %20 in file URLs) and places it as a readable book object.",
       "file": "C:/Users/thest/Downloads/Mirrored City Beta v2.9.pdf",
-      "pdf": { "x": 76, "z": 22, "scale": 3.0, "label": "RULEBOOK" }
+      "pdf": { "x": 60, "z": -28, "scale": 3.0, "rotY": 90, "label": "RULEBOOK" }
     }
   },
 
