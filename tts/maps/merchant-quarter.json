@@ -1,0 +1,47 @@
+{
+  "_comment": "Map profile. build-save.js --map merchant-quarter. One of these per base map; everything map-specific lives here.",
+  "saveName": "Mirrored City - Merchant Quarter",
+  "base": { "workshopId": "2837220745", "title": "Merchant Quarter" },
+
+  "board": {
+    "_comment": "Where the physical board sits in TTS units (1 unit = 1 inch). The Mirrored City battlefield frame is centred here.",
+    "centerX": 12.65, "centerZ": 0.0, "surfaceY": 1.0,
+    "widthX": 72, "depthZ": 48
+  },
+
+  "battlefield": {
+    "_comment": "Rulebook p.9: typically 30 x 44 inches. Frame drawn on the board; cards spawn outside it, models inside.",
+    "widthX": 44, "depthZ": 30,
+    "frameColor": { "r": 0.90, "g": 0.76, "b": 0.35 }
+  },
+
+  "keep": {
+    "_comment": "What survives from the base save. Terrain = Custom_Model / Custom_Assetbundle inside playBox and above the table. Everything else is dropped unless listed.",
+    "tableNames": ["Board", "The Kraken Table"],
+    "playBox": { "xMin": -22, "xMax": 48, "zMin": -26, "zMax": 27, "yMin": -30 },
+    "dropNames": ["Mordheim"],
+    "guids": { "8a28fc": "D6 dispenser", "c43435": "D6 dispenser" },
+    "bags": {
+      "4262d3": "Ruins library",
+      "fc34bd": "Example table layout",
+      "d32f06": "Terrain and details",
+      "2c7a37": "Buildings, bridges, river",
+      "fbf5fd": "Houses 1",
+      "e49912": "Houses 2",
+      "926237": "Houses 3",
+      "2fcbe3": "Houses 4",
+      "1af9ec": "Terrain extra",
+      "0d3390": "Effects: all",
+      "c32ef9": "Effects: fog",
+      "af970b": "Effects: clouds",
+      "6bf9de": "Effects: rain",
+      "1cf45c": "Effects: glow lights",
+      "fd0689": "Effects: water sound"
+    }
+  },
+
+  "shelves": {
+    "models":  { "x0": -62, "stepX": 3.6, "z0": -48, "stepZ": -4.2, "y": 1.5, "labelX": -70 },
+    "terrain": { "x0": -62, "stepX": 4.0, "z": 48, "y": 1.5, "labelX": -70 }
+  }
+}

@@ -4,7 +4,8 @@ A Tabletop Simulator (TTS) save that imports warbands exported from the list bui
 
 | File | What it is |
 |---|---|
-| `build-save.js` | Builds the save. Reads the two cached Workshop mods, copies the models into library bags, injects the scripts, writes to the TTS Saves folder. |
+| `build-save.js` | Builds the save. Reads the base map and the Ulthuan mod from the Workshop cache, keeps only the terrain, adds the battlefield frame, model shelf and scripts, writes to the TTS Saves folder. |
+| `maps/<name>.json` | One profile per base map: Workshop id, which objects to keep, where the board sits, battlefield size, shelf positions. `--map <name>` picks it; default `merchant-quarter`. |
 | `model-map.json` | Which Ulthuan model represents each builder unit id, plus the Workshop ids of the source mods. Edit this to change a miniature. |
 | `Global.lua` | Table script: import panel handlers, roster parsing, card and model spawning, clearing. |
 | `Global.xml` | Screen-space UI for the import panel. |
@@ -24,7 +25,18 @@ Output: `Documents\My Games\Tabletop Simulator\Saves\MirroredCity\Mirrored City 
 
 Rerun after any change to `model-map.json`, `Global.lua` or `Global.xml`. Pass `--out <path>` to write somewhere else.
 
-What survives from the Merchant Quarter map is decided in the **Prune** section of `build-save.js`: the table furniture, every terrain piece on the playing area, the two dice dispensers, and the terrain and effects bags (re-labelled and parked on a shelf north of the table). Rulebooks, warband sheets, scenarios, counters, templates, hand zones, deployment markers and the bilingual setup instructions are dropped. To keep something else, add its GUID to `KEEP_GUIDS` or `KEEP_BAGS`.
+What survives from the base map is decided by the profile's `keep` block: the table surface, every terrain piece inside `playBox`, the listed GUIDs (the two dice dispensers), and the listed bags (terrain and effects, re-labelled and parked on a shelf north of the table). Everything else is dropped: rulebooks, warband sheets, scenarios, counters, templates, hand zones, deployment markers, setup instructions, cabinets. To keep something else, add its GUID to `keep.guids` or `keep.bags`.
+
+## Battlefield size
+
+The rulebook (p.9) plays on a 44" by 30" battlefield, or 22" by 30" for small scenarios. Most Workshop tables are 72" by 48", so the build draws a gold frame of the rulebook size in the middle of the board and leaves the terrain outside it as scenery. Cards spawn just outside the frame, models just inside. The frame size and centre come from the profile's `board` and `battlefield` blocks and are injected into `Global.lua` as the `BOARD` line.
+
+## Adding another map
+
+1. Subscribe to the map on the Workshop and open it once so it is cached.
+2. Copy `maps/merchant-quarter.json` to `maps/<name>.json`, set `base.workshopId`, `saveName`, and the `board` centre.
+3. List what to keep. The scratch script approach that worked for Merchant Quarter: dump every object with its name, position and bag contents, then fill `keep.tableNames`, `keep.playBox`, `keep.guids` and `keep.bags`.
+4. Build with `--map <name>`. The model shelf, importer and frame are the same on every map.
 
 ## Using the table
 

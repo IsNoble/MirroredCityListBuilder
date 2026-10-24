@@ -16,17 +16,10 @@ CONFIG = {
   libraryTag = "MC_LIBRARY",   -- every shelf bag carries this tag
   spawnedTag = "MC_SPAWNED",   -- everything the importer creates carries this tag
 
-  -- Card rows sit just outside the playing area, model rows just inside it.
-  sides = {
-    south = { label = "South",
-              cards  = { x = -14, y = 2.5, z = -23.5, stepX = 4.6, perRow = 12, stepZ = -3.4 },
-              models = { x = -12, y = 2.5, z = -14.5, stepX = 2.3, perRow = 24, stepZ = -2.6 },
-              rotY = 0 },
-    north = { label = "North",
-              cards  = { x = 38, y = 2.5, z = 23.5, stepX = -4.6, perRow = 12, stepZ = 3.4 },
-              models = { x = 36, y = 2.5, z = 14.5, stepX = -2.3, perRow = 24, stepZ = 2.6 },
-              rotY = 180 },
-  },
+  -- Filled in by buildSides() from BOARD: card rows just outside the battlefield frame, model rows just inside it.
+  sides = {},
+  cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 4.5,   -- cards start this far outside the frame edge
+  modelStepX = 2.3, modelRowGap = 2.6, modelInset = 2.0, -- models start this far inside the frame edge
 
   cardScale = { x = 1.0, y = 1.0, z = 1.0 },
   pawnScale = { x = 0.8, y = 0.8, z = 0.8 },
@@ -40,6 +33,28 @@ CONFIG = {
   },
 }
 
+-- Board geometry. build-save.js replaces this line from the map profile (tts/maps/<map>.json).
+-- centerX/centerZ: middle of the battlefield frame; widthX/depthZ: frame size in inches (1 TTS unit = 1").
+BOARD = { centerX = 12.65, centerZ = 0, surfaceY = 1.0, widthX = 44, depthZ = 30 }
+
+-- South = negative Z, North = positive Z. Cards outside the frame, models inside.
+function buildSides()
+  local y = BOARD.surfaceY + 1.5
+  local hx, hz = BOARD.widthX / 2, BOARD.depthZ / 2
+  local cardsPerRow  = math.max(1, math.floor(BOARD.widthX / CONFIG.cardStepX))
+  local modelsPerRow = math.max(1, math.floor((BOARD.widthX - 2 * CONFIG.modelInset) / CONFIG.modelStepX))
+  local cardSpan  = (cardsPerRow - 1) * CONFIG.cardStepX
+  local modelSpan = (modelsPerRow - 1) * CONFIG.modelStepX
+  CONFIG.sides = {
+    south = { label = "South", rotY = 0,
+      cards  = { x = BOARD.centerX - cardSpan / 2,  y = y, z = BOARD.centerZ - hz - CONFIG.cardOffset, stepX = CONFIG.cardStepX,  perRow = cardsPerRow,  stepZ = -CONFIG.cardRowGap },
+      models = { x = BOARD.centerX - modelSpan / 2, y = y, z = BOARD.centerZ - hz + CONFIG.modelInset, stepX = CONFIG.modelStepX, perRow = modelsPerRow, stepZ =  CONFIG.modelRowGap } },
+    north = { label = "North", rotY = 180,
+      cards  = { x = BOARD.centerX + cardSpan / 2,  y = y, z = BOARD.centerZ + hz + CONFIG.cardOffset, stepX = -CONFIG.cardStepX,  perRow = cardsPerRow,  stepZ =  CONFIG.cardRowGap },
+      models = { x = BOARD.centerX + modelSpan / 2, y = y, z = BOARD.centerZ + hz - CONFIG.modelInset, stepX = -CONFIG.modelStepX, perRow = modelsPerRow, stepZ = -CONFIG.modelRowGap } },
+  }
+end
+
 -- ---------------------------------------------------------------------------
 -- State
 -- ---------------------------------------------------------------------------
@@ -47,6 +62,7 @@ rosterText = ""          -- what is currently in the paste box
 library = {}             -- unitId -> bag object
 
 function onLoad(saved)
+  buildSides()
   refreshLibrary()
   Wait.time(function() setStatus("Ready. " .. countLibrary() .. " model bags found.") end, 1)
 end
