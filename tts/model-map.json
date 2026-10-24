@@ -1,0 +1,66 @@
+{
+  "_comment": "unitId -> which Ulthuan faction tile and object nickname to copy into that unit's library bag. model null = empty bag (the spawner falls back to a coloured pawn). Keys match UNITS ids in index.html.",
+  "sources": {
+    "ulthuan":  { "workshopId": "3202337953", "title": "Ulthuan" },
+    "merchant": { "workshopId": "2837220745", "title": "Merchant Quarter" }
+  },
+  "factions": {
+    "mercenary_companies":   { "label": "Mercenary Companies",   "color": { "r": 0.62, "g": 0.55, "b": 0.35 } },
+    "the_great_feast":       { "label": "The Great Feast",       "color": { "r": 0.55, "g": 0.30, "b": 0.25 } },
+    "order_of_the_last_sun": { "label": "Order of the Last Sun", "color": { "r": 0.85, "g": 0.70, "b": 0.25 } },
+    "the_lorathiir":         { "label": "The Lorathiir",         "color": { "r": 0.35, "g": 0.60, "b": 0.45 } },
+    "sellswords":            { "label": "Sellswords",            "color": { "r": 0.45, "g": 0.45, "b": 0.50 } }
+  },
+  "units": {
+    "mc_captain":              { "faction": "mercenary_companies",   "name": "Captain",                 "tile": "Cities of Sigmar",               "model": "Freeguild Marshal w/Longsword", "alternatives": ["Freeguild Marshal w/Warhammer", "Freeguild Marshal w/Pistols"] },
+    "mc_lieutenant":           { "faction": "mercenary_companies",   "name": "Lieutenant",              "tile": "Cities of Sigmar",               "model": "Freeguild Command Corps (Arch Knight)" },
+    "mc_veteran_duelist":      { "faction": "mercenary_companies",   "name": "Veteran (Duelist)",       "tile": "Cities of Sigmar",               "model": "Freeguild Command Corps (Whisperblade)" },
+    "mc_veteran_sharpshooter": { "faction": "mercenary_companies",   "name": "Veteran (Sharpshooter)",  "tile": "Cities of Sigmar",               "model": "Freeguild Fusilier" },
+    "mc_spotter":              { "faction": "mercenary_companies",   "name": "Spotter",                 "tile": "Cities of Sigmar",               "model": "Wildercorp Hunter Arbalest", "note": "Requested Wildercorps Trailblazer is not in the mod; Arbalest is the closest scout." },
+    "mc_muscle":               { "faction": "mercenary_companies",   "name": "Muscle",                  "tile": "Cities of Sigmar",               "model": "Wildercorp Hunter Champion", "note": "Requested Wildercorps Warden is not in the mod." },
+    "mc_soldier":              { "faction": "mercenary_companies",   "name": "Soldier",                 "tile": "Cities of Sigmar",               "model": "Wildercorp Hunters", "note": "Requested Wildercorps Leatherhide is not in the mod." },
+    "mc_marksman":             { "faction": "mercenary_companies",   "name": "Marksman",                "tile": "Cities of Sigmar",               "model": "Freeguild Fusilier" },
+    "mc_recruit":              { "faction": "mercenary_companies",   "name": "Recruit",                 "tile": "Cities of Sigmar",               "model": "Wildercorp Hunters", "note": "Requested Wildercorps Leatherhide is not in the mod." },
+
+    "gf_colossal":             { "faction": "the_great_feast",       "name": "Colossal",                "tile": "Cities of Sigmar",               "model": "Gate Gargants" },
+    "gf_ogre_bully":           { "faction": "the_great_feast",       "name": "Ogre Bully",              "tile": "Ogor Mawtribes/Sons of Behemat", "model": "Tyrant" },
+    "gf_troll_warchief":       { "faction": "the_great_feast",       "name": "Troll Warchief",          "tile": "Gloomspite Gitz",                "model": "Rockgut Troggoth" },
+    "gf_half_blood_brute":     { "faction": "the_great_feast",       "name": "Half-Blood Brute",        "tile": "Ogor Mawtribes/Sons of Behemat", "model": "Irongut" },
+    "gf_half_blood_taskmaster":{ "faction": "the_great_feast",       "name": "Half-Blood Taskmaster",   "tile": "Ogor Mawtribes/Sons of Behemat", "model": "Ogor Glutton Champion" },
+    "gf_troll_hag":            { "faction": "the_great_feast",       "name": "Troll Hag",               "tile": "Gloomspite Gitz",                "model": "Fellwater Troggoth" },
+    "gf_ogre_mage":            { "faction": "the_great_feast",       "name": "Ogre Mage",               "tile": "Ogor Mawtribes/Sons of Behemat", "model": "Firebelly" },
+    "gf_ogre_chef":            { "faction": "the_great_feast",       "name": "Ogre Chef",               "tile": "Ogor Mawtribes/Sons of Behemat", "model": "Butcher" },
+    "gf_two_headed_troll":     { "faction": "the_great_feast",       "name": "Two-Headed Troll",        "tile": "Gloomspite Gitz",                "model": "Dankhold Troggoth" },
+    "gf_ogre_youngun":         { "faction": "the_great_feast",       "name": "Ogre Young'un",           "tile": "Ogor Mawtribes/Sons of Behemat", "model": "Ogor Glutton" },
+    "gf_scraplings":           { "faction": "the_great_feast",       "name": "Scraplings",              "tile": "Ogor Mawtribes/Sons of Behemat", "model": "Gnoblar" },
+    "gf_troll_whelps":         { "faction": "the_great_feast",       "name": "Troll Whelps",            "tile": "Blades of Khorne",               "model": "Claws of Karanak", "note": "Requested Hound of Wrath is not in the mod; Claws of Karanak are the hound models." },
+    "gf_thralls":              { "faction": "the_great_feast",       "name": "Thralls",                 "tile": "Cities of Sigmar",               "model": "Wildercorp Hunters", "note": "Requested Wildercorps Leatherhide is not in the mod." },
+
+    "ols_vindicator":          { "faction": "order_of_the_last_sun", "name": "Vindicator",              "tile": "Stormcast Eternals",             "model": "Vindictor" },
+    "ols_justicar":            { "faction": "order_of_the_last_sun", "name": "Justicar",                "tile": "Cities of Sigmar",               "model": "Galen ven Denst" },
+    "ols_dawnfather":          { "faction": "order_of_the_last_sun", "name": "Dawnfather / Dawnmother", "tile": "Cities of Sigmar",               "model": "Mallus Forgepriest" },
+    "ols_purifier":            { "faction": "order_of_the_last_sun", "name": "Purifier",                "tile": "Cities of Sigmar",               "model": "Doralia ven Denst" },
+    "ols_sunward_initiate":    { "faction": "order_of_the_last_sun", "name": "Sunward Initiate",        "tile": "Cities of Sigmar",               "model": "Freeguild Command Corps (Arch Knight)" },
+    "ols_suntouched_vessel":   { "faction": "order_of_the_last_sun", "name": "Suntouched Vessel",       "tile": "Cities of Sigmar",               "model": "Freeguild Command Corps (War Surgeon)" },
+    "ols_chaplain":            { "faction": "order_of_the_last_sun", "name": "Chaplain",                "tile": "Cities of Sigmar",               "model": "Freeguild Command Corps (Great Herald)" },
+    "ols_dawnguard":           { "faction": "order_of_the_last_sun", "name": "Dawnguard",               "tile": "Stormcast Eternals",             "model": "Vindictor" },
+    "ols_man_at_arms":         { "faction": "order_of_the_last_sun", "name": "Man-at-Arms",             "tile": "Cities of Sigmar",               "model": "Freeguild Gallants" },
+    "ols_vigilant":            { "faction": "order_of_the_last_sun", "name": "Vigilant",                "tile": "Cities of Sigmar",               "model": "Freeguild Fusilier" },
+    "ols_warhound":            { "faction": "order_of_the_last_sun", "name": "Warhound",                "tile": "Cities of Sigmar",               "model": "Trailhounds" },
+    "ols_dawner":              { "faction": "order_of_the_last_sun", "name": "Dawner",                  "tile": "Cities of Sigmar",               "model": "Freeguild Gallants" },
+
+    "lor_voice_of_the_veil":   { "faction": "the_lorathiir",         "name": "Voice of the Veil",       "tile": "Lumineth Realm-lords",           "model": "Scinari Cathallar" },
+    "lor_troupe_mother":       { "faction": "the_lorathiir",         "name": "Troupe Mother",           "tile": "Lumineth Realm-lords",           "model": "Scinari Loreseeker", "alternatives": ["Scinari Enlightener"] },
+    "lor_bladedancer":         { "faction": "the_lorathiir",         "name": "Bladedancer",             "tile": "Lumineth Realm-lords",           "model": "Vanari Bladelord" },
+    "lor_wayfinder":           { "faction": "the_lorathiir",         "name": "Wayfinder",               "tile": "Lumineth Realm-lords",           "model": "Vanari Auralan Sentinel", "note": "Listed as Pathfinder; the unit is Wayfinder in v2.9." },
+    "lor_grovefolk":           { "faction": "the_lorathiir",         "name": "Grovefolk",               "tile": "Lumineth Realm-lords",           "model": "Vanari Auralan Warden" },
+    "lor_thornbound":          { "faction": "the_lorathiir",         "name": "Thornbound",              "tile": "Lumineth Realm-lords",           "model": "Ydrilan Riverblades", "alternatives": ["Vanari Bladelord"] },
+    "lor_spirit_kin":          { "faction": "the_lorathiir",         "name": "Spirit-kin",              "tile": "Sylvaneth",                      "model": "Twistweald" },
+
+    "ss_blackhand":            { "faction": "sellswords",            "name": "Blackhand",               "tile": null, "model": null },
+    "ss_cutthroat":            { "faction": "sellswords",            "name": "Cutthroat",               "tile": null, "model": null },
+    "ss_pit_fighter":          { "faction": "sellswords",            "name": "Pit Fighter",             "tile": null, "model": null },
+    "ss_spellwright":          { "faction": "sellswords",            "name": "Spellwright",             "tile": null, "model": null },
+    "ss_strongarm":            { "faction": "sellswords",            "name": "Strongarm",               "tile": null, "model": null }
+  }
+}

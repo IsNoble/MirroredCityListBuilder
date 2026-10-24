@@ -321,6 +321,8 @@ Notes for the mod side:
 - `magic.entries` always starts with the Signature spell/prayer when the list has one.
 - Bump `TTS_FORMAT_VERSION` in `index.html` whenever a field changes shape; the mod should refuse newer versions it does not understand.
 
+The table itself lives in [`tts/`](tts/README.md): a build script that assembles the save from two cached Workshop mods, the Lua and XML for the import panel, and the unit-to-miniature mapping.
+
 ---
 
 ## Checking a change
