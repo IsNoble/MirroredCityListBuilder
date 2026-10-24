@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-24 — Header
+
+- The page header now leads with the rules version ("Mirrored City Beta v2.9"); "Noble Builder" moves to the subtitle.
+
 ## 2026-10-23 — Sellswords (Appendix C)
 
 - Added the five v2.9 Sellswords: Blackhand, Cutthroat, Pit Fighter, Spellwright (Hedgecraft WIZARD) and Strongarm, with stats, retainer fees, fixed wargear and special rules.
