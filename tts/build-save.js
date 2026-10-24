@@ -287,6 +287,14 @@ if (ST){
   });
 }
 
+// Opaque playing surface across the whole tabletop (the Kraken top is glass)
+if (B.tableTop){
+  const T = B.tableTop;
+  base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: "Table top", Description: "", GMNotes: "MC_TABLETOP",
+    Transform: { posX: T.centerX, posY: B.surfaceY - 0.1 - T.thickness / 2, posZ: T.centerZ, rotX: 0, rotY: 0, rotZ: 0, scaleX: T.widthX, scaleY: T.thickness, scaleZ: T.depthZ },
+    ColorDiffuse: T.color, Locked: true, Grid: false, Snap: false, Tooltip: false, IgnoreFoW: true });
+}
+
 // Table furniture scale (room for seats and card rows beyond the board)
 if (B.tableScale){
   const names = new Set(B.tableScale.names || []);

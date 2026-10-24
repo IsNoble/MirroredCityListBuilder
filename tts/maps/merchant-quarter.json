@@ -7,7 +7,12 @@
     "_comment": "Where the physical board sits in TTS units (1 unit = 1 inch). The Mirrored City battlefield frame is centred here. tableScale enlarges the named table furniture about its own origin so seats and card rows fit beyond the board.",
     "centerX": 12.65, "centerZ": 0.0, "surfaceY": 1.0,
     "widthX": 72, "depthZ": 48,
-    "tableScale": { "names": ["The Kraken Table"], "scale": 1.5 }
+    "tableScale": { "names": ["The Kraken Table"], "scale": 1.5 },
+    "tableTop": {
+      "_comment": "The Kraken table has a glass top; this opaque slab is the playing surface. Centred on the table (not the board). Set to null to skip.",
+      "centerX": 0, "centerZ": 0, "widthX": 164, "depthZ": 98, "thickness": 0.2,
+      "color": { "r": 0.07, "g": 0.07, "b": 0.08 }
+    }
   },
 
   "lighting": {
@@ -42,7 +47,7 @@
 
   "keep": {
     "_comment": "What survives from the base save. Terrain = Custom_Model / Custom_Assetbundle inside playBox and above the table. Everything else is dropped unless listed.",
-    "tableNames": ["Board", "The Kraken Table"],
+    "tableNames": ["The Kraken Table"],
     "playBox": { "xMin": -22, "xMax": 48, "zMin": -26, "zMax": 27, "yMin": -30 },
     "dropNames": ["Mordheim"],
     "dropGuids": {
@@ -89,11 +94,6 @@
     "cardStepX": 4.8, "cardRowGap": 3.4, "cardOffset": 3.4, "cardRows": 2,
     "modelStepX": 2.3, "modelRowGap": 2.6, "modelOffset": 10.4, "modelRows": 2,
     "inset": 2.0
-  },
-
-  "tools": {
-    "_comment": "Measuring sticks: plain unlocked blocks of exact length in inches, laid in the free strip right of the board. TTS's own ruler (toolbar, or hold a model and press R) measures any distance.",
-    "measuringSticks": { "x": 50.5, "stepX": 2.2, "z": 0, "lengths": [12, 6, 3, 1], "rotY": 90 }
   },
 
   "seats": {
