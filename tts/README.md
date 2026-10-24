@@ -71,11 +71,13 @@ A closer match to the list builder's printed cards would need card images, which
 
 In the strip right of the board (profile `extras`):
 
-- **Token dispensers:** one infinite bag per status or marker (Activated, Stunned, Dazed, Wounded, Bleeding, Burning, Hidden, Fleeing, Frightened, Rooted, Suffocating, Berserk, Blessed, Cursed, Reload, Shield, Strain, Faith, Objective, Initiative). Drag a token out; it is a coloured checker with its short name on top. Edit the list in the profile.
-- **Counters:** a big Tempo counter and a Victory Points counter for each seat, on the seat line past the board's right edge, each labelled.
-- **Rulebook:** the PDF as a readable book object (pick it up; page buttons turn pages) and five pages laid out as tiles: the Playboard (round, Tempo, Victory Points, Morale and Initiative tracker, page 87), Battle Structure (11), the phases (12), End Phase (13) and Status Effects (25). A Quick reference notebook tab repeats the round sequence and Tempo table as text.
+- **Token dispensers:** one infinite bag per status or marker (Activated, Stunned, Dazed, Wounded, Bleeding, Burning, Hidden, Fleeing, Frightened, Rooted, Suffocating, Berserk, Blessed, Cursed, Reload, Shield, Strain, Faith, Objective, Initiative), labelled, laid out to read from the east edge so both players see them the same way. Drag a token out; it is a coloured checker with its short name on top. Edit the list in the profile.
+- **Tracker board:** a tall board read from the east edge with five numbered tracks and sliding markers, after the rulebook's Playboard: Round 1 to 10 (white marker), Red and Blue Tempo 0 to 13, Red and Blue Victory Points 0 to 20. Rows are in the profile's `extras.tracker`.
+- **Rulebook:** the PDF as a readable book object (pick it up; page buttons turn pages). A Quick reference notebook tab holds the round sequence and Tempo table as text.
 
-**Rulebook files are local and not in the repo.** The profile's `extras.rulebook.file` points at the PDF on this machine; the build copies it next to the save and references it as `file://`. Page images come from `tts/tools`: `cdp.js` drives headless Edge, `pdf-page.template.js` renders pages with pdf.js; fill in the `__PDF_URL__`, `__PAGES__` and `__SCALE__` placeholders, run it through `cdp.js`, and decode the returned data URLs into `<save folder>/assets/rules-pNN.jpg`. Both the PDF and the pages are the authors' work: before any Workshop upload, confirm they may be bundled, then host them on Steam Cloud and swap the `file://` URLs.
+Objects that are read from a particular side use `readFrom` in the profile (`south`, `north`, `east`, `west`); the build turns that into the grid direction and the text rotation.
+
+**The rulebook is local and not in the repo.** The profile's `extras.rulebook.file` points at the PDF on this machine; the build copies it to `tts/assets/local/` (gitignored) under a name without spaces, because TTS does not decode `%20` in file URLs, and references it as `file://`. `tts/tools` keeps a page renderer (`cdp.js` drives headless Edge, `pdf-page.template.js` renders pages with pdf.js) should page images be wanted again. Before any Workshop upload, confirm the authors allow bundling, then host the file on Steam Cloud and swap the URL.
 
 ## The model library
 

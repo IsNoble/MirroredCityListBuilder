@@ -98,8 +98,9 @@
 
   "extras": {
     "_comment": "Mirrored City table furniture in the strip right of the board: status token dispensers, Tempo / VP counters per seat, and the quick-reference slab. Token text and reference text live in Global.lua.",
-    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 76, "z": -34 }, { "x": 76, "z": 34 } ] },
-    "tokens": { "x0": 51, "stepX": 3.2, "z0": 30, "stepZ": -3.3, "perRow": 4, "label": "TOKENS", "scale": 0.6,
+    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 76, "z": -36 }, { "x": 76, "z": 36 } ] },
+    "tokens": { "_comment": "readFrom east: the grid runs along the table edge and the labels read from the east, the same for both players. x0/z0 is the first token (reader's top-left).",
+      "x0": 54, "stepX": 3.4, "z0": 15, "stepZ": -3.3, "perRow": 5, "readFrom": "east", "label": "TOKENS", "scale": 0.6,
       "list": [
         { "name": "Activated",  "short": "ACT",  "color": { "r": 0.25, "g": 0.25, "b": 0.25 } },
         { "name": "Stunned",    "short": "STUN", "color": { "r": 0.85, "g": 0.75, "b": 0.20 } },
@@ -123,20 +124,21 @@
         { "name": "Initiative", "short": "INIT", "color": { "r": 1.00, "g": 1.00, "b": 1.00 } }
       ]
     },
-    "counters": { "_comment": "Per seat, just past the board's right edge on the seat line. scale 1 is a small Counter; Tempo is the one players touch every round so it is big.", "x": 52,
-      "list": [ { "name": "Tempo", "scale": 1.8 }, { "name": "Victory Points", "scale": 1.0 } ] },
+    "tracker": {
+      "_comment": "Tall tracker board right of the tokens, read from the east edge. Rows run along z (rowLength), stacked toward the east (rowsDepth); each row is a numbered track with a sliding marker. Like the rulebook's Playboard: shared Round track, Tempo and Victory Points per seat.",
+      "x": 70, "z": -2, "rowLength": 30, "rowsDepth": 10, "readFrom": "east",
+      "rows": [
+        { "label": "ROUND",     "min": 1, "max": 10, "marker": "White" },
+        { "label": "RED TEMPO",  "min": 0, "max": 13, "marker": "Red" },
+        { "label": "BLUE TEMPO", "min": 0, "max": 13, "marker": "Blue" },
+        { "label": "RED VP",     "min": 0, "max": 20, "marker": "Red" },
+        { "label": "BLUE VP",    "min": 0, "max": 20, "marker": "Blue" }
+      ]
+    },
     "rulebook": {
-      "_comment": "The rulebook PDF (not in the repo; rights unconfirmed). The build copies it next to the save and references it as file://. Pages are images rendered with tts/tools (pdf.js in headless Edge) into <save folder>/assets/rules-pNN.jpg and laid as tiles; height in inches, width follows the page aspect.",
+      "_comment": "The rulebook PDF (not in the repo; rights unconfirmed). The build copies it to tts/assets/local (gitignored, no spaces in the path: TTS does not decode %20 in file URLs) and places it as a readable book object.",
       "file": "C:/Users/thest/Downloads/Mirrored City Beta v2.9.pdf",
-      "pdf": { "x": 74, "z": 22, "scale": 3.0, "label": "RULEBOOK" },
-      "pages": [
-        { "page": 87, "x": 57.5, "z": 3,   "height": 20, "name": "Playboard: round, Tempo, Victory Points, Morale, Initiative" },
-        { "page": 11, "x": 56,   "z": -18, "height": 13, "name": "Battle structure and round sequence" },
-        { "page": 12, "x": 67,   "z": -18, "height": 13, "name": "Start, Mystic and Action Phases" },
-        { "page": 13, "x": 56,   "z": -32, "height": 13, "name": "End Phase: Morale, Recovery, Clean Up" },
-        { "page": 25, "x": 67,   "z": -32, "height": 13, "name": "Status Effects" }
-      ],
-      "pagesLabel": { "text": "RULES REFERENCE", "x": 61.5, "z": -10 }
+      "pdf": { "x": 76, "z": 22, "scale": 3.0, "label": "RULEBOOK" }
     }
   },
 
@@ -150,9 +152,9 @@
 
   "stations": {
     "_comment": "The free table strip left of the board holds the List Importer: an outline, a label and a button pad (GM Notes MC_STATION_IMPORT). Table edge is near x -65 after tableScale.",
-    "area": { "xMin": -56, "xMax": -27, "zMin": -16, "zMax": 16 },
-    "labelSize": 48,
-    "import": { "label": "LIST IMPORTER", "pad": { "x": -41.5, "z": 0 } }
+    "area": { "xMin": -41, "xMax": -27, "zMin": -7, "zMax": 7 },
+    "labelSize": 40,
+    "import": { "label": "LIST IMPORTER", "pad": { "x": -34, "z": 0.5 } }
   },
 
   "shelves": {

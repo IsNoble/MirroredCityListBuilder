@@ -289,8 +289,18 @@ if (ST){
 }
 
 // ---------------------------------------------------------------------------
-// Mirrored City extras: token dispensers, Tempo / VP counters, quick-reference slab
+// Mirrored City extras: token dispensers, tracker board, rulebook
 // ---------------------------------------------------------------------------
+// Where a reader stands decides which way "right" and "down the page" point and how 3D text must be rotated.
+// A 3DText / label with rotY 0 reads from the south; TTS rotates clockwise seen from above.
+function readerFrame(side){
+  switch ((side || "south").toLowerCase()){
+    case "east":  return { right: { x: 0, z: 1 },  down: { x: 1, z: 0 },  rotY: 270 };
+    case "west":  return { right: { x: 0, z: -1 }, down: { x: -1, z: 0 }, rotY: 90 };
+    case "north": return { right: { x: -1, z: 0 }, down: { x: 0, z: 1 },  rotY: 180 };
+    default:      return { right: { x: 1, z: 0 },  down: { x: 0, z: -1 }, rotY: 0 };
+  }
+}
 const EX = profile.extras;
 if (EX && EX.tokens){
   const TK = EX.tokens;
@@ -299,16 +309,53 @@ if (EX && EX.tokens){
     position = { 0, 0.25, 0 }, rotation = { 0, 180, 0 }, width = 0, height = 0, font_size = 180, font_color = { 0.05, 0.05, 0.05 } })
 end
 function noop() end`;
-  base.ObjectStates.push(label3d(TK.label || "TOKENS", TK.x0 + ((Math.min(TK.perRow, TK.list.length) - 1) * TK.stepX) / 2, TK.z0 + 2.6, { r: 0.9, g: 0.85, b: 0.7 }, 40));
+  const F = readerFrame(TK.readFrom), rotY = F.rotY;
+  // Grid in reader space: u to the reader's right, v toward the reader (down the page), from the origin (x0, z0).
+  const place = (u, v) => ({ x: TK.x0 + u * F.right.x + v * F.down.x, z: TK.z0 + u * F.right.z + v * F.down.z });
+  const cols = Math.min(TK.perRow, TK.list.length), rowStep = Math.abs(TK.stepZ);
+  const title = place(((cols - 1) * TK.stepX) / 2, -2.6);
+  const tl = label3d(TK.label || "TOKENS", title.x, title.z, { r: 0.9, g: 0.85, b: 0.7 }, 40); tl.Transform.rotY = rotY; base.ObjectStates.push(tl);
   TK.list.forEach((tk, i) => {
-    const x = TK.x0 + (i % TK.perRow) * TK.stepX, z = TK.z0 + Math.floor(i / TK.perRow) * TK.stepZ;
+    const p = place((i % TK.perRow) * TK.stepX, Math.floor(i / TK.perRow) * rowStep), x = p.x, z = p.z;
     const token = { GUID: guid(), Name: "Checker_white", Nickname: tk.name, Description: tk.name + " token", GMNotes: tk.short,
       Transform: { posX: x, posY: B.surfaceY + 1, posZ: z, rotX: 0, rotY: 0, rotZ: 0, scaleX: TK.scale, scaleY: TK.scale, scaleZ: TK.scale },
       ColorDiffuse: tk.color, Locked: false, Grid: false, Snap: true, Tooltip: true, LuaScript: tokenScript };
     base.ObjectStates.push({ GUID: guid(), Name: "Infinite_Bag", Nickname: tk.name + " tokens", Description: "Drag a token out. The bag never empties.", GMNotes: "MC_TOKEN_BAG",
       Transform: { posX: x, posY: B.surfaceY + 0.6, posZ: z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 0.8, scaleY: 0.8, scaleZ: 0.8 },
       ColorDiffuse: tk.color, Locked: true, Grid: false, Snap: false, Tooltip: true, Bag: { Order: 0 }, ContainedObjects: [token] });
-    base.ObjectStates.push(label3d(tk.name, x, z - 1.45, { r: 0.85, g: 0.85, b: 0.85 }, 22));
+    const lp = place((i % TK.perRow) * TK.stepX, Math.floor(i / TK.perRow) * rowStep + 1.45);
+    const l = label3d(tk.name, lp.x, lp.z, { r: 0.85, g: 0.85, b: 0.85 }, 22); l.Transform.rotY = rotY; base.ObjectStates.push(l);
+    token.Transform.rotY = rotY;
+  });
+}
+// Tracker board: numbered tracks with sliding markers, read from the side the profile names
+if (EX && EX.tracker){
+  const TR = EX.tracker, F = readerFrame(TR.readFrom), rotY = F.rotY;
+  // Reader space: u along the row (to the reader's right), v from the reader's top row toward the reader. Board centre at (TR.x, TR.z).
+  const place = (u, v) => ({ x: TR.x + u * F.right.x + v * F.down.x, z: TR.z + u * F.right.z + v * F.down.z });
+  const rowLen = TR.rowLength, boardW = TR.rowsDepth;     // the reader sees rowLen across and boardW top to bottom
+  base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: "Tracker", Description: "Round, Tempo and Victory Point tracks. Slide the markers.", GMNotes: "MC_TRACKER",
+    Transform: { posX: TR.x, posY: B.surfaceY + 0.12, posZ: TR.z, rotX: 0, rotY: rotY, rotZ: 0, scaleX: rowLen, scaleY: 0.06, scaleZ: boardW },
+    ColorDiffuse: { r: 0.16, g: 0.16, b: 0.18 }, Locked: true, Grid: false, Snap: false, Tooltip: true });
+  const rowGap = boardW / TR.rows.length, labelW = 6.5, trackLen = rowLen - labelW - 0.8;
+  TR.rows.forEach((row, r) => {
+    const v = -boardW / 2 + rowGap * (r + 0.5);
+    const n = row.max - row.min + 1, cell = trackLen / n;
+    const lp = place(-rowLen / 2 + 0.4 + labelW / 2, v - 0.1);
+    const lbl = label3d(row.label, lp.x, lp.z, seatColors[row.marker] || { r: 0.9, g: 0.9, b: 0.9 }, 26); lbl.Transform.rotY = rotY; base.ObjectStates.push(lbl);
+    for (let k = 0; k < n; k++){
+      const u = -rowLen / 2 + 0.4 + labelW + cell * (k + 0.5);
+      const cp = place(u, v);
+      base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: `${row.label} ${row.min + k}`, Description: "", GMNotes: "MC_TRACKER_CELL",
+        Transform: { posX: cp.x, posY: B.surfaceY + 0.17, posZ: cp.z, rotX: 0, rotY: rotY, rotZ: 0, scaleX: cell - 0.12, scaleY: 0.04, scaleZ: rowGap - 0.5 },
+        ColorDiffuse: k % 5 === 0 ? { r: 0.55, g: 0.52, b: 0.46 } : { r: 0.42, g: 0.40, b: 0.36 }, Locked: true, Grid: false, Snap: true, Tooltip: false });
+      const np = place(u, v + rowGap * 0.28);
+      const num = label3d(String(row.min + k), np.x, np.z, { r: 0.95, g: 0.95, b: 0.95 }, cell < 1.2 ? 16 : 22); num.Transform.rotY = rotY; base.ObjectStates.push(num);
+    }
+    const mp = place(-rowLen / 2 + 0.4 + labelW + cell * 0.5, v);
+    base.ObjectStates.push({ GUID: guid(), Name: "Checker_white", Nickname: `${row.label} marker`, Description: `Slide along the ${row.label} track.`, GMNotes: "MC_TRACKER_MARKER",
+      Transform: { posX: mp.x, posY: B.surfaceY + 1, posZ: mp.z, rotX: 0, rotY: rotY, rotZ: 0, scaleX: 0.45, scaleY: 0.45, scaleZ: 0.45 },
+      ColorDiffuse: seatColors[row.marker] || { r: 0.9, g: 0.9, b: 0.9 }, Locked: false, Grid: false, Snap: true, Tooltip: true });
   });
 }
 if (EX && EX.counters){
@@ -345,11 +392,13 @@ if (EX && EX.reference){
 // Rulebook: the PDF as a readable book object, plus rendered pages as tiles. Both are local files next to the save.
 const fileUrl = p => "file:///" + p.replace(/\\/g, "/").replace(/ /g, "%20");
 if (EX && EX.rulebook && EX.rulebook.file){
-  const RB = EX.rulebook, assets = path.join(path.dirname(outPath), "assets");
+  // Local copy under tts/assets/local (gitignored). No spaces anywhere in the path: TTS does not decode %20 in file URLs.
+  const RB = EX.rulebook, assets = path.join(here, "assets", "local");
   fs.mkdirSync(assets, { recursive: true });
   if (!fs.existsSync(RB.file)) throw new Error(`rulebook.file not found: ${RB.file}`);
-  const pdfCopy = path.join(assets, path.basename(RB.file));
+  const pdfCopy = path.join(assets, path.basename(RB.file).replace(/\s+/g, ""));
   fs.copyFileSync(RB.file, pdfCopy);
+  if (/\s/.test(pdfCopy)) throw new Error(`rulebook copy path contains spaces, TTS cannot load it: ${pdfCopy}`);
   if (RB.pdf){
     base.ObjectStates.push({ GUID: guid(), Name: "Custom_PDF", Nickname: "Mirrored City rulebook", Description: "Pick up to read. Page buttons on the object turn pages.", GMNotes: "MC_RULEBOOK",
       Transform: { posX: RB.pdf.x, posY: B.surfaceY + 0.5, posZ: RB.pdf.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: RB.pdf.scale, scaleY: 1, scaleZ: RB.pdf.scale },
