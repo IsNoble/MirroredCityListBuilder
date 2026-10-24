@@ -57,10 +57,10 @@
     "lor_thornbound":          { "faction": "the_lorathiir",         "name": "Thornbound",              "tile": "Lumineth Realm-lords",           "model": "Ydrilan Riverblades", "alternatives": ["Vanari Bladelord"] },
     "lor_spirit_kin":          { "faction": "the_lorathiir",         "name": "Spirit-kin",              "tile": "Sylvaneth",                      "model": "Twistweald" },
 
-    "ss_blackhand":            { "faction": "sellswords",            "name": "Blackhand",               "tile": null, "model": null },
-    "ss_cutthroat":            { "faction": "sellswords",            "name": "Cutthroat",               "tile": null, "model": null },
-    "ss_pit_fighter":          { "faction": "sellswords",            "name": "Pit Fighter",             "tile": null, "model": null },
-    "ss_spellwright":          { "faction": "sellswords",            "name": "Spellwright",             "tile": null, "model": null },
-    "ss_strongarm":            { "faction": "sellswords",            "name": "Strongarm",               "tile": null, "model": null }
+    "ss_blackhand":            { "faction": "sellswords",            "name": "Blackhand",               "tile": "Cities of Sigmar",               "model": "Freeguild Fusilier" },
+    "ss_cutthroat":            { "faction": "sellswords",            "name": "Cutthroat",               "tile": "Cities of Sigmar",               "model": "Freeguild Command Corps (Whisperblade)" },
+    "ss_pit_fighter":          { "faction": "sellswords",            "name": "Pit Fighter",             "tile": "Slaves to Darkness",             "model": "Darkoath Savagers Champion", "alternatives": ["Darkoath Savagers", "Darkoath Marauder Champion"], "note": "Requested Splintered Fang Trueblood is not in the mod; Darkoath Savagers are the closest lightly armoured arena-style fighters." },
+    "ss_spellwright":          { "faction": "sellswords",            "name": "Spellwright",             "tile": "Cities of Sigmar",               "model": "Alchemite Warforger" },
+    "ss_strongarm":            { "faction": "sellswords",            "name": "Strongarm",               "tile": "Ogor Mawtribes/Sons of Behemat", "model": "Ogor Glutton", "note": "Requested Ogor Glutton with Ironfist is not a separate model in the mod; plain Glutton used." }
   }
 }
