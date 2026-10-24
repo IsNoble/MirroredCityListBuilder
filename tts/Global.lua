@@ -226,72 +226,63 @@ function setupReference(obj)
 end
 
 -- ---------------------------------------------------------------------------
--- Tracker: numbered buttons on the board; clicking one sets that row's value.
+-- Score board: one row per value, each a label, a minus button, a value box and a plus button.
 -- Button geometry on a flat object: the reader faces the object's front; local +x is the reader's LEFT,
 -- local +z is the far edge (reader's top). Buttons are rotated 180 to read from the front.
 -- ---------------------------------------------------------------------------
 SEAT_RGB = { Red = { 0.85, 0.2, 0.2 }, Blue = { 0.25, 0.45, 0.9 }, White = { 0.92, 0.92, 0.92 }, Green = { 0.3, 0.7, 0.3 }, Yellow = { 0.9, 0.8, 0.2 } }
-trackerCells = {}   -- row index -> { first = button index of cell 0, n = count }
+trackerValueButtons = {}   -- row index -> button index of the value box
 
 function setupTracker(obj)
   obj.clearButtons()
-  trackerCells = {}
+  trackerValueButtons = {}
   local sx, sz = obj.getScale().x, obj.getScale().z
   local rows = TRACKER.rows
   local rowGap = sz / #rows
-  local labelW, pad = 6.5, 0.4
-  local trackLen = sx - labelW - 2 * pad
+  local pad, labelW, btnW, boxW, gap = 0.5, 6.0, 1.7, 3.2, 0.3
   local index = 0
-  for r, row in ipairs(rows) do
-    local v = sz / 2 - rowGap * (r - 0.5)          -- local z of this row (top row first)
-    local n = row.max - row.min + 1
-    local cell = trackLen / n
-    local rgb = SEAT_RGB[row.color] or SEAT_RGB.White
-    -- row label on the reader's left (local +x)
-    obj.createButton({
-      label = row.label, click_function = "mc_noop", function_owner = Global,
-      position = { (sx / 2 - pad - labelW / 2) / sx, 1.0, v / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
-      width = 0, height = 0, font_size = 300, font_color = rgb,
-    })
+  local function button(def)
+    def.function_owner = Global
+    def.rotation = { 0, 180, 0 }
+    def.scale = { 1 / sx, 1, 1 / sz }
+    obj.createButton(def)
     index = index + 1
-    trackerCells[r] = { first = index, n = n }
+    return index - 1
+  end
+  for r, row in ipairs(rows) do
+    local v = (sz / 2 - rowGap * (r - 0.5)) / sz          -- local z of this row (top row first)
+    local rgb = SEAT_RGB[row.color] or SEAT_RGB.White
     if trackerValues[r] == nil then trackerValues[r] = row.min end
-    for k = 0, n - 1 do
-      local value = row.min + k
-      local u = sx / 2 - pad - labelW - cell * (k + 0.5)   -- cells run to the reader's right = local -x
-      local fn = "mc_track_" .. r .. "_" .. k
-      _G[fn] = function(_, playerColor) setTrackerValue(obj, r, value) end
-      obj.createButton({
-        label = tostring(value), click_function = fn, function_owner = Global,
-        position = { u / sx, 1.0, v / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
-        width = (cell - 0.15) * BTN_PER_INCH, height = (rowGap - 0.6) * BTN_PER_INCH, font_size = cell < 1.2 and 300 or 380,
-        color = { 0.42, 0.40, 0.36 }, font_color = { 0.95, 0.95, 0.95 }, tooltip = row.label .. " " .. value,
-      })
-      index = index + 1
-    end
+    -- from the reader's left (local +x) to the right (local -x): label, minus, value, plus
+    local u = sx / 2 - pad
+    button({ label = row.label, click_function = "mc_noop", position = { (u - labelW / 2) / sx, 1.0, v },
+             width = 0, height = 0, font_size = 320, font_color = rgb })
+    u = u - labelW - gap
+    local minusFn, plusFn = "mc_track_dn_" .. r, "mc_track_up_" .. r
+    _G[minusFn] = function() bumpTracker(obj, r, -1) end
+    _G[plusFn]  = function() bumpTracker(obj, r,  1) end
+    button({ label = "-", click_function = minusFn, position = { (u - btnW / 2) / sx, 1.0, v },
+             width = btnW * BTN_PER_INCH, height = (rowGap - 0.5) * BTN_PER_INCH, font_size = 520,
+             color = { 0.30, 0.30, 0.32 }, font_color = { 1, 1, 1 }, tooltip = row.label .. " -1" })
+    u = u - btnW - gap
+    trackerValueButtons[r] = button({ label = tostring(trackerValues[r]), click_function = "mc_noop", position = { (u - boxW / 2) / sx, 1.0, v },
+             width = boxW * BTN_PER_INCH, height = (rowGap - 0.5) * BTN_PER_INCH, font_size = 620,
+             color = rgb, font_color = (row.color == "White") and { 0.1, 0.1, 0.1 } or { 1, 1, 1 }, tooltip = row.label })
+    u = u - boxW - gap
+    button({ label = "+", click_function = plusFn, position = { (u - btnW / 2) / sx, 1.0, v },
+             width = btnW * BTN_PER_INCH, height = (rowGap - 0.5) * BTN_PER_INCH, font_size = 520,
+             color = { 0.30, 0.30, 0.32 }, font_color = { 1, 1, 1 }, tooltip = row.label .. " +1" })
   end
-  refreshTracker(obj)
 end
 
-function setTrackerValue(obj, r, value)
-  trackerValues[r] = value
-  refreshTracker(obj)
-end
-
-function refreshTracker(obj)
-  for r, row in ipairs(TRACKER.rows) do
-    local cells = trackerCells[r]
-    if cells then
-      local rgb = SEAT_RGB[row.color] or SEAT_RGB.White
-      for k = 0, cells.n - 1 do
-        local value = row.min + k
-        local current = (trackerValues[r] == value)
-        obj.editButton({ index = cells.first + k,
-          color = current and rgb or { 0.42, 0.40, 0.36 },
-          font_color = current and (row.color == "White" and { 0.1, 0.1, 0.1 } or { 1, 1, 1 }) or { 0.95, 0.95, 0.95 } })
-      end
-    end
-  end
+function bumpTracker(obj, r, delta)
+  local row = TRACKER.rows[r]
+  local v = (trackerValues[r] or row.min) + delta
+  if v < row.min then v = row.min end
+  if v > row.max then v = row.max end
+  trackerValues[r] = v
+  local idx = trackerValueButtons[r]
+  if idx ~= nil then obj.editButton({ index = idx, label = tostring(v) }) end
 end
 
 function setupStations()
