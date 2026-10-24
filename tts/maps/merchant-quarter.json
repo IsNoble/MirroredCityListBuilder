@@ -36,7 +36,7 @@
     "_comment": "Textured tile laid over the board under the terrain. imageFile is relative to tts/ and becomes a file:// URL (local only; upload it to Steam Cloud and switch to imageUrl before publishing). A Custom_Tile is 2 x 2 units at scale 1, so scale = size / 2. Set to null for none.",
     "imageFile": "assets/ground-cobblestone.jpg",
     "imageUrl": "",
-    "widthX": 72, "depthZ": 48, "thickness": 0.1
+    "widthX": 44, "depthZ": 30, "thickness": 0.1
   },
 
   "keep": {
