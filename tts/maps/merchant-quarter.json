@@ -83,8 +83,23 @@
     }
   },
 
+  "seats": {
+    "_comment": "Player hand zones along the long table edges. widthX / depthZ in inches.",
+    "list": [
+      { "color": "Red",  "x": 12.65, "z": -29.5, "rotY": 0,   "widthX": 40, "depthZ": 5 },
+      { "color": "Blue", "x": 12.65, "z":  29.5, "rotY": 180, "widthX": 40, "depthZ": 5 }
+    ]
+  },
+
+  "stations": {
+    "_comment": "The free table area left of the board, cut in two: List Importer north, Card Creator south. Each half gets an outline, a label and a button pad (GM Notes MC_STATION_*).",
+    "area": { "xMin": -66, "xMax": -27, "zMin": -22, "zMax": 22 },
+    "import": { "label": "LIST IMPORTER", "pad": { "x": -46.5, "z": 12 } },
+    "cards":  { "label": "CARD CREATOR",  "pad": { "x": -46.5, "z": -14 },
+                "spawn": { "x": -62, "z": -4, "stepX": 4.8, "perRow": 7, "stepZ": -3.4, "rotY": 0 } }
+  },
+
   "shelves": {
-    "models":  { "x0": -62, "stepX": 3.6, "z0": -48, "stepZ": -4.2, "y": 1.5, "labelX": -70 },
     "terrain": { "x0": -62, "stepX": 4.0, "z": 48, "y": 1.5, "labelX": -70 }
   }
 }

@@ -84,6 +84,7 @@ function cleanModel(src, label){
 }
 
 const textTemplate = JSON.parse(JSON.stringify(base.ObjectStates.find(o => o.Name === "3DText") || { Name: "3DText", Text: {} }));
+const handTemplate = JSON.parse(JSON.stringify(base.ObjectStates.find(o => o.Name === "HandTrigger") || { Name: "HandTrigger" }));
 function label3d(text, x, z, color, size){
   const o = JSON.parse(JSON.stringify(textTemplate));
   o.GUID = guid(); o.Nickname = ""; o.Description = ""; o.GMNotes = "MC_LABEL"; o.Locked = true;
@@ -195,44 +196,75 @@ base.ObjectStates.push(
 );
 
 // ---------------------------------------------------------------------------
-// Model shelf: one row per faction
+// Model library: embedded in the Lua as object JSON per unit id (no bags on the table)
 // ---------------------------------------------------------------------------
-const MS = profile.shelves.models;
-const factionOrder = Object.keys(map.factions);
 const report = [];
-let bagCount = 0, filled = 0;
-factionOrder.forEach((fid, row) => {
-  const f = map.factions[fid];
-  const z = MS.z0 + row * MS.stepZ;
-  base.ObjectStates.push(label3d(f.label, MS.labelX, z, { r: 0.9, g: 0.85, b: 0.7 }));
-  const units = Object.entries(map.units).filter(([, u]) => u.faction === fid);
-  units.forEach(([unitId, u], col) => {
-    let contained = [], status = "empty";
-    if (u.tile && u.model){
-      const src = (index[u.tile] || {})[u.model];
-      if (src){ contained = [cleanModel(src, u.name)]; status = "ok"; filled++; }
-      else status = `MISSING: "${u.model}" not found in tile "${u.tile}"`;
-    }
-    base.ObjectStates.push({
-      GUID: guid(), Name: "Bag",
-      Transform: { posX: MS.x0 + col * MS.stepX, posY: MS.y, posZ: z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 0.8, scaleY: 0.8, scaleZ: 0.8 },
-      Nickname: `${u.name} (${unitId})`,
-      Description: `Model library bag for ${u.name}. The importer copies whatever is inside this bag for every ${u.name} model. Drop a different model in to swap it; keep the GM Notes (${unitId}).`,
-      GMNotes: unitId, Tags: [LIBRARY_TAG], ColorDiffuse: f.color,
-      Locked: true, Grid: false, Snap: false, Tooltip: true,
-      Bag: { Order: 0 }, ContainedObjects: contained,
-    });
-    bagCount++;
-    report.push(`${status === "ok" ? "  " : "!!"} ${unitId.padEnd(26)} ${status === "ok" ? u.model : status}${u.note ? "   (" + u.note + ")" : ""}`);
-  });
-});
+let unitCount = 0, filled = 0;
+const libEntries = [];
+for (const [unitId, u] of Object.entries(map.units)){
+  unitCount++;
+  let status = "empty";
+  if (u.tile && u.model){
+    const src = (index[u.tile] || {})[u.model];
+    if (src){
+      const json = JSON.stringify(cleanModel(src, u.name));
+      if (json.includes("]==]")) throw new Error(`model JSON for ${unitId} contains a Lua long-bracket terminator`);
+      libEntries.push(`["${unitId}"] = [==[${json}]==]`);
+      status = "ok"; filled++;
+    } else status = `MISSING: "${u.model}" not found in tile "${u.tile}"`;
+  }
+  report.push(`${status === "ok" ? "  " : "!!"} ${unitId.padEnd(26)} ${status === "ok" ? u.model : status}${u.note ? "   (" + u.note + ")" : ""}`);
+}
+const libraryLua = `MODEL_LIBRARY = { ${libEntries.join(", ")} }`;
 
 // ---------------------------------------------------------------------------
-// Scripts and metadata. The Lua gets the board geometry from the profile.
+// Player seats: hand zones along the long edges
 // ---------------------------------------------------------------------------
-const boardLua = `BOARD = { centerX = ${B.centerX}, centerZ = ${B.centerZ}, surfaceY = ${B.surfaceY}, widthX = ${F.widthX}, depthZ = ${F.depthZ} }`;
-if (!/^BOARD = \{.*\}$/m.test(luaSrc)) throw new Error("Global.lua has no 'BOARD = { ... }' line to replace.");
-const lua = luaSrc.replace(/^BOARD = \{.*\}$/m, boardLua);
+const seats = (profile.seats && profile.seats.list) || [];
+for (const s of seats){
+  const h = JSON.parse(JSON.stringify(handTemplate));
+  h.GUID = guid(); h.Nickname = ""; h.Description = ""; h.GMNotes = "MC_SEAT"; h.Locked = true;
+  delete h.LuaScript; delete h.LuaScriptState; delete h.XmlUI;
+  h.FogColor = s.color; h.FogHidePointers = false; h.FogReverseHiding = false; h.FogSeethrough = false;
+  h.Transform = { posX: s.x, posY: B.surfaceY + 1.0, posZ: s.z, rotX: 0, rotY: s.rotY, rotZ: 0, scaleX: s.widthX, scaleY: 5, scaleZ: s.depthZ };
+  base.ObjectStates.push(h);
+}
+
+// ---------------------------------------------------------------------------
+// Stations: the free area left of the board, cut in two, each with an outline, a label and a button pad
+// ---------------------------------------------------------------------------
+const ST = profile.stations;
+if (ST){
+  const A = ST.area, dim = { r: 0.55, g: 0.5, b: 0.42 }, midZ = (A.zMin + A.zMax) / 2;
+  const halfBars = (zMin, zMax) => {
+    const cx = (A.xMin + A.xMax) / 2, cz = (zMin + zMax) / 2, w = A.xMax - A.xMin, d = zMax - zMin;
+    return [ bar(cx, zMin, w + th, th), bar(cx, zMax, w + th, th), bar(A.xMin, cz, th, d + th), bar(A.xMax, cz, th, d + th) ];
+  };
+  for (const b of [...halfBars(midZ, A.zMax), ...halfBars(A.zMin, midZ)]){ b.ColorDiffuse = dim; b.Nickname = "Station edge"; b.Description = ""; b.GMNotes = "MC_STATION_EDGE"; base.ObjectStates.push(b); }
+  const pad = (note, label, p, labelZ) => {
+    base.ObjectStates.push(label3d(label, (A.xMin + A.xMax) / 2, labelZ, { r: 0.9, g: 0.85, b: 0.7 }, 72));
+    base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: label, Description: "Mirrored City station. The buttons are created by the table script.", GMNotes: note,
+      Transform: { posX: p.x, posY: B.surfaceY + 0.15, posZ: p.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 1, scaleY: 0.3, scaleZ: 1 },
+      ColorDiffuse: { r: 0.16, g: 0.2, b: 0.24 }, Locked: true, Grid: false, Snap: false, Tooltip: true });
+  };
+  pad("MC_STATION_IMPORT", ST.import.label, ST.import.pad, A.zMax - 2.5);
+  pad("MC_STATION_CARDS",  ST.cards.label,  ST.cards.pad,  midZ - 2.5);
+}
+
+// ---------------------------------------------------------------------------
+// Scripts and metadata. The Lua gets the board geometry, card spawn grid and model library from the profile.
+// ---------------------------------------------------------------------------
+function injectLine(src, name, value){
+  const re = new RegExp(`^${name} = \\{.*\\}$`, "m");
+  if (!re.test(src)) throw new Error(`Global.lua has no '${name} = { ... }' line to replace.`);
+  return src.replace(re, () => value);
+}
+let lua = injectLine(luaSrc, "BOARD", `BOARD = { centerX = ${B.centerX}, centerZ = ${B.centerZ}, surfaceY = ${B.surfaceY}, widthX = ${F.widthX}, depthZ = ${F.depthZ} }`);
+if (ST && ST.cards && ST.cards.spawn){
+  const c = ST.cards.spawn;
+  lua = injectLine(lua, "CARD_SPAWN", `CARD_SPAWN = { x = ${c.x}, y = ${B.surfaceY + 1.5}, z = ${c.z}, stepX = ${c.stepX}, perRow = ${c.perRow}, stepZ = ${c.stepZ}, rotY = ${c.rotY || 0} }`);
+}
+lua = injectLine(lua, "MODEL_LIBRARY", libraryLua);
 
 base.SaveName = profile.saveName;
 base.GameMode = profile.saveName;
@@ -241,7 +273,7 @@ base.LuaScriptState = "";
 base.XmlUI = xml;
 base.Date = new Date().toLocaleString();
 base.Tags = Array.from(new Set([...(base.Tags || []), "Mirrored City"]));
-if (base.Hands) base.Hands.Enable = false;
+base.Hands = Object.assign(base.Hands || {}, { Enable: seats.length > 0, DisableUnused: false, Hiding: 0 });
 if (profile.lighting){
   const { _comment, ...lighting } = profile.lighting;
   base.Lighting = Object.assign({}, base.Lighting || {}, lighting);
@@ -249,7 +281,7 @@ if (profile.lighting){
 if ("sky" in profile){ if (profile.sky) base.SkyURL = profile.sky; else delete base.SkyURL; }   // null = TTS default sky
 if ("music" in profile && !profile.music && base.MusicPlayer){ base.MusicPlayer.CurrentAudioURL = ""; base.MusicPlayer.CurrentAudioTitle = ""; }
 base.TabStates = { "0": { title: "Mirrored City", body:
-  `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9).\n\n1. In the list builder press Export for TTS.\n2. Press the Mirrored City button (top right), paste, choose Import South or North.\n3. Model library: shelf south of the table, one bag per unit. Terrain library: shelf north of the table.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
+  `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9). Seats: Red south, Blue north.\n\n1. In the list builder press Export for TTS.\n2. Press Import Warband on the List Importer station (or the Mirrored City button, top right), paste, choose Import South or North.\n3. Card Creator station: New Stat Card spawns a blank card to fill in by hand.\n\nMiniatures are embedded in the table script. To swap one in-game, put a model in a bag, set the bag's GM Notes to the unit id (e.g. mc_captain) and press Rescan models.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
   color: "Grey", visibleColor: { r: 0.5, g: 0.5, b: 0.5 }, id: 0 } };
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
@@ -261,4 +293,4 @@ console.log(report.join("\n"));
 console.log(`\nMap: ${profile.base.title}. Dropped ${prunedCount} base objects; kept ${kept.length - shelfBags.length} table/terrain objects and ${shelfBags.length} terrain bags. Dead assets: dropped ${droppedByUrl} objects, stripped ${strippedChildren} attached objects and ${strippedDecals} decals.`);
 console.log(G && G.imageUrl ? `Ground tile ${G.widthX}" x ${G.depthZ}" from ${G.imageUrl}` : "No ground tile.");
 console.log(`Battlefield frame ${F.widthX}" x ${F.depthZ}" at (${B.centerX}, ${B.centerZ}).`);
-console.log(`${bagCount} bags on the model shelf, ${filled} with a model. Save written to:\n${outPath}\n${(fs.statSync(outPath).size / 1048576).toFixed(1)} MB`);
+console.log(`${unitCount} units in the embedded model library, ${filled} with a model. ${seats.length} seats. Save written to:\n${outPath}\n${(fs.statSync(outPath).size / 1048576).toFixed(1)} MB`);

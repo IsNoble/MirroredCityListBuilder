@@ -50,22 +50,23 @@ The rulebook (p.9) plays on a 44" by 30" battlefield, or 22" by 30" for small sc
 
 ## Using the table
 
-1. In the list builder press **Export for TTS**. The roster JSON is now on the clipboard.
-2. In TTS press the **Mirrored City** button (top right), paste into the box, press **Import South** or **Import North**.
-3. One Notecard per Stat Card appears outside the table edge on that side, with the full card text on it and a **Full** button that opens a readable panel. One miniature per model appears just inside the edge, named after its card, with the stat line and weapons as hover text.
-4. **Clear South / North / All** removes what the importer spawned and nothing else. Importing to a side clears it first.
+The table has two seats, Red on the south edge and Blue on the north, and two stations in the free area left of the board.
 
-Positions are in `CONFIG.sides` at the top of `Global.lua`.
+1. In the list builder press **Export for TTS**. The roster JSON is now on the clipboard.
+2. Press **Import Warband** on the List Importer station (or the **Mirrored City** button, top right), paste into the box, press **Import South** or **Import North**.
+3. One Notecard per Stat Card appears just outside the battlefield frame on that side, with the full card text on it and a **Full** button that opens a readable panel. One miniature per model appears just inside the frame, named after its card, with the stat line and weapons as hover text.
+4. **Clear South / North** on the station (or **Clear All** in the panel) removes what the importer spawned and nothing else. Importing to a side clears it first.
+5. **New Stat Card** on the Card Creator station spawns a blank card with the Stat Card layout for hand-made entries. **Clear blank cards** removes them.
+
+Positions come from `BOARD` and `CARD_SPAWN`, which the build injects from the profile; row spacing is in `CONFIG` at the top of `Global.lua`.
 
 ## The model library
 
-A shelf of locked bags sits south of the table (below the rulebook PDFs), one row per faction and one bag per unit id. The bag's GM Notes hold the unit id and the importer copies whatever is inside for every model of that unit, so:
+The miniatures are embedded in the table script as `MODEL_LIBRARY`, one object JSON per unit id, so nothing sits on the table. The importer spawns from it with `spawnObjectData`.
 
-- **To swap a miniature in-game:** drop a different model into the bag, delete the old one, save. No script change.
-- **To swap it permanently:** change `model` (and `tile`) in `model-map.json` and rebuild. The model name must match the hover name in the Ulthuan mod exactly.
-- **Empty bag:** the importer spawns a pawn tinted in the warband's colour. The five Sellswords are empty on purpose until a model is chosen.
-
-Press **Rescan model library** in the panel after editing bags in-game.
+- **To swap a miniature permanently:** change `model` (and `tile`) in `model-map.json` and rebuild. The model name must match the hover name in the Ulthuan mod exactly.
+- **To swap one in-game without rebuilding:** put a model in any bag, set the bag's GM Notes to the unit id (for example `mc_captain`) and press **Rescan models**. A bag with a unit id in its notes overrides the embedded model.
+- **No model:** the importer spawns a pawn tinted in the warband's colour. The five Sellswords have none on purpose until a model is chosen.
 
 ## Script workflow
 

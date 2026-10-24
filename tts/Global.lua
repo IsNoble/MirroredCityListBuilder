@@ -1,20 +1,26 @@
 --[[
-  Mirrored City — roster importer (Global script)
+  Mirrored City — table script (Global)
 
   Paste the JSON produced by the list builder's "Export for TTS" button into the
   Import panel, pick a side, and one Notecard per Stat Card plus one model per
-  miniature is spawned on that side. Models are copied from the library bags on
-  the shelf (bag GM Notes = unit id). Missing bag or empty bag = coloured pawn.
+  miniature is spawned on that side.
 
-  Edit CONFIG.sides to move where things land. Positions are table units.
+  Models come from MODEL_LIBRARY (object JSON per unit id, embedded by
+  build-save.js). A bag anywhere on the table whose GM Notes equal a unit id
+  overrides the embedded model for that unit, so swapping a miniature in-game
+  is: put a model in a bag, set the bag's GM Notes, press Rescan.
+
+  Stations (objects with GM Notes MC_STATION_IMPORT / MC_STATION_CARDS) get
+  their buttons in setupStations().
 ]]
 
 CONFIG = {
   formatName       = "mirrored-city-tts",
   maxFormatVersion = 1,
 
-  libraryTag = "MC_LIBRARY",   -- every shelf bag carries this tag
+  libraryTag = "MC_LIBRARY",   -- optional override bags carry this tag
   spawnedTag = "MC_SPAWNED",   -- everything the importer creates carries this tag
+  customTag  = "MC_CUSTOM_CARD",
 
   -- Filled in by buildSides() from BOARD: card rows just outside the battlefield frame, model rows just inside it.
   sides = {},
@@ -36,6 +42,12 @@ CONFIG = {
 -- Board geometry. build-save.js replaces this line from the map profile (tts/maps/<map>.json).
 -- centerX/centerZ: middle of the battlefield frame; widthX/depthZ: frame size in inches (1 TTS unit = 1").
 BOARD = { centerX = 12.65, centerZ = 0, surfaceY = 1.0, widthX = 44, depthZ = 30 }
+
+-- Where the Card Creator puts new blank cards. build-save.js replaces this line from the map profile.
+CARD_SPAWN = { x = -62, y = 2.5, z = -6, stepX = 4.8, perRow = 8, stepZ = -3.4, rotY = 0 }
+
+-- unitId -> object JSON (string). build-save.js replaces this line; keep it on one line.
+MODEL_LIBRARY = {}
 
 -- South = negative Z, North = positive Z. Cards outside the frame, models inside.
 function buildSides()
@@ -59,54 +71,72 @@ end
 -- State
 -- ---------------------------------------------------------------------------
 rosterText = ""          -- what is currently in the paste box
-library = {}             -- unitId -> bag object
+library = {}             -- unitId -> override bag object
 
 function onLoad(saved)
   buildSides()
   refreshLibrary()
-  Wait.time(function() setStatus("Ready. " .. countLibrary() .. " model bags found.") end, 1)
+  setupStations()
+  Wait.time(function() setStatus("Ready. " .. countLibrary() .. " unit models available.") end, 1)
 end
 
 -- ---------------------------------------------------------------------------
--- Library (shelf bags)
+-- Library
 -- ---------------------------------------------------------------------------
 function refreshLibrary()
   library = {}
-  for _, obj in ipairs(getObjectsWithTag(CONFIG.libraryTag)) do
-    local id = trim(obj.getGMNotes() or "")
-    if id ~= "" then library[id] = obj end
+  for _, obj in ipairs(getAllObjects()) do
+    if obj.type == "Bag" or obj.type == "Infinite" or obj.hasTag(CONFIG.libraryTag) then
+      local id = trim(obj.getGMNotes() or "")
+      -- Any bag whose GM Notes look like a unit id (e.g. mc_captain) overrides the embedded model.
+      if id ~= "" and id:sub(1, 3) ~= "MC_" and id:match("^[a-z]+_[a-z_]+$") then library[id] = obj end
+    end
   end
 end
 
 function countLibrary()
+  local ids = {}
+  for id, _ in pairs(MODEL_LIBRARY) do ids[id] = true end
+  for id, _ in pairs(library) do ids[id] = true end
   local n = 0
-  for _ in pairs(library) do n = n + 1 end
+  for _ in pairs(ids) do n = n + 1 end
   return n
 end
 
 -- Returns a model data table (for spawnObjectData) or nil.
 function libraryModelData(unitId)
   local bag = library[unitId]
-  if bag == nil then return nil end
-  local data = bag.getData()
-  if data == nil or data.ContainedObjects == nil or #data.ContainedObjects == 0 then return nil end
-  return data.ContainedObjects[1]
+  if bag ~= nil then
+    local data = bag.getData()
+    if data ~= nil and data.ContainedObjects ~= nil and #data.ContainedObjects > 0 then
+      return data.ContainedObjects[1]
+    end
+  end
+  local js = MODEL_LIBRARY[unitId]
+  if js == nil or js == "" then return nil end
+  local ok, data = pcall(function() return JSON.decode(js) end)
+  if ok and type(data) == "table" then return data end
+  return nil
 end
 
 -- ---------------------------------------------------------------------------
--- UI handlers (called from Global.xml)
+-- UI handlers (called from Global.xml and station buttons)
 -- ---------------------------------------------------------------------------
-function mc_onRosterText(player, value, id)
-  rosterText = value or ""
-end
-
 function isTrue(v)
   return tostring(v):lower() == "true"
+end
+
+function mc_onRosterText(player, value, id)
+  rosterText = value or ""
 end
 
 function mc_togglePanel(player, value, id)
   local active = UI.getAttribute("mcPanel", "active")
   UI.setAttribute("mcPanel", "active", isTrue(active) and "false" or "true")
+end
+
+function mc_openPanel(obj, playerColor)
+  UI.setAttribute("mcPanel", "active", "true")
 end
 
 function mc_importSouth(player) importRoster("south", player) end
@@ -116,11 +146,75 @@ function mc_clearNorth(player) clearSide("north") end
 function mc_clearAll(player) clearSide(nil) end
 function mc_refreshLibrary(player)
   refreshLibrary()
-  setStatus(countLibrary() .. " model bags found.")
+  setStatus(countLibrary() .. " unit models available.")
 end
 
 function setStatus(msg)
   UI.setAttribute("mcStatus", "text", msg)
+end
+
+-- ---------------------------------------------------------------------------
+-- Stations: physical buttons on the table
+-- ---------------------------------------------------------------------------
+function stationButton(obj, label, fn, dx, dz, width, tooltip)
+  obj.createButton({
+    label = label, click_function = fn, function_owner = Global,
+    position = { dx, 0.6, dz }, rotation = { 0, 0, 0 }, scale = { 1, 1, 1 },
+    width = width, height = 420, font_size = 180,
+    color = { 0.17, 0.23, 0.29 }, font_color = { 0.94, 0.94, 0.94 }, tooltip = tooltip or "",
+  })
+end
+
+function setupStations()
+  for _, obj in ipairs(getAllObjects()) do
+    local note = obj.getGMNotes() or ""
+    if note == "MC_STATION_IMPORT" then
+      obj.clearButtons()
+      stationButton(obj, "Import Warband", "mc_openPanel", 0, -2.2, 2600, "Open the paste box for a roster from the list builder")
+      stationButton(obj, "Clear South",    "mc_clearSouth", -3.2, 0.8, 1500, "Remove everything imported on the south side")
+      stationButton(obj, "Clear North",    "mc_clearNorth",  3.2, 0.8, 1500, "Remove everything imported on the north side")
+      stationButton(obj, "Rescan models",  "mc_refreshLibrary", 0, 3.4, 2000, "Pick up override bags added in-game")
+    elseif note == "MC_STATION_CARDS" then
+      obj.clearButtons()
+      stationButton(obj, "New Stat Card",  "mc_newCard", 0, -2.2, 2600, "Spawn a blank Mirrored City Stat Card to fill in by hand")
+      stationButton(obj, "Clear blank cards", "mc_clearCustomCards", 0, 0.8, 2600, "Remove the cards made here")
+    end
+  end
+end
+
+-- Card Creator: a blank Notecard with the Stat Card layout, laid out in a grid near the station.
+function mc_newCard(obj, playerColor)
+  local n = #getObjectsWithTag(CONFIG.customTag)
+  local pos = gridPos(CARD_SPAWN, n)
+  spawnObject({
+    type = "Notecard", position = pos, rotation = { 0, CARD_SPAWN.rotY, 0 }, scale = CONFIG.cardScale, sound = false,
+    callback_function = function(card)
+      card.setName("New Stat Card  —  HERO, 0 lumens")
+      card.setDescription(blankCardBody())
+      card.addTag(CONFIG.customTag)
+    end,
+  })
+end
+
+function mc_clearCustomCards(obj, playerColor)
+  local removed = 0
+  for _, o in ipairs(getObjectsWithTag(CONFIG.customTag)) do destroyObject(o); removed = removed + 1 end
+  if removed > 0 then broadcastToAll("Removed " .. removed .. " blank cards.", {0.8, 1, 0.8}) end
+end
+
+function blankCardBody()
+  local h = function(t) return "[e6c15a]" .. t .. "[-]" end
+  return table.concat({
+    h("Stats"),
+    "SPD -   STR -   TGH -   WIL -   HP -",
+    "ATK -   FGT -   SHT -   ARM -   XP -",
+    "Tags: ",
+    h("Weapons"), "- : R -, Hit -, Str -, AP -, Dmg -",
+    h("Armor"), "-",
+    h("Equipment"), "-",
+    h("Special Rules"), "-",
+    "", "(Hover the card and press the gear icon to edit the name and this text.)",
+  }, "\n")
 end
 
 -- ---------------------------------------------------------------------------
@@ -160,12 +254,10 @@ function importRoster(sideKey, player)
   local missing = {}
 
   for _, card in ipairs(data.cards) do
-    -- Stat card
     local cpos = gridPos(side.cards, cardIndex)
     cardIndex = cardIndex + 1
     spawnCard(card, roster, cpos, side.rotY, { CONFIG.spawnedTag, sideTag })
 
-    -- Models
     local count = tonumber(card.count) or 1
     if count < 1 then count = 1 end
     local modelData = libraryModelData(card.unitId or "")
@@ -182,7 +274,7 @@ function importRoster(sideKey, player)
   if who == nil or who == "" then who = roster.warband or "Warband" end
   local msg = string.format("%s: %d Stat Cards, %d models placed %s.", who, cardIndex, modelIndex, side.label)
   if #missing > 0 then
-    msg = msg .. " No model in library for: " .. table.concat(uniq(missing), ", ") .. " (pawns used)."
+    msg = msg .. " No model for: " .. table.concat(uniq(missing), ", ") .. " (pawns used)."
   end
   setStatus(msg)
   broadcastToAll(msg, {0.8, 1, 0.8})
