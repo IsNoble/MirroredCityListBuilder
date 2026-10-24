@@ -98,7 +98,8 @@
 
   "extras": {
     "_comment": "Mirrored City table furniture in the strip right of the board: status token dispensers, Tempo / VP counters per seat, and the quick-reference slab. Token text and reference text live in Global.lua.",
-    "tokens": { "x0": 54, "stepX": 3.2, "z0": 18, "stepZ": -3.2, "perRow": 4, "label": "TOKENS", "scale": 0.6,
+    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 76, "z": -34 }, { "x": 76, "z": 34 } ] },
+    "tokens": { "x0": 51, "stepX": 3.2, "z0": 30, "stepZ": -3.3, "perRow": 4, "label": "TOKENS", "scale": 0.6,
       "list": [
         { "name": "Activated",  "short": "ACT",  "color": { "r": 0.25, "g": 0.25, "b": 0.25 } },
         { "name": "Stunned",    "short": "STUN", "color": { "r": 0.85, "g": 0.75, "b": 0.20 } },
@@ -122,8 +123,21 @@
         { "name": "Initiative", "short": "INIT", "color": { "r": 1.00, "g": 1.00, "b": 1.00 } }
       ]
     },
-    "counters": { "_comment": "Per seat, just past the board's right edge, level with that seat's zone.", "list": ["Tempo", "Victory Points"], "x": 53, "stepX": 5.5 },
-    "reference": { "x": 66, "z": -9, "widthX": 20, "depthZ": 17 }
+    "counters": { "_comment": "Per seat, just past the board's right edge on the seat line. scale 1 is a small Counter; Tempo is the one players touch every round so it is big.", "x": 52,
+      "list": [ { "name": "Tempo", "scale": 1.8 }, { "name": "Victory Points", "scale": 1.0 } ] },
+    "rulebook": {
+      "_comment": "The rulebook PDF (not in the repo; rights unconfirmed). The build copies it next to the save and references it as file://. Pages are images rendered with tts/tools (pdf.js in headless Edge) into <save folder>/assets/rules-pNN.jpg and laid as tiles; height in inches, width follows the page aspect.",
+      "file": "C:/Users/thest/Downloads/Mirrored City Beta v2.9.pdf",
+      "pdf": { "x": 74, "z": 22, "scale": 3.0, "label": "RULEBOOK" },
+      "pages": [
+        { "page": 87, "x": 57.5, "z": 3,   "height": 20, "name": "Playboard: round, Tempo, Victory Points, Morale, Initiative" },
+        { "page": 11, "x": 56,   "z": -18, "height": 13, "name": "Battle structure and round sequence" },
+        { "page": 12, "x": 67,   "z": -18, "height": 13, "name": "Start, Mystic and Action Phases" },
+        { "page": 13, "x": 56,   "z": -32, "height": 13, "name": "End Phase: Morale, Recovery, Clean Up" },
+        { "page": 25, "x": 67,   "z": -32, "height": 13, "name": "Status Effects" }
+      ],
+      "pagesLabel": { "text": "RULES REFERENCE", "x": 61.5, "z": -10 }
+    }
   },
 
   "seats": {

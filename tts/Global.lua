@@ -218,18 +218,18 @@ function setupReference(obj)
   obj.clearButtons()
   local sx, sz = obj.getScale().x, obj.getScale().z
   local lineHeight, top, pad = 1.0, 0.9, 0.5
-  local z = -sz / 2 + top
+  local z = sz / 2 - top
   for _, line in ipairs(REFERENCE) do
     if line ~= "" then
       local heading = (line == line:upper()) and not line:match("^%d")
       obj.createButton({
         label = line, click_function = "mc_noop", function_owner = Global,
-        position = { (-sx / 2 + pad) / sx, 1.0, z / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
-        width = 0, height = 0, font_size = heading and 300 or 240, alignment = 3,
+        position = { (sx / 2 - pad) / sx, 1.0, z / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
+        width = 0, height = 0, font_size = heading and 300 or 240, alignment = 2,
         font_color = heading and { 0.10, 0.18, 0.22 } or { 0.08, 0.08, 0.08 },
       })
     end
-    z = z + (line == "" and lineHeight * 0.5 or lineHeight)
+    z = z - (line == "" and lineHeight * 0.5 or lineHeight)
   end
 end
 
@@ -340,20 +340,22 @@ function spawnCard(card, roster, pos, rotY, tags)
       obj.measure_movement = false
       -- Label-only buttons (no click, no background). Local coordinates are divided by the object's
       -- scale, and the button scale undoes the slab's non-uniform scale so text is not stretched.
+      -- A button rotated 180 reads correctly from the object's "front" (south when rotY = 0); its local
+      -- +x is then the reader's left, and the first line sits at +z (the far edge from the reader).
       local sx, sz = C.width, height
       local function label(text, z, size, bold)
         obj.createButton({
           label = text, click_function = "mc_noop", function_owner = Global,
-          position = { (-sx / 2 + C.sidePad) / sx, 1.0, z / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
-          width = 0, height = 0, font_size = size, font_color = bold and C.titleColor or C.textColor, alignment = 3,
+          position = { (sx / 2 - C.sidePad) / sx, 1.0, z / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
+          width = 0, height = 0, font_size = size, font_color = bold and C.titleColor or C.textColor, alignment = 2,
         })
       end
-      local z = -sz / 2 + C.topPad
+      local z = sz / 2 - C.topPad
       label(cardTitle(card), z, C.titleSize, true)
-      z = z + C.lineHeight * 1.3
+      z = z - C.lineHeight * 1.3
       for _, line in ipairs(faceLines) do
         label(line, z, C.fontSize, false)
-        z = z + C.lineHeight
+        z = z - C.lineHeight
       end
     end,
   })

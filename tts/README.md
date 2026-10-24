@@ -70,10 +70,10 @@ Each imported Stat Card is a flat cream slab (`CONFIG.card` in `Global.lua`) wit
 In the strip right of the board (profile `extras`):
 
 - **Token dispensers:** one infinite bag per status or marker (Activated, Stunned, Dazed, Wounded, Bleeding, Burning, Hidden, Fleeing, Frightened, Rooted, Suffocating, Berserk, Blessed, Cursed, Reload, Shield, Strain, Faith, Objective, Initiative). Drag a token out; it is a coloured checker with its short name on top. Edit the list in the profile.
-- **Counters:** a Tempo counter and a Victory Points counter for each seat, at that seat's end of the board edge.
-- **Quick reference:** a slab with the round sequence, the Tempo table and modifiers, the Recovery Check table and the measuring rule, from rulebook pages 12 and 13. The text is the `REFERENCE` table in `Global.lua`. The same text is in the notebook's Quick reference tab.
+- **Counters:** a big Tempo counter and a Victory Points counter for each seat, on the seat line past the board's right edge, each labelled.
+- **Rulebook:** the PDF as a readable book object (pick it up; page buttons turn pages) and five pages laid out as tiles: the Playboard (round, Tempo, Victory Points, Morale and Initiative tracker, page 87), Battle Structure (11), the phases (12), End Phase (13) and Status Effects (25). A Quick reference notebook tab repeats the round sequence and Tempo table as text.
 
-The rulebook itself is not bundled until its authors confirm that is allowed.
+**Rulebook files are local and not in the repo.** The profile's `extras.rulebook.file` points at the PDF on this machine; the build copies it next to the save and references it as `file://`. Page images come from `tts/tools`: `cdp.js` drives headless Edge, `pdf-page.template.js` renders pages with pdf.js; fill in the `__PDF_URL__`, `__PAGES__` and `__SCALE__` placeholders, run it through `cdp.js`, and decode the returned data URLs into `<save folder>/assets/rules-pNN.jpg`. Both the PDF and the pages are the authors' work: before any Workshop upload, confirm they may be bundled, then host them on Steam Cloud and swap the `file://` URLs.
 
 ## The model library
 

@@ -308,23 +308,69 @@ function noop() end`;
     base.ObjectStates.push({ GUID: guid(), Name: "Infinite_Bag", Nickname: tk.name + " tokens", Description: "Drag a token out. The bag never empties.", GMNotes: "MC_TOKEN_BAG",
       Transform: { posX: x, posY: B.surfaceY + 0.6, posZ: z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 0.8, scaleY: 0.8, scaleZ: 0.8 },
       ColorDiffuse: tk.color, Locked: true, Grid: false, Snap: false, Tooltip: true, Bag: { Order: 0 }, ContainedObjects: [token] });
+    base.ObjectStates.push(label3d(tk.name, x, z - 1.45, { r: 0.85, g: 0.85, b: 0.85 }, 22));
   });
 }
 if (EX && EX.counters){
   for (const s of seats){
     const dir = Math.sign(s.z) || 1;
-    EX.counters.list.forEach((name, i) => {
+    let x = EX.counters.x;
+    EX.counters.list.forEach((c) => {
+      const name = typeof c === "string" ? c : c.name, k = (typeof c === "object" && c.scale) || 0.7;
       base.ObjectStates.push({ GUID: guid(), Name: "Counter", Nickname: `${s.color} ${name}`, Description: `${s.color} player's ${name}. Click the arrows, or scroll on it.`, GMNotes: "MC_COUNTER",
-        Transform: { posX: EX.counters.x + i * EX.counters.stepX, posY: B.surfaceY + 0.8, posZ: s.z - dir * 6.5, rotX: 0, rotY: s.rotY, rotZ: 0, scaleX: 0.7, scaleY: 0.7, scaleZ: 0.7 },
+        Transform: { posX: x + k * 2.2, posY: B.surfaceY + 0.8, posZ: s.z, rotX: 0, rotY: s.rotY, rotZ: 0, scaleX: k, scaleY: k, scaleZ: k },
         ColorDiffuse: { r: 1, g: 1, b: 1 }, Locked: true, Grid: false, Snap: false, Tooltip: true, Counter: { value: 0 } });
+      const l = label3d(`${s.color.toUpperCase()} ${name.toUpperCase()}`, x + k * 2.2, s.z - dir * (k * 2.4), seatColors[s.color] || { r: 0.9, g: 0.9, b: 0.9 }, 30);
+      l.Transform.rotY = s.rotY; base.ObjectStates.push(l);
+      x += k * 4.4 + 1.5;
     });
   }
+}
+// Dice dispensers kept from the base map: move them where the profile says and label them
+{
+  const dice = base.ObjectStates.filter(o => o.Name === "Custom_Model_Infinite_Bag" && (o.ContainedObjects || []).some(c => /^Die_/.test(c.Name)));
+  const spots = (EX && EX.dice && EX.dice.positions) || [];
+  dice.forEach((o, i) => {
+    if (spots[i]){ o.Transform.posX = spots[i].x; o.Transform.posZ = spots[i].z; }
+    o.Nickname = "D6 dice"; o.Description = "Drag dice out. The cup never empties.";
+    base.ObjectStates.push(label3d("D6 DICE", o.Transform.posX, o.Transform.posZ - 3.2 * Math.sign(o.Transform.posZ || 1), { r: 0.85, g: 0.85, b: 0.85 }, 28));
+  });
 }
 if (EX && EX.reference){
   const RF = EX.reference;
   base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: "Quick reference", Description: "Round sequence, Tempo and Recovery tables from the rulebook. Text is drawn by the table script.", GMNotes: "MC_REFERENCE",
     Transform: { posX: RF.x, posY: B.surfaceY + 0.14, posZ: RF.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: RF.widthX, scaleY: 0.08, scaleZ: RF.depthZ },
     ColorDiffuse: { r: 0.93, g: 0.90, b: 0.82 }, Locked: true, Grid: false, Snap: false, Tooltip: true });
+}
+// Rulebook: the PDF as a readable book object, plus rendered pages as tiles. Both are local files next to the save.
+const fileUrl = p => "file:///" + p.replace(/\\/g, "/").replace(/ /g, "%20");
+if (EX && EX.rulebook && EX.rulebook.file){
+  const RB = EX.rulebook, assets = path.join(path.dirname(outPath), "assets");
+  fs.mkdirSync(assets, { recursive: true });
+  if (!fs.existsSync(RB.file)) throw new Error(`rulebook.file not found: ${RB.file}`);
+  const pdfCopy = path.join(assets, path.basename(RB.file));
+  fs.copyFileSync(RB.file, pdfCopy);
+  if (RB.pdf){
+    base.ObjectStates.push({ GUID: guid(), Name: "Custom_PDF", Nickname: "Mirrored City rulebook", Description: "Pick up to read. Page buttons on the object turn pages.", GMNotes: "MC_RULEBOOK",
+      Transform: { posX: RB.pdf.x, posY: B.surfaceY + 0.5, posZ: RB.pdf.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: RB.pdf.scale, scaleY: 1, scaleZ: RB.pdf.scale },
+      ColorDiffuse: { r: 1, g: 1, b: 1 }, Locked: false, Grid: false, Snap: false, Tooltip: true,
+      CustomPDF: { PDFUrl: fileUrl(pdfCopy), PDFPassword: "", PDFPage: 0, PDFPageOffset: 0 } });
+    base.ObjectStates.push(label3d(RB.pdf.label || "RULEBOOK", RB.pdf.x, RB.pdf.z - RB.pdf.scale * 1.9, { r: 0.9, g: 0.85, b: 0.7 }, 34));
+  }
+  if (Array.isArray(RB.pages)){
+    let missing = [];
+    for (const pg of RB.pages){
+      const img = path.join(assets, `rules-p${pg.page}.jpg`);
+      if (!fs.existsSync(img)){ missing.push(pg.page); continue; }
+      const sz = imageSize(img), aspect = sz.w / sz.h, h = pg.height, w = h * aspect;
+      base.ObjectStates.push({ GUID: guid(), Name: "Custom_Tile", Nickname: pg.name || `Rulebook page ${pg.page}`, Description: `Rulebook page ${pg.page}.`, GMNotes: "MC_RULES_PAGE",
+        Transform: { posX: pg.x, posY: B.surfaceY + 0.2, posZ: pg.z, rotX: 0, rotY: pg.rotY || 0, rotZ: 0, scaleX: w / (2 * aspect), scaleY: 1, scaleZ: h / 2 },
+        ColorDiffuse: { r: 1, g: 1, b: 1 }, Locked: true, Grid: false, Snap: false, Tooltip: true,
+        CustomImage: { ImageURL: fileUrl(img), ImageSecondaryURL: "", ImageScalar: 1.0, WidthScale: 0.0, CustomTile: { Type: 0, Thickness: 0.1, Stackable: false, Stretch: true } } });
+    }
+    if (missing.length) console.log(`!! rulebook pages not rendered yet (see tts/tools): ${missing.join(", ")}`);
+    if (RB.pagesLabel) base.ObjectStates.push(label3d(RB.pagesLabel.text, RB.pagesLabel.x, RB.pagesLabel.z, { r: 0.9, g: 0.85, b: 0.7 }, 34));
+  }
 }
 
 // Opaque playing surface across the whole tabletop (the Kraken top is glass)
