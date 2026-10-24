@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Tabletop Simulator export
+
+- New **Export for TTS** button copies a compact, fully resolved JSON roster to the clipboard (file download as fallback) for the upcoming Tabletop Simulator table. Format documented in the README under "Tabletop Simulator export".
+- Weapon and armor collection is shared between the printable Stat Cards and the TTS export (`collectWeaponProfiles`, `collectArmorIds`), so the two never disagree.
+
 ## 2026-10-24 — Header
 
 - The page header now leads with the rules version ("Mirrored City Beta v2.9"); "Noble Builder" moves to the subtitle.

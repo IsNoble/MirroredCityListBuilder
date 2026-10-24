@@ -287,6 +287,42 @@ If you rename a unit id, add `old_id: "new_id"` to `UNIT_ID_ALIASES`; `applyImpo
 
 ---
 
+## Tabletop Simulator export
+
+**Export for TTS** copies a compact JSON roster to the clipboard (or downloads `<name>_tts.json` when the clipboard is unavailable). It is meant to be pasted into the Import panel of the Mirrored City Tabletop Simulator table, which parses it with `JSON.decode` and spawns one object per Stat Card. Unlike the saved roster, it is fully resolved: names, stats and rules text are included so the mod needs no copy of the data tables.
+
+`buildTTSExport()` → `buildTTSCardData(cardLike)` build it; `collectWeaponProfiles` and `collectArmorIds` are shared with the printable Stat Cards so both exports always agree.
+
+```json
+{ "format": "mirrored-city-tts", "formatVersion": 1, "rules": "Beta v2.9", "exportedAt": "<ISO date>",
+  "roster": { "name", "warbandId", "warband", "archetypeId", "archetype", "spent", "spentVariable" },
+  "cards": [ {
+    "kind": "LEADER | HERO | HENCHMEN | SELLSWORD",
+    "unitId", "unit", "name", "count", "cost", "costVariable",
+    "tags": ["HERO", "..."],
+    "stats": { "spd", "str", "tgh", "wil", "hp", "atk", "fgt", "sht", "arm", "xp" },
+    "weapons":   [ { "name", "range", "hit", "str", "ap", "dmg", "traits": [] } ],
+    "armor":     [ { "name", "slot", "armorValue", "injurySave", "mobility", "moveCheck", "traits": [], "rules" } ],
+    "equipment": [ { "name", "rules" } ],
+    "weaponRules": [ { "name", "text" } ],
+    "special":   [ { "name", "text" } ],
+    "sellsword": { "retainer", "fixedWargear": [] } | null,
+    "duty":      { "name", "cost", "rules" } | null,
+    "quirks":    [ { "name", "cost", "rules" } ],
+    "magic":     { "label", "list", "entries": [ { "name", "signature", "powerCost", "empoweredPowerCost", "tags": [], "note", "effect" } ] } | null
+  } ] }
+```
+
+Notes for the mod side:
+
+- `name` is the custom name if one was set, otherwise the unit name. `unit` is always the unit name.
+- `count` is the number of models on a Henchmen card; everything else is 1. `cost` is the whole card.
+- `weapons` is in print order: innate attacks (suffixed `(innate)`), Sellsword fixed wargear, equipped weapons, then attack profiles printed on equipment. Missing values are `"—"`.
+- `magic.entries` always starts with the Signature spell/prayer when the list has one.
+- Bump `TTS_FORMAT_VERSION` in `index.html` whenever a field changes shape; the mod should refuse newer versions it does not understand.
+
+---
+
 ## Checking a change
 
 There is no test runner in the repo. The quickest checks after editing data:

@@ -272,6 +272,7 @@
       <button id="btnExport">Export</button>
       <button id="btnImport">Import</button>
       <button id="btnExportCards">Export Stat Cards</button>
+      <button id="btnExportTTS" title="Copy a compact JSON roster for the Tabletop Simulator mod">Export for TTS</button>
       <button id="btnPrint">Print</button>
       <button id="btnReset">Reset</button>
     </div>
@@ -2993,36 +2994,47 @@ function weaponRowHtml(name, st){
   </tr>`;
 }
 
-// Innate weapons from the unit profile, equipped weapons, and weapon profiles printed on equipment.
-function renderWeaponRows(cardLike){
+// Every weapon profile a card brings to the table, in print order:
+// innate attacks, fixed wargear (Sellswords), equipped weapons, then profiles printed on equipment.
+// Returns [{ name, st }] where st is a weapon profile object (may be {} for a weapon without stats).
+function collectWeaponProfiles(cardLike){
   const unit = getUnitById(cardLike.unitId);
   const equip = cardLike.equipment || {};
   const rows = [];
-  for (const p of (unit?.weaponProfiles || [])) rows.push(weaponRowHtml(`${p.name} (innate)`, p));
-  // Fixed wargear (Sellswords): weapons and any equipment that carries a weapon profile
+  for (const p of (unit?.weaponProfiles || [])) rows.push({ name: `${p.name} (innate)`, st: p });
   for (const id of (unit?.fixedWargear || [])){
     const eq = getEqById(id);
     if (!eq) continue;
-    if (eq.stats && eq.stats.type === "weapon") rows.push(weaponRowHtml(eq.name, eq.stats));
-    for (const p of (eq.weaponProfiles || [])) rows.push(weaponRowHtml(p.name, p));
+    if (eq.stats && eq.stats.type === "weapon") rows.push({ name: eq.name, st: eq.stats });
+    for (const p of (eq.weaponProfiles || [])) rows.push({ name: p.name, st: p });
   }
   for (const id of (equip.weaponIds || [])){
     const eq = getEqById(id);
     if (!eq) continue;
-    rows.push(weaponRowHtml(eq.name, (eq.stats && eq.stats.type === "weapon") ? eq.stats : {}));
+    rows.push({ name: eq.name, st: (eq.stats && eq.stats.type === "weapon") ? eq.stats : {} });
   }
   for (const id of (equip.otherIds || [])){
     const eq = getEqById(id);
-    for (const p of (eq?.weaponProfiles || [])) rows.push(weaponRowHtml(p.name, p));
+    for (const p of (eq?.weaponProfiles || [])) rows.push({ name: p.name, st: p });
   }
+  return rows;
+}
+
+function renderWeaponRows(cardLike){
+  const rows = collectWeaponProfiles(cardLike).map(r => weaponRowHtml(r.name, r.st));
   if (!rows.length) return `<tr><td colspan="7" class="muted">No weapons</td></tr>`;
   return rows.join("");
 }
 
+// Armor item ids worn by a card: fixed wargear armor (Sellswords) first, then helmet / body / shield slots.
+function collectArmorIds(helmetId, armorId, shieldId, fixedIds){
+  const fixedArmor = (fixedIds || []).filter(id => { const eq = getEqById(id); return eq && ["HELMET","ARMOR","SHIELD"].includes(classifyEquip(eq)); });
+  return [...fixedArmor, helmetId, armorId, shieldId].filter(Boolean);
+}
+
 // Armor profile row (Beta v2.9: Armor Value / Injury Save / Mobility / Move Check / Traits)
 function renderArmorRows(helmetId, armorId, shieldId, fixedIds){
-  const fixedArmor = (fixedIds || []).filter(id => { const eq = getEqById(id); return eq && ["HELMET","ARMOR","SHIELD"].includes(classifyEquip(eq)); });
-  const ids = [...fixedArmor, helmetId, armorId, shieldId].filter(Boolean);
+  const ids = collectArmorIds(helmetId, armorId, shieldId, fixedIds);
   if (!ids.length) return `<tr><td colspan="6" class="muted">No armor</td></tr>`;
   return ids.map(id => {
     const eq = getEqById(id);
@@ -3215,11 +3227,20 @@ function buildStatCardHTML(models){
 }
 
 function exportStatCards(){
-  const models = [];
+  const models = allCardLikes().map(buildOneCardModel);
+  const doc = buildStatCardHTML(models);
+  const w = window.open("", "_blank");
+  if (!w){ alert("Popup blocked. Allow popups for this page to export stat cards."); return; }
+  w.document.open();
+  w.document.write(doc);
+  w.document.close();
+}
 
-  // Leader card
+// Every filled Stat Card as a cardLike, Leader first. Shared by the Stat Card and TTS exports.
+function allCardLikes(){
+  const out = [];
   if (state.leaderUnitId){
-    models.push(buildOneCardModel({
+    out.push({
       kind: "LEADER",
       unitId: state.leaderUnitId,
       customName: state.leaderCustomName || "",
@@ -3228,21 +3249,173 @@ function exportStatCards(){
       magicIds: state.leaderMagicIds || [],
       count: 1,
       equipment: state.leaderEquipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] }
-    }));
+    });
+  }
+  // One Stat Card per Hero / Henchmen group (the Henchmen card lists the number of models it represents)
+  (state.cards || []).forEach(c => { if (c && c.unitId) out.push(c); });
+  return out;
+}
+
+/* =========================================================
+   TABLETOP SIMULATOR EXPORT
+   A structured, HTML-free version of the Stat Card model. The TTS mod parses
+   this with JSON.decode and spawns one object per card. Bump TTS_FORMAT_VERSION
+   when a field changes shape; the mod checks it.
+   ========================================================= */
+
+const TTS_FORMAT = "mirrored-city-tts";
+const TTS_FORMAT_VERSION = 1;
+
+function ttsTraits(st){
+  if (!st) return [];
+  return Array.isArray(st.traits) ? st.traits.slice() : (st.traits ? [String(st.traits)] : []);
+}
+
+function buildTTSCardData(cardLike){
+  const unit = getUnitById(cardLike.unitId);
+  const equip = cardLike.equipment || {};
+  const duty = cardLike.dutyId ? getDutyById(cardLike.dutyId) : null;
+  const quirks = (cardLike.quirkIds || []).map(getQuirkById).filter(Boolean);
+  const count = cardLike.kind === "HENCHMAN" ? Math.max(1, Number(cardLike.count || 1)) : 1;
+  const cost = cardLike.kind === "LEADER" ? leaderCost() : cardCost(cardLike);
+  const isSellsword = !!(unit && unit.type === "SELLSWORD");
+
+  const weapons = collectWeaponProfiles(cardLike).map(({ name, st }) => ({
+    name,
+    range: st.range ?? "—",
+    hit: st.hit ?? "—",
+    str: st.str ?? st.might ?? "—",
+    ap: st.ap ?? "—",
+    dmg: st.dmg ?? st.damage ?? "—",
+    traits: ttsTraits(st)
+  }));
+
+  const armor = collectArmorIds(equip.helmetId || "", equip.armorId || "", equip.shieldId || "", unit?.fixedWargear || [])
+    .map(getEqById).filter(Boolean).map(eq => {
+      const st = eq.stats || {};
+      return {
+        name: eq.name,
+        slot: classifyEquip(eq),
+        armorValue: st.armorValue ?? "—",
+        injurySave: st.injurySave ?? "—",
+        mobility: st.mobility ?? "—",
+        moveCheck: st.moveCheck ?? "—",
+        traits: ttsTraits(st),
+        rules: eq.rules || ""
+      };
+    });
+
+  const equipment = (equip.otherIds || []).map(getEqById).filter(Boolean)
+    .map(eq => ({ name: eq.name, rules: eq.rules || "" }));
+
+  // Rules text printed on equipped weapons (armor rules travel with the armor entries above)
+  const weaponRules = (equip.weaponIds || []).map(getEqById).filter(eq => eq && eq.rules)
+    .map(eq => ({ name: eq.name, text: eq.rules }));
+
+  const special = (unit?.specialRules || []).map(r => ({ name: r.name, text: r.text }));
+  let sellsword = null;
+  if (isSellsword){
+    const wb = getWarbandBase() || {};
+    sellsword = {
+      retainer: (unit.retainer || 0) + (wb.sellswordRetainerModifier || 0),
+      fixedWargear: (unit.fixedWargear || []).map(id => getEqById(id)?.name || id)
+    };
   }
 
-  // One Stat Card per Hero / Henchmen group (the Henchmen card lists the number of models it represents)
-  (state.cards || []).forEach(c => {
-    if (!c || !c.unitId) return;
-    models.push(buildOneCardModel(c));
-  });
+  const magicData = getMagicDataForUnit(cardLike.unitId);
+  const magic = magicData ? {
+    label: magicData.label || "",
+    list: magicData.listName || "",
+    entries: knownMagicForCard(cardLike).map(e => ({
+      name: e.name,
+      signature: !!e.signature,
+      powerCost: e.powerCost ?? null,
+      empoweredPowerCost: e.empoweredPowerCost ?? null,
+      tags: Array.isArray(e.tags) ? e.tags.slice() : [],
+      note: e.note || "",
+      effect: e.effect || ""
+    }))
+  } : null;
 
-  const doc = buildStatCardHTML(models);
-  const w = window.open("", "_blank");
-  if (!w){ alert("Popup blocked. Allow popups for this page to export stat cards."); return; }
-  w.document.open();
-  w.document.write(doc);
-  w.document.close();
+  return {
+    kind: isSellsword ? "SELLSWORD" : (cardLike.kind === "HENCHMAN" ? "HENCHMEN" : (cardLike.kind || "CARD")),
+    unitId: cardLike.unitId,
+    unit: unit ? unit.name : "—",
+    name: cardLike.customName ? cardLike.customName : (unit ? unit.name : "—"),
+    count,
+    cost: cost.sum,
+    costVariable: !!cost.hasVariable,
+    tags: unit ? unitTags(cardLike.unitId).slice() : [],
+    stats: Object.assign({}, unit?.stats || {}),
+    weapons,
+    armor,
+    equipment,
+    weaponRules,
+    special,
+    sellsword,
+    duty: duty ? { name: duty.name, cost: duty.cost, rules: duty.rules } : null,
+    quirks: quirks.map(q => ({ name: q.name, cost: q.cost, rules: q.rules })),
+    magic
+  };
+}
+
+function buildTTSExport(){
+  const wb = getWarbandBase();
+  const arch = wb ? getArchetype(wb) : null;
+  const v = validate();
+  return {
+    format: TTS_FORMAT,
+    formatVersion: TTS_FORMAT_VERSION,
+    rules: RULES.rulesVersion,
+    exportedAt: new Date().toISOString(),
+    roster: {
+      name: state.name || "",
+      warbandId: state.warbandId || "",
+      warband: wb ? wb.name : "",
+      archetypeId: arch ? arch.id : "",
+      archetype: arch ? arch.name : "",
+      spent: v.meta.spent,
+      spentVariable: !!v.meta.spentHasVariable
+    },
+    cards: allCardLikes().map(buildTTSCardData)
+  };
+}
+
+function ttsFileName(){
+  return (state.name ? state.name.replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_") : "noble_roster") + "_tts.json";
+}
+
+async function exportForTTS(){
+  const data = buildTTSExport();
+  if (!data.cards.length){ alert("Nothing to export: pick a Leader or add a Stat Card first."); return; }
+  // Compact JSON: this is pasted into a text box inside Tabletop Simulator, so size matters more than readability.
+  const json = JSON.stringify(data);
+  let copied = false;
+  try{
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(json);
+      copied = true;
+    }
+  }catch(_){ copied = false; }
+  if (copied){
+    alert(`Copied ${data.cards.length} Stat Card${data.cards.length === 1 ? "" : "s"} to the clipboard.\nPaste into the Import panel on the Tabletop Simulator table.`);
+    return;
+  }
+  // Clipboard unavailable (insecure context or permission denied): download the file instead.
+  downloadText(json, ttsFileName(), "application/json");
+  alert("Clipboard access was not available, so the TTS export was downloaded as a file instead.");
+}
+
+function downloadText(text, filename, mime){
+  const blob = new Blob([text], { type: mime || "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function formatCostLabel(eq, cardKind, unitId){
@@ -3677,6 +3850,7 @@ byId("btnReset").addEventListener("click", () => {
 
 byId("btnPrint").addEventListener("click", () => window.print());
 byId("btnExportCards").addEventListener("click", exportStatCards);
+byId("btnExportTTS").addEventListener("click", () => { exportForTTS(); });
 
 byId("btnExport").addEventListener("click", () => exportRoster());
 byId("btnImport").addEventListener("click", () => importRoster());
