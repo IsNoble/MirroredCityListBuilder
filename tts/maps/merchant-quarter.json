@@ -9,6 +9,20 @@
     "widthX": 72, "depthZ": 48
   },
 
+  "lighting": {
+    "_comment": "Overrides the base save's scene lighting (Merchant Quarter ships a dim purple night). Values as in Options > Lighting. Delete this block to keep the base lighting.",
+    "LightIntensity": 0.8,
+    "LightColor": { "r": 1.0, "g": 0.96, "b": 0.88 },
+    "AmbientIntensity": 1.4,
+    "AmbientType": 1,
+    "AmbientSkyColor": { "r": 0.62, "g": 0.64, "b": 0.70 },
+    "AmbientEquatorColor": { "r": 0.55, "g": 0.52, "b": 0.48 },
+    "AmbientGroundColor": { "r": 0.30, "g": 0.28, "b": 0.26 },
+    "ReflectionIntensity": 1.0,
+    "LutIndex": 0,
+    "LutContribution": 1.0
+  },
+
   "battlefield": {
     "_comment": "Rulebook p.9: typically 30 x 44 inches. Frame drawn on the board; cards spawn outside it, models inside.",
     "widthX": 44, "depthZ": 30,

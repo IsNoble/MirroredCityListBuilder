@@ -190,6 +190,10 @@ base.XmlUI = xml;
 base.Date = new Date().toLocaleString();
 base.Tags = Array.from(new Set([...(base.Tags || []), "Mirrored City"]));
 if (base.Hands) base.Hands.Enable = false;
+if (profile.lighting){
+  const { _comment, ...lighting } = profile.lighting;
+  base.Lighting = Object.assign({}, base.Lighting || {}, lighting);
+}
 base.TabStates = { "0": { title: "Mirrored City", body:
   `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9).\n\n1. In the list builder press Export for TTS.\n2. Press the Mirrored City button (top right), paste, choose Import South or North.\n3. Model library: shelf south of the table, one bag per unit. Terrain library: shelf north of the table.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
   color: "Grey", visibleColor: { r: 0.5, g: 0.5, b: 0.5 }, id: 0 } };
