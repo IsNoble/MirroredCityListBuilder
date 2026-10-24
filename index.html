@@ -2736,7 +2736,7 @@ function syncCardTitle(wrap, customName, unitName, fallback){
   if (nameEl) nameEl.textContent = custom || unitName || fallback;
   if (unitPill){
     unitPill.textContent = unitName || "";
-    unitPill.style.display = (custom && unitName) ? "" : "none";
+    unitPill.style.display = unitName ? "" : "none";
   }
 }
 
