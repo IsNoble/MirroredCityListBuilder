@@ -222,6 +222,8 @@ const libraryLua = `MODEL_LIBRARY = { ${libEntries.join(", ")} }`;
 // Player seats: hand zones along the long edges
 // ---------------------------------------------------------------------------
 const seats = (profile.seats && profile.seats.list) || [];
+const seatColors = { Red: { r: 0.85, g: 0.2, b: 0.2 }, Blue: { r: 0.25, g: 0.45, b: 0.9 }, Green: { r: 0.3, g: 0.7, b: 0.3 }, Yellow: { r: 0.9, g: 0.8, b: 0.2 },
+                     White: { r: 0.9, g: 0.9, b: 0.9 }, Orange: { r: 0.95, g: 0.55, b: 0.15 }, Purple: { r: 0.6, g: 0.3, b: 0.8 }, Pink: { r: 0.95, g: 0.5, b: 0.75 } };
 for (const s of seats){
   const h = JSON.parse(JSON.stringify(handTemplate));
   h.GUID = guid(); h.Nickname = ""; h.Description = ""; h.GMNotes = "MC_SEAT"; h.Locked = true;
@@ -230,8 +232,6 @@ for (const s of seats){
   h.Transform = { posX: s.x, posY: B.surfaceY + 1.0, posZ: s.z, rotX: 0, rotY: s.rotY, rotZ: 0, scaleX: s.widthX, scaleY: 5, scaleZ: s.depthZ };
   base.ObjectStates.push(h);
   // Visible seat: a coloured bar along the outer edge of the hand zone and a label, so the seat is obvious before anyone sits.
-  const seatColors = { Red: { r: 0.85, g: 0.2, b: 0.2 }, Blue: { r: 0.25, g: 0.45, b: 0.9 }, Green: { r: 0.3, g: 0.7, b: 0.3 }, Yellow: { r: 0.9, g: 0.8, b: 0.2 },
-                       White: { r: 0.9, g: 0.9, b: 0.9 }, Orange: { r: 0.95, g: 0.55, b: 0.15 }, Purple: { r: 0.6, g: 0.3, b: 0.8 }, Pink: { r: 0.95, g: 0.5, b: 0.75 } };
   const outer = s.z + Math.sign(s.z) * (s.depthZ / 2 + 0.3);
   const sb = bar(s.x, outer, s.widthX, 0.5); sb.ColorDiffuse = seatColors[s.color] || { r: 0.7, g: 0.7, b: 0.7 }; sb.Nickname = `${s.color} seat`; sb.Description = `${s.color} player's seat. Press the Sit button, or click the colour on the player list.`; sb.GMNotes = "MC_SEAT_BAR:" + s.color;
   sb.Transform.rotY = s.rotY; sb.Transform.scaleY = 0.3;
