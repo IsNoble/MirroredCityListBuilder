@@ -122,7 +122,7 @@
         { "name": "Initiative", "short": "INIT", "color": { "r": 1.00, "g": 1.00, "b": 1.00 } }
       ]
     },
-    "counters": { "_comment": "Per seat, placed at the seat's end of the board edge.", "list": ["Tempo", "Victory Points"], "x": 44, "stepX": 5.5 },
+    "counters": { "_comment": "Per seat, just past the board's right edge, level with that seat's zone.", "list": ["Tempo", "Victory Points"], "x": 53, "stepX": 5.5 },
     "reference": { "x": 66, "z": -9, "widthX": 20, "depthZ": 17 }
   },
 
