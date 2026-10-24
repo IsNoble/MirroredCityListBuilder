@@ -1,32 +1,37 @@
-<!-- Mirrored City roster importer: screen-space UI. Handlers live in Global.lua. -->
+<!-- Mirrored City roster importer: screen-space UI. Handlers live in Global.lua.
+     {SOUTH} / {NORTH} are replaced with the seat colours by build-save.js. -->
 <Defaults>
   <Button fontSize="14" color="#2B3A4A" textColor="#F0F0F0" />
   <Text fontSize="14" color="#F0F0F0" />
 </Defaults>
 
-<!-- Opened by the Import List button on the table; closed by its own Close button -->
-<Panel id="mcPanel" active="false" rectAlignment="MiddleCenter" offsetXY="0 0" width="420" height="500"
-       color="#101820F2" outline="#E6C15A" outlineSize="2" padding="12 12 12 12">
-  <VerticalLayout spacing="8" childForceExpandHeight="false">
-    <HorizontalLayout preferredHeight="28" spacing="8">
-      <Text fontSize="18" color="#E6C15A" fontStyle="Bold" alignment="MiddleLeft">Import a warband</Text>
-      <Button onClick="mc_closePanel" preferredWidth="70" minWidth="70" flexibleWidth="0" color="#4A2B2B">Close</Button>
-    </HorizontalLayout>
-    <Text fontSize="12" color="#C8C8C8" preferredHeight="40">In the list builder press <b>Export for TTS</b>, then paste the clipboard below and choose whose zone it goes to.</Text>
+<!-- Opened by the Import List button on the table; closed by the red X -->
+<Panel id="mcPanel" active="false" rectAlignment="MiddleCenter" offsetXY="0 0" width="440" height="600"
+       color="#101820F2" outline="#E6C15A" outlineSize="2">
 
-    <InputField id="mcRoster" preferredHeight="220" lineType="MultiLineNewline" placeholder="Paste roster JSON here…"
+  <Button onClick="mc_closePanel" rectAlignment="UpperRight" offsetXY="-6 -6" width="26" height="26"
+          color="#B22222" textColor="#FFFFFF" fontSize="15" fontStyle="Bold" tooltip="Close">X</Button>
+
+  <VerticalLayout rectAlignment="UpperLeft" offsetXY="12 -12" width="416" height="576" spacing="8"
+                  childForceExpandHeight="false" childForceExpandWidth="true" childAlignment="UpperCenter">
+    <Text fontSize="18" color="#E6C15A" fontStyle="Bold" alignment="MiddleLeft" preferredHeight="28" minHeight="28" flexibleHeight="0">Import a warband</Text>
+    <Text fontSize="12" color="#C8C8C8" alignment="UpperLeft" preferredHeight="36" minHeight="36" flexibleHeight="0">In the list builder press <b>Export for TTS</b>, then paste the clipboard below and choose whose zone it goes to.</Text>
+
+    <InputField id="mcRoster" preferredHeight="300" minHeight="300" flexibleHeight="0" lineType="MultiLineNewline" placeholder="Paste roster JSON here…"
                 onValueChanged="mc_onRosterText" fontSize="11" color="#1B2530" textColor="#F0F0F0" placeholderColor="#808080" />
 
-    <HorizontalLayout spacing="8" preferredHeight="40">
+    <HorizontalLayout spacing="8" preferredHeight="40" minHeight="40" flexibleHeight="0">
       <Button onClick="mc_importSouth" color="#7A2A2A">Import {SOUTH}</Button>
       <Button onClick="mc_importNorth" color="#2A4A7A">Import {NORTH}</Button>
     </HorizontalLayout>
-    <HorizontalLayout spacing="8" preferredHeight="34">
+    <HorizontalLayout spacing="8" preferredHeight="34" minHeight="34" flexibleHeight="0">
       <Button onClick="mc_clearSouth" color="#4A2B2B">Clear {SOUTH}</Button>
       <Button onClick="mc_clearNorth" color="#2B344A">Clear {NORTH}</Button>
       <Button onClick="mc_clearAll" color="#5A2222">Clear All</Button>
     </HorizontalLayout>
-    <Text id="mcStatus" fontSize="12" color="#9FE6A0" preferredHeight="70" alignment="UpperLeft">Ready.</Text>
-    <Button onClick="mc_refreshLibrary" preferredHeight="24" color="#1E2A24" fontSize="11" tooltip="Only needed if you swapped a miniature in-game by putting a model in a bag whose GM Notes hold the unit id.">Rescan override bags</Button>
+
+    <Text id="mcStatus" fontSize="12" color="#9FE6A0" alignment="UpperLeft" preferredHeight="60" minHeight="60" flexibleHeight="0">Ready.</Text>
+    <Button onClick="mc_refreshLibrary" preferredHeight="24" minHeight="24" flexibleHeight="0" color="#1E2A24" fontSize="11"
+            tooltip="Only needed if you swapped a miniature in-game by putting a model in a bag whose GM Notes hold the unit id.">Rescan override bags</Button>
   </VerticalLayout>
 </Panel>
