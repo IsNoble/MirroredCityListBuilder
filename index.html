@@ -184,6 +184,8 @@
     }
 
     .btnRow{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .cardBtns{display:flex; flex-wrap:wrap; gap:6px; flex-shrink:0; justify-content:flex-end}
+    .cardBtns button{padding:6px 9px; font-size:12px}
 
     .slotGrid{
       display:grid;
@@ -2514,7 +2516,6 @@ function magicRowHtml(id){
         </div>
         <div class="btnRow" style="margin-top:0">
           <button class="noPrint magicRoll" type="button" title="Generate the additional Spell/Prayer by rolling a D6">Roll D6</button>
-          <button class="noPrint magicAdd" type="button">Add</button>
         </div>
       </div>
       <div class="equipList"></div>
@@ -2533,7 +2534,6 @@ function quirkRowHtml(id){
         </div>
         <div class="btnRow" style="margin-top:0">
           <button class="noPrint quirkRoll" type="button" title="Roll 2D6 on the Half-Blood Quirks table">Roll 2D6</button>
-          <button class="noPrint quirkAdd" type="button">Add</button>
         </div>
       </div>
       <div class="equipList"></div>
@@ -2555,7 +2555,6 @@ function renderMagicUI(rowEl, cardLike){
   const label = rowEl.querySelector("label");
   const sel = rowEl.querySelector("select");
   const help = rowEl.querySelector(".magicHelp");
-  const addBtn = rowEl.querySelector(".magicAdd");
   const rollBtn = rowEl.querySelector(".magicRoll");
   const list = rowEl.querySelector(".equipList");
 
@@ -2574,12 +2573,12 @@ function renderMagicUI(rowEl, cardLike){
     sel.appendChild(o);
   }
 
-  if (help) help.textContent = `Knows the Signature ${singular} automatically. At Warband Generation it also knows ONE additional ${singular}, determined by rolling a D6 on the ${data.listName} list (1–5 = listed entry, 6 = you choose). Use Roll D6, or record the result from the dropdown.`;
+  if (help) help.textContent = `Knows the Signature ${singular} automatically. At Warband Generation it also knows ONE additional ${singular}, determined by rolling a D6 on the ${data.listName} list (1–5 = listed entry, 6 = you choose). Use Roll D6, or pick the result from the dropdown.`;
 
   if (rollBtn) rollBtn.onclick = () => {
     const r = 1 + Math.floor(Math.random() * 6);
     if (r === 6){
-      alert(`Rolled a 6: you choose which ${singular} the model knows. Pick it from the dropdown and click Add.`);
+      alert(`Rolled a 6: you choose which ${singular} the model knows. Pick it from the dropdown.`);
       return;
     }
     const e = data.options.find(x => x.roll === r);
@@ -2589,12 +2588,13 @@ function renderMagicUI(rowEl, cardLike){
     ids.push(e.id);
     render();
   };
-  if (addBtn) addBtn.onclick = () => {
+  // Picking an entry records it immediately.
+  sel.addEventListener("change", () => {
     const v = sel.value || "";
     if (!v) return;
     if (!ids.includes(v)) ids.push(v);
     render();
-  };
+  });
 
   list.innerHTML = "";
   if (data.signature){
@@ -2629,7 +2629,6 @@ function renderQuirkUI(rowEl, card){
   const ids = ensureQuirkIds(card);
   const sel = rowEl.querySelector("select");
   const help = rowEl.querySelector(".quirkHelp");
-  const addBtn = rowEl.querySelector(".quirkAdd");
   const rollBtn = rowEl.querySelector(".quirkRoll");
   const list = rowEl.querySelector(".equipList");
 
@@ -2656,12 +2655,13 @@ function renderQuirkUI(rowEl, card){
     ids.push(q.id);
     render();
   };
-  if (addBtn) addBtn.onclick = () => {
+  // Picking a Quirk adds it immediately.
+  sel.addEventListener("change", () => {
     const v = sel.value || "";
     if (!v) return;
     if (!ids.includes(v)) ids.push(v);
     render();
-  };
+  });
 
   list.innerHTML = "";
   if (!ids.length){
@@ -2700,24 +2700,133 @@ function statLine(unitId){
   return `<div class="statLine">${cells.map(([k,v]) => `<span><b>${k}</b> ${escapeHtml(v ?? "—")}</span>`).join("")}</div>`;
 }
 
+/* ---------- per-card view toggles ---------- */
+
+// Per-card UI state: display (stats and gear only, no controls) and collapsed (title line only).
+function cardUi(cardLike){
+  if (cardLike.kind === "LEADER"){
+    if (!state.leaderUi || typeof state.leaderUi !== "object") state.leaderUi = { display:false, collapsed:false };
+    return state.leaderUi;
+  }
+  if (!cardLike.ui || typeof cardLike.ui !== "object") cardLike.ui = { display:false, collapsed:false };
+  return cardLike.ui;
+}
+
+function cardToggleButtonsHtml(ui, extraHtml){
+  return `<div class="cardBtns noPrint">
+    <button type="button" class="toggleDisplay" title="${ui.display ? "Show the editing controls" : "Show only stats and gear"}">${ui.display ? "Edit" : "View"}</button>
+    <button type="button" class="toggleCollapse" title="${ui.collapsed ? "Expand this card" : "Collapse this card to one line"}">${ui.collapsed ? "Expand" : "Collapse"}</button>
+    ${extraHtml || ""}
+  </div>`;
+}
+
+function bindCardToggles(wrap, ui){
+  const d = wrap.querySelector(".toggleDisplay");
+  const c = wrap.querySelector(".toggleCollapse");
+  if (d) d.addEventListener("click", () => { ui.display = !ui.display; render(); });
+  if (c) c.addEventListener("click", () => { ui.collapsed = !ui.collapsed; render(); });
+}
+
+function setNamePill(wrap, name){
+  const pill = wrap.querySelector(".namePill");
+  if (!pill) return;
+  pill.textContent = name || "";
+  pill.style.display = name ? "" : "none";
+}
+
+function summaryChips(items){
+  if (!items.length) return `<div class="tiny">None.</div>`;
+  return `<div class="equipList">${items.map(i =>
+    `<div class="equipChip" title="${escapeHtml(i.title || "")}"><span>${escapeHtml(i.name)}</span>${i.meta ? `<span class="tagMini">${escapeHtml(i.meta)}</span>` : ""}</div>`
+  ).join("")}</div>`;
+}
+
+// Read-only view of a card: unit, stats, tags, Duty / Quirks / Spells and gear, without any controls.
+function renderCardSummary(cardLike){
+  const unit = getUnit(cardLike.unitId);
+  if (!unit) return `<div class="tiny" style="margin-top:6px">No unit selected. Switch to Edit to pick one.</div>`;
+  const kind = cardLike.kind;
+  const unitId = cardLike.unitId;
+  const eq = getCardEquip(cardLike);
+  const modelCount = kind === "HENCHMAN" ? Math.max(1, cardLike.count || 1) : 1;
+
+  const chip = id => {
+    const e = getEquip(id);
+    if (!e) return { name: id };
+    const c = costForCardEquip(e, kind, unitId);
+    const qty = equipQuantityForCard(e, kind, modelCount);
+    return {
+      name: e.name,
+      meta: `${c.display}${qty > 1 ? ` ×${qty}` : ""}`,
+      title: [(e.stats && e.stats.traits ? e.stats.traits.join(", ") : ""), e.rules || ""].filter(Boolean).join(" — ")
+    };
+  };
+  const fixed = (unit.fixedWargear || []).map(id => ({ name: getEquip(id)?.name || id, meta: "included" }));
+  const weapons = (eq.weaponIds || []).map(chip);
+  const armor = [eq.helmetId, eq.armorId, eq.shieldId].filter(Boolean).map(chip);
+  const other = (eq.otherIds || []).map(chip);
+  const duty = cardLike.dutyId ? MERCENARY_DUTIES.find(d => d.id === cardLike.dutyId) : null;
+  const quirks = (cardLike.quirkIds || []).map(q => GREAT_FEAST_HALF_BLOOD_QUIRKS.find(x => x.id === q)).filter(Boolean);
+  const magicData = getMagicDataForUnit(unitId);
+  const magic = magicData ? knownMagicForCard(cardLike) : [];
+
+  const sections = [];
+  if (duty) sections.push(["Duty", summaryChips([{ name: duty.name, meta: `${duty.cost} lumens`, title: duty.rules }])]);
+  if (isGreatFeastHalfBloodUnit(unitId)) sections.push(["Half-Blood Quirks", summaryChips(quirks.map(q => ({ name: q.name, meta: `${q.cost} lumens`, title: q.rules })))]);
+  if (magicData) sections.push([`${magicData.label} — ${magicData.listName}`, summaryChips(magic.map(e => ({ name: e.name, meta: (e.signature ? "Signature • " : "") + magicCostLabel(e), title: e.effect || "" })))]);
+  if (unit.noEquipment){
+    if (fixed.length) sections.push(["Wargear (included)", summaryChips(fixed)]);
+  } else {
+    sections.push(["Weapons", summaryChips(weapons)]);
+    sections.push(["Armor", summaryChips(armor)]);
+    sections.push(["Equipment", summaryChips(other)]);
+  }
+
+  return `
+    <div class="muted">${escapeHtml(unit.name)}${modelCount > 1 ? ` × ${modelCount}` : ""} <span class="tiny">${escapeHtml(unitTags(unitId).join(", "))}</span></div>
+    ${statLine(unitId)}
+    <div class="slotGrid">${sections.map(([t, h]) => `<div class="slotBox"><div class="slotHdr"><strong>${escapeHtml(t)}</strong></div>${h}</div>`).join("")}</div>`;
+}
+
 function renderLeaderStatCard(){
   const wrap = document.createElement("div");
   wrap.className = "card";
 
   const leaderUnit = getUnit(state.leaderUnitId);
-  const leaderCard = { kind:"LEADER", unitId: state.leaderUnitId, count:1 };
+  const leaderCard = { kind:"LEADER", unitId: state.leaderUnitId, count:1, customName: state.leaderCustomName || "", dutyId: state.leaderDutyId || "", quirkIds: [], magicIds: state.leaderMagicIds || [] };
+  const ui = cardUi(leaderCard);
   const lc = leaderCost();
+
+  const titlePills = ui.collapsed
+    ? `<span class="pill">${leaderUnit ? escapeHtml(leaderUnit.name) : "—"}</span>`
+    : `${unitTagPills(state.leaderUnitId)}
+       <span class="pill">Counts as 1 Card</span>
+       <span class="pill">Cost: ${lc.sum}${lc.hasVariable ? "+" : ""} <span class="lumIcon">$</span></span>`;
+
+  if (ui.collapsed || ui.display){
+    wrap.innerHTML = `
+      <div class="card-top">
+        <div class="card-title">
+          <span>LEADER Stat Card</span>
+          <span class="pill good namePill" style="display:none"></span>
+          ${titlePills}
+        </div>
+        ${cardToggleButtonsHtml(ui)}
+      </div>
+      ${ui.collapsed ? "" : renderCardSummary(leaderCard)}`;
+    setNamePill(wrap, state.leaderCustomName);
+    bindCardToggles(wrap, ui);
+    return wrap;
+  }
 
   wrap.innerHTML = `
     <div class="card-top">
       <div class="card-title">
         <span>LEADER Stat Card</span>
         <span class="pill good namePill" style="display:none"></span>
-        ${unitTagPills(state.leaderUnitId)}
-        <span class="pill">Counts as 1 Card</span>
-        <span class="pill">Cost: ${lc.sum}${lc.hasVariable ? "+" : ""} <span class="lumIcon">$</span></span>
+        ${titlePills}
       </div>
-      <button class="noPrint" disabled>Leader</button>
+      ${cardToggleButtonsHtml(ui)}
     </div>
 
     <div class="muted">Leader: <strong>${leaderUnit ? escapeHtml(leaderUnit.name) : "—"}</strong> <span class="tiny">${leaderUnit ? escapeHtml(unitTags(state.leaderUnitId).join(", ")) : ""}</span></div>
@@ -2743,6 +2852,7 @@ function renderLeaderStatCard(){
   const host = wrap.querySelector("#leaderEquipHost");
   renderEquipmentSlotsUI(host, leaderCard, "LEADER");
 
+  bindCardToggles(wrap, ui);
   bindCustomNameInput(wrap.querySelector("#leaderCustomName"), wrap.querySelector(".namePill"),
     () => state.leaderCustomName, v => { state.leaderCustomName = v; });
 
@@ -2771,17 +2881,43 @@ function renderStatCard(card, warbandBase){
     unitHasTag(card.unitId, "ELITE") ? "ELITE Henchmen: 1–2 models per card." : "Henchmen: 1–3 models per card.";
 
   const cc = cardCost(card);
+  const ui = cardUi(card);
+
+  const titlePills = ui.collapsed
+    ? `<span class="pill">${unit ? escapeHtml(unit.name) : "No unit"}</span>`
+    : `${card.unitId ? unitTagPills(card.unitId) : ""}
+       <span class="pill">Cost: ${cc.sum}${cc.hasVariable ? "+" : ""} <span class="lumIcon">$</span></span>
+       ${unit?.limit ? `<span class="pill">${unit.limit}</span>` : ""}`;
+  const removeBtn = `<button type="button" class="noPrint" id="rm_${card.id}">Remove</button>`;
+
+  if (ui.collapsed || ui.display){
+    wrap.innerHTML = `
+      <div class="card-top">
+        <div class="card-title">
+          <span>${kindLabel} Card</span>
+          <span class="pill good namePill" style="display:none"></span>
+          ${titlePills}
+        </div>
+        ${cardToggleButtonsHtml(ui, removeBtn)}
+      </div>
+      ${ui.collapsed ? "" : renderCardSummary(card)}`;
+    setNamePill(wrap, card.customName);
+    bindCardToggles(wrap, ui);
+    wrap.querySelector(`#rm_${card.id}`).addEventListener("click", () => {
+      state.cards = state.cards.filter(c => c.id !== card.id);
+      render();
+    });
+    return wrap;
+  }
 
   wrap.innerHTML = `
     <div class="card-top">
       <div class="card-title">
         <span>${kindLabel} Card</span>
         <span class="pill good namePill" style="display:none"></span>
-        ${card.unitId ? unitTagPills(card.unitId) : ""}
-        <span class="pill">Cost: ${cc.sum}${cc.hasVariable ? "+" : ""} <span class="lumIcon">$</span></span>
-        ${unit?.limit ? `<span class="pill">${unit.limit}</span>` : ""}
+        ${titlePills}
       </div>
-      <button class="noPrint" id="rm_${card.id}">Remove</button>
+      ${cardToggleButtonsHtml(ui, removeBtn)}
     </div>
 
     ${unit ? `<div class="muted">${escapeHtml(unit.name)} <span class="tiny">${escapeHtml(unitTags(card.unitId).join(", "))}</span></div>${statLine(card.unitId)}` : ""}
@@ -2819,6 +2955,7 @@ function renderStatCard(card, warbandBase){
     state.cards = state.cards.filter(c => c.id !== card.id);
     render();
   });
+  bindCardToggles(wrap, ui);
 
   bindCustomNameInput(wrap.querySelector(`#customName_${card.id}`), wrap.querySelector(".namePill"),
     () => card.customName, v => { card.customName = v; });
@@ -3535,7 +3672,6 @@ function renderEquipmentSlotsUI(host, card, cardKind){
     const count = counts[s.key];
 
     const selId = `sel_${s.key}_${cardKind}_${card.id || "leader"}`;
-    const btnId = `btn_${s.key}_${cardKind}_${card.id || "leader"}`;
     const listId = `list_${s.key}_${cardKind}_${card.id || "leader"}`;
     const helpId = `help_${s.key}_${cardKind}_${card.id || "leader"}`;
 
@@ -3546,15 +3682,12 @@ function renderEquipmentSlotsUI(host, card, cardKind){
       </div>
       <div class="tiny">${s.hint}</div>
 
-      <div class="slotAddRow">
-        <div>
-          <label>Add</label>
-          <select id="${selId}">
-            <option value="">— Choose —</option>
-          </select>
-          <div class="tiny" id="${helpId}"></div>
-        </div>
-        <button class="noPrint" id="${btnId}">Add</button>
+      <div>
+        <label>Add</label>
+        <select id="${selId}">
+          <option value="">— Choose —</option>
+        </select>
+        <div class="tiny" id="${helpId}"></div>
       </div>
 
       <div class="equipList" id="${listId}"></div>
@@ -3563,13 +3696,11 @@ function renderEquipmentSlotsUI(host, card, cardKind){
     slotGrid.appendChild(box);
 
     const sel = box.querySelector("#" + selId);
-    const btn = box.querySelector("#" + btnId);
     const help = box.querySelector("#" + helpId);
     const list = box.querySelector("#" + listId);
 
     if (banned){
       sel.style.display = "none";
-      btn.style.display = "none";
       box.querySelector("label").style.display = "none";
       help.textContent = "This unit cannot use this slot.";
       renderSlotChips(list, card, cardKind, s.key);
@@ -3589,7 +3720,6 @@ function renderEquipmentSlotsUI(host, card, cardKind){
 
     if (!filtered.length){
       sel.style.display = "none";
-      btn.style.display = "none";
       box.querySelector("label").style.display = "none";
       help.textContent = selectedIds.length ? "No additional items available for this slot." : "No available items for this slot.";
       renderSlotChips(list, card, cardKind, s.key);
@@ -3628,16 +3758,22 @@ function renderEquipmentSlotsUI(host, card, cardKind){
       appendOptGroup(sel, `Unique / Faction ${s.label}`, uniq, kind, unitId, modelCount);
     }
 
-    btn.disabled = !canAddToSlot(eqObj, s.key, sel.value || "");
-    sel.addEventListener("change", () => { btn.disabled = !canAddToSlot(eqObj, s.key, sel.value || ""); });
-    help.textContent = btn.disabled
-      ? (s.key === "WEAPON" ? "No free Weapon slot for this weapon." : "Slot is full.")
-      : (s.key === "WEAPON" ? "A Lightweight weapon may use the Lightweight slot instead of a Weapon slot." : "Choose an item and click Add.");
+    // Selecting an item adds it straight away. If the slot cannot take it (e.g. no free Weapon slot
+    // for a non-Lightweight weapon) the choice is refused and explained instead.
+    const slotFull = !canAddToSlot(eqObj, s.key, "");
+    if (slotFull && s.key !== "WEAPON") sel.disabled = true;
+    help.textContent = slotFull
+      ? (s.key === "WEAPON" ? "Weapon slots are full. Only a Lightweight weapon can still be added if the Lightweight slot is free." : "Slot is full. Remove the current item to change it.")
+      : (s.key === "WEAPON" ? "Pick a weapon to add it. A Lightweight weapon may use the Lightweight slot instead of a Weapon slot." : "Pick an item to add it.");
 
-    btn.addEventListener("click", () => {
+    sel.addEventListener("change", () => {
       const id = sel.value;
       if (!id) return;
-      if (!canAddToSlot(eqObj, s.key, id)) return;
+      if (!canAddToSlot(eqObj, s.key, id)){
+        help.textContent = s.key === "WEAPON" ? "No free Weapon slot for this weapon." : "Slot is full.";
+        sel.value = "";
+        return;
+      }
       addEquipToSlot(eqObj, s.key, id);
       render();
     });
@@ -3828,7 +3964,7 @@ byId("leaderSelect").addEventListener("change", (e) => {
 });
 
 function newCard(kind){
-  return { id: uid(), kind, unitId: "", count: 1, customName:"", dutyId:"", quirkIds:[], magicIds:[], equipment: { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] } };
+  return { id: uid(), kind, unitId: "", count: 1, customName:"", dutyId:"", quirkIds:[], magicIds:[], ui: { display:false, collapsed:false }, equipment: { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] } };
 }
 
 byId("btnAddHero").addEventListener("click", () => {
@@ -3872,6 +4008,7 @@ function safeExportState(){
       leaderCustomName: state.leaderCustomName || "",
       leaderDutyId: state.leaderDutyId || "",
       leaderMagicIds: state.leaderMagicIds || [],
+      leaderUi: state.leaderUi || { display:false, collapsed:false },
       cards: state.cards.map(c => ({
         id: c.id,
         kind: c.kind,
@@ -3881,6 +4018,7 @@ function safeExportState(){
         dutyId: c.dutyId || "",
         quirkIds: Array.isArray(c.quirkIds) ? c.quirkIds : (c.quirkId ? [c.quirkId] : []),
         magicIds: c.magicIds || [],
+        ui: c.ui || { display:false, collapsed:false },
         equipment: ensureEquipObj(c) && c.equipment
       }))
     }
@@ -3906,6 +4044,7 @@ function applyImported(obj){
   state.leaderCustomName = r.leaderCustomName || "";
   state.leaderDutyId = r.leaderDutyId || "";
   state.leaderMagicIds = Array.isArray(r.leaderMagicIds) ? r.leaderMagicIds : [];
+  state.leaderUi = { display: !!(r.leaderUi && r.leaderUi.display), collapsed: !!(r.leaderUi && r.leaderUi.collapsed) };
 
   const importedCards = Array.isArray(r.cards) ? r.cards : [];
   state.cards = importedCards.map(c => {
@@ -3924,6 +4063,7 @@ function applyImported(obj){
       dutyId: c.dutyId || "",
       quirkIds: Array.isArray(c.quirkIds) ? c.quirkIds.slice() : (c.quirkId ? [c.quirkId] : []),
       magicIds: Array.isArray(c.magicIds) ? c.magicIds : [],
+      ui: { display: !!(c.ui && c.ui.display), collapsed: !!(c.ui && c.ui.collapsed) },
       equipment: c.equipment || { weaponIds:[], helmetId:"", armorId:"", shieldId:"", otherIds:[] }
     };
     ensureEquipObj(card);
