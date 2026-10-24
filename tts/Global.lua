@@ -24,7 +24,13 @@ CONFIG = {
   -- Filled in by buildSides() from BOARD and SPAWN: card rows just outside the battlefield frame, model rows just inside it.
   sides = {},
 
-  cardScale = { x = 1.0, y = 1.0, z = 1.0 },
+  -- Stat Card slab. Sizes in table units; font sizes are button font_size (1/1000 units at scale 1).
+  card = {
+    width = 11, minDepth = 6, thickness = 0.08,
+    topPad = 0.55, bottomPad = 0.45, sidePad = 0.35, lineHeight = 0.5,
+    titleSize = 300, fontSize = 230,
+    color = { r = 0.93, g = 0.90, b = 0.82 }, titleColor = { 0.10, 0.18, 0.22 }, textColor = { 0.08, 0.08, 0.08 },
+  },
   pawnScale = { x = 0.8, y = 0.8, z = 0.8 },
 
   -- Tint for the fallback pawn, by warband id. Unknown warbands get grey.
@@ -189,11 +195,51 @@ function seatButton(obj, color)
   })
 end
 
+-- Quick-reference slab text (rulebook p.12-13). One entry per line; "" is a blank line.
+REFERENCE = {
+  "ROUND SEQUENCE",
+  "1  Start Phase: generate Tempo, roll Initiative, draw Harrows, deploy Reinforcements",
+  "2  Mystic Phase: resolve Rites (Spells and Prayers)",
+  "3  Action Phase: alternate activations, spend Tempo; Activation token on each activated model",
+  "4  End Phase: Morale, victory check, Recovery Checks for Stunned models, clean up",
+  "",
+  "TEMPO  (models in play, both warbands)",
+  "16+ = 10      12-15 = 8      8-11 = 6      4-7 = 5      2-3 = 4",
+  "+1 Leader on the battlefield    +1 behind on Victory Points    -2 warband Broken",
+  "+1 per 2 models you are outnumbered by (max +3)",
+  "",
+  "RECOVERY CHECK  (2D6 per Stunned model, End Phase)",
+  "2-6 Bleeding Out: 1 Mortal Wound      7-10 On Death's Door      11+ Recovered",
+  "",
+  "MEASURE from the base edge nearest the direction of travel (TTS ruler: left toolbar)",
+}
+
+function setupReference(obj)
+  obj.clearButtons()
+  local sx, sz = obj.getScale().x, obj.getScale().z
+  local lineHeight, top, pad = 1.0, 0.9, 0.5
+  local z = -sz / 2 + top
+  for _, line in ipairs(REFERENCE) do
+    if line ~= "" then
+      local heading = (line == line:upper()) and not line:match("^%d")
+      obj.createButton({
+        label = line, click_function = "mc_noop", function_owner = Global,
+        position = { (-sx / 2 + pad) / sx, 1.0, z / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
+        width = 0, height = 0, font_size = heading and 300 or 240, alignment = 3,
+        font_color = heading and { 0.10, 0.18, 0.22 } or { 0.08, 0.08, 0.08 },
+      })
+    end
+    z = z + (line == "" and lineHeight * 0.5 or lineHeight)
+  end
+end
+
 function setupStations()
   for _, obj in ipairs(getAllObjects()) do
     local note = obj.getGMNotes() or ""
     if note:sub(1, 12) == "MC_SEAT_BAR:" then
       seatButton(obj, note:sub(13))
+    elseif note == "MC_REFERENCE" then
+      setupReference(obj)
     elseif note == "MC_STATION_IMPORT" then
       obj.clearButtons()
       stationButton(obj, "Import List", "mc_openPanel", 0, -2.0, 11000, "Open the paste box for a roster from the list builder")
@@ -272,20 +318,105 @@ function gridPos(g, i)
   return { x = g.x + col * g.stepX, y = g.y, z = g.z + row * g.stepZ }
 end
 
+-- A Stat Card is a flat cream slab with the card text drawn on its face as label-only buttons.
+-- The face shows stats, tags, weapon and armor profiles, equipment and rule names (no item rules text);
+-- the hover tooltip (description) carries everything including the rules text.
 function spawnCard(card, roster, pos, rotY, tags)
+  local C = CONFIG.card
+  local faceLines = cardFaceLines(card)
+  local height = math.max(C.minDepth, C.topPad + #faceLines * C.lineHeight + C.bottomPad)
   spawnObject({
-    type = "Notecard",
+    type = "BlockSquare",
     position = pos,
     rotation = { 0, rotY, 0 },
-    scale = CONFIG.cardScale,
+    scale = { C.width, C.thickness, height },
     sound = false,
     callback_function = function(obj)
       obj.setName(cardTitle(card))
       obj.setDescription(cardBody(card, roster))
+      obj.setColorTint(C.color)
       for _, t in ipairs(tags) do obj.addTag(t) end
       obj.setGMNotes(card.unitId or "")
+      obj.measure_movement = false
+      -- Label-only buttons (no click, no background). Local coordinates are divided by the object's
+      -- scale, and the button scale undoes the slab's non-uniform scale so text is not stretched.
+      local sx, sz = C.width, height
+      local function label(text, z, size, bold)
+        obj.createButton({
+          label = text, click_function = "mc_noop", function_owner = Global,
+          position = { (-sx / 2 + C.sidePad) / sx, 1.0, z / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
+          width = 0, height = 0, font_size = size, font_color = bold and C.titleColor or C.textColor, alignment = 3,
+        })
+      end
+      local z = -sz / 2 + C.topPad
+      label(cardTitle(card), z, C.titleSize, true)
+      z = z + C.lineHeight * 1.3
+      for _, line in ipairs(faceLines) do
+        label(line, z, C.fontSize, false)
+        z = z + C.lineHeight
+      end
     end,
   })
+end
+
+function mc_noop() end
+
+-- Lines drawn on the card face. Headings are plain text here (buttons cannot colour part of a label).
+function cardFaceLines(card)
+  local L = {}
+  local function add(s) L[#L + 1] = s end
+  add(statLine1(card.stats))
+  add(statLine2(card.stats))
+  if type(card.tags) == "table" and #card.tags > 0 then add("Tags: " .. table.concat(card.tags, ", ")) end
+  if type(card.weapons) == "table" and #card.weapons > 0 then
+    add("WEAPONS   Rng / Hit / Str / AP / Dmg")
+    for _, w in ipairs(card.weapons) do add(weaponFaceLine(w)) end
+  end
+  if type(card.armor) == "table" and #card.armor > 0 then
+    add("ARMOR   Armor / Injury / Mobility / Move")
+    for _, a in ipairs(card.armor) do add(armorFaceLine(a)) end
+  end
+  if type(card.equipment) == "table" and #card.equipment > 0 then
+    local names = {}
+    for _, e in ipairs(card.equipment) do names[#names + 1] = tostring(e.name) end
+    add("EQUIPMENT: " .. table.concat(names, ", "))
+  end
+  local rules = {}
+  for _, r in ipairs(card.special or {}) do rules[#rules + 1] = tostring(r.name) end
+  if type(card.duty) == "table" then rules[#rules + 1] = "Duty: " .. tostring(card.duty.name) end
+  for _, q in ipairs(card.quirks or {}) do rules[#rules + 1] = "Quirk: " .. tostring(q.name) end
+  if #rules > 0 then add("RULES: " .. table.concat(rules, "; ")) end
+  if type(card.magic) == "table" and type(card.magic.entries) == "table" and #card.magic.entries > 0 then
+    local names = {}
+    for _, e in ipairs(card.magic.entries) do names[#names + 1] = tostring(e.name) .. (e.signature and "*" or "") end
+    add(tostring(card.magic.label or "SPELLS"):upper() .. ": " .. table.concat(names, ", "))
+  end
+  if type(card.sellsword) == "table" then add("SELLSWORD: retainer " .. tostring(card.sellsword.retainer) .. " lumens") end
+  return L
+end
+
+function statLine1(st)
+  st = st or {}
+  local function v(k) local x = st[k]; if x == nil then return "-" end; return tostring(x) end
+  return string.format("SPD %s   STR %s   TGH %s   WIL %s   HP %s", v("spd"), v("str"), v("tgh"), v("wil"), v("hp"))
+end
+
+function statLine2(st)
+  st = st or {}
+  local function v(k) local x = st[k]; if x == nil then return "-" end; return tostring(x) end
+  return string.format("ATK %s   FGT %s   SHT %s   ARM %s   XP %s", v("atk"), v("fgt"), v("sht"), v("arm"), v("xp"))
+end
+
+function weaponFaceLine(w)
+  local traits = ""
+  if type(w.traits) == "table" and #w.traits > 0 then traits = "  [" .. table.concat(w.traits, ", ") .. "]" end
+  return string.format("%s   %s / %s / %s / %s / %s%s", tostring(w.name), tostring(w.range), tostring(w.hit), tostring(w.str), tostring(w.ap), tostring(w.dmg), traits)
+end
+
+function armorFaceLine(a)
+  local traits = ""
+  if type(a.traits) == "table" and #a.traits > 0 then traits = "  [" .. table.concat(a.traits, ", ") .. "]" end
+  return string.format("%s   %s / %s / %s / %s%s", tostring(a.name), tostring(a.armorValue), tostring(a.injurySave), tostring(a.mobility), tostring(a.moveCheck), traits)
 end
 
 function spawnModel(modelData, label, tooltip, tint, pos, rotY, tags)

@@ -61,6 +61,20 @@ The side names come from the profile's seat colours; the build injects them into
 
 Positions come from `BOARD` and `SPAWN`, which the build injects from the profile's `board`, `battlefield` and `spawn` blocks.
 
+## Stat Cards on the table
+
+Each imported Stat Card is a flat cream slab (`CONFIG.card` in `Global.lua`) with the text drawn on its face: title, two stat lines, tags, weapon and armor profiles, equipment names, rule names, known spells or prayers. Item rules text is not on the face; hovering the card shows the full text in the tooltip. Card depth grows with the number of lines, so every card fits its content. Font sizes and padding are in `CONFIG.card` and the spacing of the card row in the profile's `spawn` block.
+
+## Mirrored City extras
+
+In the strip right of the board (profile `extras`):
+
+- **Token dispensers:** one infinite bag per status or marker (Activated, Stunned, Dazed, Wounded, Bleeding, Burning, Hidden, Fleeing, Frightened, Rooted, Suffocating, Berserk, Blessed, Cursed, Reload, Shield, Strain, Faith, Objective, Initiative). Drag a token out; it is a coloured checker with its short name on top. Edit the list in the profile.
+- **Counters:** a Tempo counter and a Victory Points counter for each seat, at that seat's end of the board edge.
+- **Quick reference:** a slab with the round sequence, the Tempo table and modifiers, the Recovery Check table and the measuring rule, from rulebook pages 12 and 13. The text is the `REFERENCE` table in `Global.lua`. The same text is in the notebook's Quick reference tab.
+
+The rulebook itself is not bundled until its authors confirm that is allowed.
+
 ## The model library
 
 The miniatures are embedded in the table script as `MODEL_LIBRARY`, one object JSON per unit id, so nothing sits on the table. The importer spawns from it with `spawnObjectData`.

@@ -10,7 +10,7 @@
     "tableScale": { "names": ["The Kraken Table"], "scale": 1.5 },
     "tableTop": {
       "_comment": "The Kraken table has a glass top; this opaque slab is the playing surface. Centred on the table (not the board). Set to null to skip.",
-      "centerX": 0, "centerZ": 0, "widthX": 164, "depthZ": 98, "thickness": 0.2,
+      "centerX": 0, "centerZ": 0, "widthX": 164, "depthZ": 100, "thickness": 0.2,
       "color": { "r": 0.07, "g": 0.07, "b": 0.08 }
     }
   },
@@ -91,16 +91,46 @@
 
   "spawn": {
     "_comment": "Each player's staging zone lies beyond their long edge of the board (board.depthZ / 2 from centre), as wide as the board. Cards fill the rows nearest the board, models the rows behind them, all measured outward from the board edge. Injected into Global.lua as SPAWN; the build draws the zone from it.",
-    "cardStepX": 4.8, "cardRowGap": 3.4, "cardOffset": 3.4, "cardRows": 2,
-    "modelStepX": 2.3, "modelRowGap": 2.6, "modelOffset": 10.4, "modelRows": 2,
-    "inset": 2.0
+    "cardStepX": 11.6, "cardRowGap": 9.0, "cardOffset": 5.6, "cardRows": 1,
+    "modelStepX": 2.3, "modelRowGap": 2.6, "modelOffset": 12.2, "modelRows": 2,
+    "inset": 1.0
+  },
+
+  "extras": {
+    "_comment": "Mirrored City table furniture in the strip right of the board: status token dispensers, Tempo / VP counters per seat, and the quick-reference slab. Token text and reference text live in Global.lua.",
+    "tokens": { "x0": 54, "stepX": 3.2, "z0": 18, "stepZ": -3.2, "perRow": 4, "label": "TOKENS", "scale": 0.6,
+      "list": [
+        { "name": "Activated",  "short": "ACT",  "color": { "r": 0.25, "g": 0.25, "b": 0.25 } },
+        { "name": "Stunned",    "short": "STUN", "color": { "r": 0.85, "g": 0.75, "b": 0.20 } },
+        { "name": "Dazed",      "short": "DAZE", "color": { "r": 0.95, "g": 0.90, "b": 0.55 } },
+        { "name": "Wounded",    "short": "WND",  "color": { "r": 0.75, "g": 0.15, "b": 0.15 } },
+        { "name": "Bleeding",   "short": "BLD",  "color": { "r": 0.55, "g": 0.05, "b": 0.10 } },
+        { "name": "Burning",    "short": "FIRE", "color": { "r": 0.95, "g": 0.45, "b": 0.10 } },
+        { "name": "Hidden",     "short": "HID",  "color": { "r": 0.35, "g": 0.35, "b": 0.45 } },
+        { "name": "Fleeing",    "short": "FLEE", "color": { "r": 0.60, "g": 0.75, "b": 0.95 } },
+        { "name": "Frightened", "short": "FEAR", "color": { "r": 0.55, "g": 0.40, "b": 0.75 } },
+        { "name": "Rooted",     "short": "ROOT", "color": { "r": 0.35, "g": 0.55, "b": 0.25 } },
+        { "name": "Suffocating","short": "SUFF", "color": { "r": 0.20, "g": 0.45, "b": 0.55 } },
+        { "name": "Berserk",    "short": "BRSK", "color": { "r": 0.80, "g": 0.30, "b": 0.10 } },
+        { "name": "Blessed",    "short": "BLES", "color": { "r": 0.95, "g": 0.85, "b": 0.45 } },
+        { "name": "Cursed",     "short": "CURS", "color": { "r": 0.40, "g": 0.15, "b": 0.45 } },
+        { "name": "Reload",     "short": "RLD",  "color": { "r": 0.50, "g": 0.50, "b": 0.50 } },
+        { "name": "Shield",     "short": "SHLD", "color": { "r": 0.60, "g": 0.65, "b": 0.75 } },
+        { "name": "Strain",     "short": "STRN", "color": { "r": 0.30, "g": 0.60, "b": 0.90 } },
+        { "name": "Faith",      "short": "FTH",  "color": { "r": 0.95, "g": 0.95, "b": 0.80 } },
+        { "name": "Objective",  "short": "OBJ",  "color": { "r": 0.90, "g": 0.70, "b": 0.20 } },
+        { "name": "Initiative", "short": "INIT", "color": { "r": 1.00, "g": 1.00, "b": 1.00 } }
+      ]
+    },
+    "counters": { "_comment": "Per seat, placed at the seat's end of the board edge.", "list": ["Tempo", "Victory Points"], "x": 44, "stepX": 5.5 },
+    "reference": { "x": 66, "z": -9, "widthX": 20, "depthZ": 17 }
   },
 
   "seats": {
     "_comment": "Player hand zones along the long table edges. widthX / depthZ in inches.",
     "list": [
-      { "color": "Red",  "x": 12.65, "z": -42.5, "rotY": 0,   "widthX": 48, "depthZ": 6 },
-      { "color": "Blue", "x": 12.65, "z":  42.5, "rotY": 180, "widthX": 48, "depthZ": 6 }
+      { "color": "Red",  "x": 12.65, "z": -44, "rotY": 0,   "widthX": 48, "depthZ": 6 },
+      { "color": "Blue", "x": 12.65, "z":  44, "rotY": 180, "widthX": 48, "depthZ": 6 }
     ]
   },
 
