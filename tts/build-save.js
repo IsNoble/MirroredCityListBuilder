@@ -334,30 +334,15 @@ if (EX && EX.tracker){
   // Reader space: u along the row (to the reader's right), v from the reader's top row toward the reader. Board centre at (TR.x, TR.z).
   const place = (u, v) => ({ x: TR.x + u * F.right.x + v * F.down.x, z: TR.z + u * F.right.z + v * F.down.z });
   const rowLen = TR.rowLength, boardW = TR.rowsDepth;     // the reader sees rowLen across and boardW top to bottom
-  base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: "Tracker", Description: "Round, Tempo and Victory Point tracks. Slide the markers.", GMNotes: "MC_TRACKER",
+  base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: "Tracker", Description: "Round, Tempo and Victory Point tracks. Click a number to set it.", GMNotes: "MC_TRACKER",
     Transform: { posX: TR.x, posY: B.surfaceY + 0.12, posZ: TR.z, rotX: 0, rotY: rotY, rotZ: 0, scaleX: rowLen, scaleY: 0.06, scaleZ: boardW },
     ColorDiffuse: { r: 0.16, g: 0.16, b: 0.18 }, Locked: true, Grid: false, Snap: false, Tooltip: true });
-  const rowGap = boardW / TR.rows.length, labelW = 6.5, trackLen = rowLen - labelW - 0.8;
-  TR.rows.forEach((row, r) => {
-    const v = -boardW / 2 + rowGap * (r + 0.5);
-    const n = row.max - row.min + 1, cell = trackLen / n;
-    const lp = place(-rowLen / 2 + 0.4 + labelW / 2, v - 0.1);
-    const lbl = label3d(row.label, lp.x, lp.z, seatColors[row.marker] || { r: 0.9, g: 0.9, b: 0.9 }, 26); lbl.Transform.rotY = rotY; base.ObjectStates.push(lbl);
-    for (let k = 0; k < n; k++){
-      const u = -rowLen / 2 + 0.4 + labelW + cell * (k + 0.5);
-      const cp = place(u, v);
-      base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: `${row.label} ${row.min + k}`, Description: "", GMNotes: "MC_TRACKER_CELL",
-        Transform: { posX: cp.x, posY: B.surfaceY + 0.17, posZ: cp.z, rotX: 0, rotY: rotY, rotZ: 0, scaleX: cell - 0.12, scaleY: 0.04, scaleZ: rowGap - 0.5 },
-        ColorDiffuse: k % 5 === 0 ? { r: 0.55, g: 0.52, b: 0.46 } : { r: 0.42, g: 0.40, b: 0.36 }, Locked: true, Grid: false, Snap: true, Tooltip: false });
-      const np = place(u, v + rowGap * 0.28);
-      const num = label3d(String(row.min + k), np.x, np.z, { r: 0.95, g: 0.95, b: 0.95 }, cell < 1.2 ? 16 : 22); num.Transform.rotY = rotY; base.ObjectStates.push(num);
-    }
-    const mp = place(-rowLen / 2 + 0.4 + labelW + cell * 0.5, v);
-    base.ObjectStates.push({ GUID: guid(), Name: "Checker_white", Nickname: `${row.label} marker`, Description: `Slide along the ${row.label} track.`, GMNotes: "MC_TRACKER_MARKER",
-      Transform: { posX: mp.x, posY: B.surfaceY + 1, posZ: mp.z, rotX: 0, rotY: rotY, rotZ: 0, scaleX: 0.45, scaleY: 0.45, scaleZ: 0.45 },
-      ColorDiffuse: seatColors[row.marker] || { r: 0.9, g: 0.9, b: 0.9 }, Locked: false, Grid: false, Snap: true, Tooltip: true });
-  });
+  void place;
 }
+// The tracker's rows go to the Lua, which draws the clickable cells on the board.
+const trackerLua = (EX && EX.tracker)
+  ? `TRACKER = { rows = { ${EX.tracker.rows.map(r => `{ label = ${JSON.stringify(r.label)}, min = ${r.min}, max = ${r.max}, color = ${JSON.stringify(r.color || "White")} }`).join(", ")} } }`
+  : "TRACKER = { rows = {} }";
 if (EX && EX.counters){
   for (const s of seats){
     const dir = Math.sign(s.z) || 1;
@@ -453,6 +438,7 @@ function injectLine(src, name, value){
 }
 let lua = injectLine(luaSrc, "BOARD", `BOARD = { centerX = ${B.centerX}, centerZ = ${B.centerZ}, surfaceY = ${B.surfaceY}, widthX = ${F.widthX}, depthZ = ${F.depthZ}, boardWidthX = ${B.widthX}, boardDepthZ = ${B.depthZ} }`);
 lua = injectLine(lua, "MODEL_LIBRARY", libraryLua);
+lua = injectLine(lua, "TRACKER", trackerLua);
 const southSeat = seats.find(s => s.z < 0), northSeat = seats.find(s => s.z > 0);
 const seatNames = { south: southSeat ? southSeat.color : "South", north: northSeat ? northSeat.color : "North" };
 lua = injectLine(lua, "SEATS", `SEATS = { south = "${seatNames.south}", north = "${seatNames.north}" }`);

@@ -47,6 +47,12 @@ MODEL_LIBRARY = {}
 -- Seat colour on each side of the board. build-save.js replaces this line from the map profile's seats.
 SEATS = { south = "Red", north = "Blue" }
 
+-- Tracker rows (label, min, max, colour). build-save.js replaces this line from the map profile.
+TRACKER = { rows = { { label = "ROUND", min = 1, max = 10, color = "White" } } }
+
+-- Current tracker values by row index; saved with the table.
+trackerValues = {}
+
 -- Spacing of imported cards and models, measured outward from the board edge into the player's staging zone.
 -- build-save.js replaces this line from the map profile.
 SPAWN = { cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 3.4, modelStepX = 2.3, modelRowGap = 2.6, modelOffset = 10.4, inset = 2.0 }
@@ -78,10 +84,18 @@ rosterText = ""          -- what is currently in the paste box
 library = {}             -- unitId -> override bag object
 
 function onLoad(saved)
+  if saved ~= nil and saved ~= "" then
+    local ok, st = pcall(function() return JSON.decode(saved) end)
+    if ok and type(st) == "table" and type(st.trackerValues) == "table" then trackerValues = st.trackerValues end
+  end
   buildSides()
   refreshLibrary()
   setupStations()
   Wait.time(function() setStatus("Ready. " .. countLibrary() .. " unit models available.") end, 1)
+end
+
+function onSave()
+  return JSON.encode({ trackerValues = trackerValues })
 end
 
 -- ---------------------------------------------------------------------------
@@ -208,10 +222,81 @@ function setupReference(obj)
   end
 end
 
+-- ---------------------------------------------------------------------------
+-- Tracker: numbered buttons on the board; clicking one sets that row's value.
+-- Button geometry on a flat object: the reader faces the object's front; local +x is the reader's LEFT,
+-- local +z is the far edge (reader's top). Buttons are rotated 180 to read from the front.
+-- ---------------------------------------------------------------------------
+SEAT_RGB = { Red = { 0.85, 0.2, 0.2 }, Blue = { 0.25, 0.45, 0.9 }, White = { 0.92, 0.92, 0.92 }, Green = { 0.3, 0.7, 0.3 }, Yellow = { 0.9, 0.8, 0.2 } }
+trackerCells = {}   -- row index -> { first = button index of cell 0, n = count }
+
+function setupTracker(obj)
+  obj.clearButtons()
+  trackerCells = {}
+  local sx, sz = obj.getScale().x, obj.getScale().z
+  local rows = TRACKER.rows
+  local rowGap = sz / #rows
+  local labelW, pad = 6.5, 0.4
+  local trackLen = sx - labelW - 2 * pad
+  local index = 0
+  for r, row in ipairs(rows) do
+    local v = sz / 2 - rowGap * (r - 0.5)          -- local z of this row (top row first)
+    local n = row.max - row.min + 1
+    local cell = trackLen / n
+    local rgb = SEAT_RGB[row.color] or SEAT_RGB.White
+    -- row label on the reader's left (local +x)
+    obj.createButton({
+      label = row.label, click_function = "mc_noop", function_owner = Global,
+      position = { (sx / 2 - pad - labelW / 2) / sx, 1.0, v / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
+      width = 0, height = 0, font_size = 300, font_color = rgb,
+    })
+    index = index + 1
+    trackerCells[r] = { first = index, n = n }
+    if trackerValues[r] == nil then trackerValues[r] = row.min end
+    for k = 0, n - 1 do
+      local value = row.min + k
+      local u = sx / 2 - pad - labelW - cell * (k + 0.5)   -- cells run to the reader's right = local -x
+      local fn = "mc_track_" .. r .. "_" .. k
+      _G[fn] = function(_, playerColor) setTrackerValue(obj, r, value) end
+      obj.createButton({
+        label = tostring(value), click_function = fn, function_owner = Global,
+        position = { u / sx, 1.0, v / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
+        width = (cell - 0.15) * 1000, height = (rowGap - 0.6) * 1000, font_size = cell < 1.2 and 360 or 440,
+        color = { 0.42, 0.40, 0.36 }, font_color = { 0.95, 0.95, 0.95 }, tooltip = row.label .. " " .. value,
+      })
+      index = index + 1
+    end
+  end
+  refreshTracker(obj)
+end
+
+function setTrackerValue(obj, r, value)
+  trackerValues[r] = value
+  refreshTracker(obj)
+end
+
+function refreshTracker(obj)
+  for r, row in ipairs(TRACKER.rows) do
+    local cells = trackerCells[r]
+    if cells then
+      local rgb = SEAT_RGB[row.color] or SEAT_RGB.White
+      for k = 0, cells.n - 1 do
+        local value = row.min + k
+        local current = (trackerValues[r] == value)
+        obj.editButton({ index = cells.first + k,
+          color = current and rgb or { 0.42, 0.40, 0.36 },
+          font_color = current and (row.color == "White" and { 0.1, 0.1, 0.1 } or { 1, 1, 1 }) or { 0.95, 0.95, 0.95 } })
+      end
+    end
+  end
+end
+
 function setupStations()
   for _, obj in ipairs(getAllObjects()) do
     local note = obj.getGMNotes() or ""
-    if note == "MC_REFERENCE" then
+    if note == "MC_TRACKER" then
+      setupTracker(obj)
+    elseif note == "MC_REFERENCE" then
       setupReference(obj)
     elseif note == "MC_STATION_IMPORT" then
       obj.clearButtons()
