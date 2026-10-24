@@ -4,14 +4,14 @@
   <Text fontSize="14" color="#F0F0F0" />
 </Defaults>
 
-<!-- Small toggle that is always visible, top-right -->
-<Button id="mcToggle" rectAlignment="UpperRight" offsetXY="-20 -20" width="160" height="34"
-        onClick="mc_togglePanel" color="#8A6B1F" textColor="#FFFFFF" fontStyle="Bold">Mirrored City</Button>
-
-<Panel id="mcPanel" active="false" rectAlignment="UpperRight" offsetXY="-20 -64" width="420" height="520"
+<!-- Opened by the Import List button on the table; closed by its own Close button -->
+<Panel id="mcPanel" active="false" rectAlignment="MiddleCenter" offsetXY="0 0" width="420" height="500"
        color="#101820F2" outline="#E6C15A" outlineSize="2" padding="12 12 12 12">
   <VerticalLayout spacing="8" childForceExpandHeight="false">
-    <Text fontSize="18" color="#E6C15A" fontStyle="Bold" preferredHeight="28">Import a warband</Text>
+    <HorizontalLayout preferredHeight="28" spacing="8">
+      <Text fontSize="18" color="#E6C15A" fontStyle="Bold" alignment="MiddleLeft">Import a warband</Text>
+      <Button onClick="mc_closePanel" preferredWidth="70" minWidth="70" flexibleWidth="0" color="#4A2B2B">Close</Button>
+    </HorizontalLayout>
     <Text fontSize="12" color="#C8C8C8" preferredHeight="40">In the list builder press <b>Export for TTS</b>, then paste the clipboard below and choose whose zone it goes to.</Text>
 
     <InputField id="mcRoster" preferredHeight="220" lineType="MultiLineNewline" placeholder="Paste roster JSON here…"
@@ -26,8 +26,7 @@
       <Button onClick="mc_clearNorth" color="#2B344A">Clear {NORTH}</Button>
       <Button onClick="mc_clearAll" color="#5A2222">Clear All</Button>
     </HorizontalLayout>
-    <Button onClick="mc_refreshLibrary" preferredHeight="30" color="#2B4A3A">Rescan model library</Button>
-
     <Text id="mcStatus" fontSize="12" color="#9FE6A0" preferredHeight="70" alignment="UpperLeft">Ready.</Text>
+    <Button onClick="mc_refreshLibrary" preferredHeight="24" color="#1E2A24" fontSize="11" tooltip="Only needed if you swapped a miniature in-game by putting a model in a bag whose GM Notes hold the unit id.">Rescan override bags</Button>
   </VerticalLayout>
 </Panel>

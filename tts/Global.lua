@@ -134,13 +134,12 @@ function mc_onRosterText(player, value, id)
   rosterText = value or ""
 end
 
-function mc_togglePanel(player, value, id)
-  local active = UI.getAttribute("mcPanel", "active")
-  UI.setAttribute("mcPanel", "active", isTrue(active) and "false" or "true")
-end
-
 function mc_openPanel(obj, playerColor)
   UI.setAttribute("mcPanel", "active", "true")
+end
+
+function mc_closePanel(player, value, id)
+  UI.setAttribute("mcPanel", "active", "false")
 end
 
 function mc_importSouth(player) importRoster("south", player) end
@@ -197,10 +196,9 @@ function setupStations()
       seatButton(obj, note:sub(13))
     elseif note == "MC_STATION_IMPORT" then
       obj.clearButtons()
-      stationButton(obj, "Import Warband", "mc_openPanel", 0, -4.0, 11000, "Open the paste box for a roster from the list builder")
-      stationButton(obj, "Clear " .. SEATS.south, "mc_clearSouth", -2.9, -1.0, 5200, "Remove everything imported into the " .. SEATS.south .. " zone")
-      stationButton(obj, "Clear " .. SEATS.north, "mc_clearNorth",  2.9, -1.0, 5200, "Remove everything imported into the " .. SEATS.north .. " zone")
-      stationButton(obj, "Rescan models",  "mc_refreshLibrary", 0, 2.0, 11000, "Pick up override bags added in-game")
+      stationButton(obj, "Import List", "mc_openPanel", 0, -2.0, 11000, "Open the paste box for a roster from the list builder")
+      stationButton(obj, "Clear " .. SEATS.south, "mc_clearSouth", -2.9, 1.2, 5200, "Remove everything imported into the " .. SEATS.south .. " zone")
+      stationButton(obj, "Clear " .. SEATS.north, "mc_clearNorth",  2.9, 1.2, 5200, "Remove everything imported into the " .. SEATS.north .. " zone")
     end
   end
 end

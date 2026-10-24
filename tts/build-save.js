@@ -275,8 +275,8 @@ if (ST){
   const pad = (note, label, p, labelZ) => {
     base.ObjectStates.push(label3d(label, (A.xMin + A.xMax) / 2, labelZ, { r: 0.9, g: 0.85, b: 0.7 }, ST.labelSize || 72));
     base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: label, Description: "Mirrored City station. The buttons are created by the table script.", GMNotes: note,
-      Transform: { posX: p.x, posY: B.surfaceY + 0.3, posZ: p.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 1, scaleY: 0.3, scaleZ: 1 },
-      ColorDiffuse: { r: 0.16, g: 0.2, b: 0.24 }, Locked: true, Grid: false, Snap: false, Tooltip: true });
+      Transform: { posX: p.x, posY: B.surfaceY + 0.12, posZ: p.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 1, scaleY: 0.02, scaleZ: 1 },
+      ColorDiffuse: B.tableTop ? B.tableTop.color : { r: 0.07, g: 0.07, b: 0.08 }, Locked: true, Grid: false, Snap: false, Tooltip: false });
   };
   // One station fills the area; two split it north / south.
   const stations = [["MC_STATION_IMPORT", ST.import], ["MC_STATION_CARDS", ST.cards]].filter(([, s]) => s);
@@ -343,7 +343,7 @@ if (profile.lighting){
 if ("sky" in profile){ if (profile.sky) base.SkyURL = profile.sky; else delete base.SkyURL; }   // null = TTS default sky
 if ("music" in profile && !profile.music && base.MusicPlayer){ base.MusicPlayer.CurrentAudioURL = ""; base.MusicPlayer.CurrentAudioTitle = ""; }
 base.TabStates = { "0": { title: "Mirrored City", body:
-  `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9). Seats: Red south, Blue north.\n\n1. In the list builder press Export for TTS.\n2. Press Import Warband on the List Importer station (or the Mirrored City button, top right), paste, choose Import ${seatNames.south} or Import ${seatNames.north}.\n3. Cards and models land in that player's outlined zone beyond their edge of the board.\n\nMiniatures are embedded in the table script. To swap one in-game, put a model in a bag, set the bag's GM Notes to the unit id (e.g. mc_captain) and press Rescan models.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
+  `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9). Seats: Red south, Blue north.\n\n1. In the list builder press Export for TTS.\n2. Press Import List on the List Importer station, paste, choose Import ${seatNames.south} or Import ${seatNames.north}.\n3. Cards and models land in that player's outlined zone beyond their edge of the board.\n\nMiniatures are embedded in the table script. To swap one in-game, put a model in a bag, set the bag's GM Notes to the unit id (e.g. mc_captain) and press Rescan models.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
   color: "Grey", visibleColor: { r: 0.5, g: 0.5, b: 0.5 }, id: 0 } };
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
