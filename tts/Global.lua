@@ -44,6 +44,9 @@ BOARD = { centerX = 12.65, centerZ = 0, surfaceY = 1.0, widthX = 44, depthZ = 30
 -- unitId -> object JSON (string). build-save.js replaces this line; keep it on one line.
 MODEL_LIBRARY = {}
 
+-- Seat colour on each side of the board. build-save.js replaces this line from the map profile's seats.
+SEATS = { south = "Red", north = "Blue" }
+
 -- Spacing of imported cards and models, measured outward from the board edge into the player's staging zone.
 -- build-save.js replaces this line from the map profile.
 SPAWN = { cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 3.4, modelStepX = 2.3, modelRowGap = 2.6, modelOffset = 10.4, inset = 2.0 }
@@ -59,10 +62,10 @@ function buildSides()
   local cardSpan  = (cardsPerRow - 1) * SPAWN.cardStepX
   local modelSpan = (modelsPerRow - 1) * SPAWN.modelStepX
   CONFIG.sides = {
-    south = { label = "South", rotY = 0,
+    south = { label = SEATS.south, rotY = 0,
       cards  = { x = BOARD.centerX - cardSpan / 2,  y = y, z = BOARD.centerZ - edge - SPAWN.cardOffset,  stepX = SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ = -SPAWN.cardRowGap },
       models = { x = BOARD.centerX - modelSpan / 2, y = y, z = BOARD.centerZ - edge - SPAWN.modelOffset, stepX = SPAWN.modelStepX, perRow = modelsPerRow, stepZ = -SPAWN.modelRowGap } },
-    north = { label = "North", rotY = 180,
+    north = { label = SEATS.north, rotY = 180,
       cards  = { x = BOARD.centerX + cardSpan / 2,  y = y, z = BOARD.centerZ + edge + SPAWN.cardOffset,  stepX = -SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ =  SPAWN.cardRowGap },
       models = { x = BOARD.centerX + modelSpan / 2, y = y, z = BOARD.centerZ + edge + SPAWN.modelOffset, stepX = -SPAWN.modelStepX, perRow = modelsPerRow, stepZ =  SPAWN.modelRowGap } },
   }
@@ -195,8 +198,8 @@ function setupStations()
     elseif note == "MC_STATION_IMPORT" then
       obj.clearButtons()
       stationButton(obj, "Import Warband", "mc_openPanel", 0, -4.0, 11000, "Open the paste box for a roster from the list builder")
-      stationButton(obj, "Clear South",    "mc_clearSouth", -2.9, -1.0, 5200, "Remove everything imported on the south side")
-      stationButton(obj, "Clear North",    "mc_clearNorth",  2.9, -1.0, 5200, "Remove everything imported on the north side")
+      stationButton(obj, "Clear " .. SEATS.south, "mc_clearSouth", -2.9, -1.0, 5200, "Remove everything imported into the " .. SEATS.south .. " zone")
+      stationButton(obj, "Clear " .. SEATS.north, "mc_clearNorth",  2.9, -1.0, 5200, "Remove everything imported into the " .. SEATS.north .. " zone")
       stationButton(obj, "Rescan models",  "mc_refreshLibrary", 0, 2.0, 11000, "Pick up override bags added in-game")
     end
   end
@@ -257,7 +260,7 @@ function importRoster(sideKey, player)
 
   local who = roster.name
   if who == nil or who == "" then who = roster.warband or "Warband" end
-  local msg = string.format("%s: %d Stat Cards, %d models placed %s.", who, cardIndex, modelIndex, side.label)
+  local msg = string.format("%s: %d Stat Cards, %d models placed in the %s zone.", who, cardIndex, modelIndex, side.label)
   if #missing > 0 then
     msg = msg .. " No model for: " .. table.concat(uniq(missing), ", ") .. " (pawns used)."
   end
@@ -283,12 +286,6 @@ function spawnCard(card, roster, pos, rotY, tags)
       obj.setDescription(cardBody(card, roster))
       for _, t in ipairs(tags) do obj.addTag(t) end
       obj.setGMNotes(card.unitId or "")
-      obj.createButton({
-        label = "Full", click_function = "mc_toggleInfo", function_owner = Global,
-        position = { 0, 0.2, 1.25 }, rotation = { 0, 0, 0 }, scale = { 0.5, 0.5, 0.5 },
-        width = 500, height = 160, font_size = 90, tooltip = "Show / hide the full card",
-      })
-      obj.UI.setXml(cardPanelXml(card, roster))
     end,
   })
 end
@@ -332,11 +329,6 @@ function clearSide(sideKey)
   if removed > 0 then
     setStatus("Cleared " .. removed .. " objects" .. (sideKey and (" (" .. CONFIG.sides[sideKey].label .. ")") or "") .. ".")
   end
-end
-
-function mc_toggleInfo(obj, playerColor)
-  local active = obj.UI.getAttribute("mcCard", "active")
-  obj.UI.setAttribute("mcCard", "active", isTrue(active) and "false" or "true")
 end
 
 -- ---------------------------------------------------------------------------
@@ -453,22 +445,6 @@ function cardBody(card, roster)
   return cardText(card, roster, function(t) return "[e6c15a]" .. t .. "[-]" end)
 end
 
--- Object-level XML panel with the full card, hidden until the Full button is pressed.
-function cardPanelXml(card, roster)
-  local body = xmlEscape(cardText(card, roster, function(t) return "<b>" .. t .. "</b>" end), true)
-  local title = xmlEscape(cardTitle(card), false)
-  return [[
-<Panel id="mcCard" active="false" position="0 0 -140" rotation="0 0 0" width="520" height="640"
-       color="#101820F0" outline="#E6C15A" outlineSize="2" padding="10 10 10 10">
-  <VerticalLayout spacing="6" childForceExpandHeight="false">
-    <Text fontSize="20" color="#E6C15A" fontStyle="Bold" alignment="UpperLeft" preferredHeight="34">]] .. title .. [[</Text>
-    <VerticalScrollView preferredHeight="560" scrollSensitivity="30" color="#00000000">
-      <Text fontSize="14" color="#F0F0F0" alignment="UpperLeft" resizeTextForBestFit="false">]] .. body .. [[</Text>
-    </VerticalScrollView>
-  </VerticalLayout>
-</Panel>]]
-end
-
 -- ---------------------------------------------------------------------------
 -- Helpers
 -- ---------------------------------------------------------------------------
@@ -484,16 +460,3 @@ function uniq(list)
   return out
 end
 
--- Escapes text for TTS XML UI. keepBold=true leaves <b>/</b> tags intact.
-function xmlEscape(s, keepBold)
-  s = tostring(s or "")
-  s = s:gsub("&", "&amp;")
-  if keepBold then
-    s = s:gsub("<b>", "\1"):gsub("</b>", "\2")
-  end
-  s = s:gsub("<", "&lt;"):gsub(">", "&gt;"):gsub('"', "&quot;")
-  if keepBold then
-    s = s:gsub("\1", "<b>"):gsub("\2", "</b>")
-  end
-  return s
-end

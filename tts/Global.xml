@@ -12,18 +12,18 @@
        color="#101820F2" outline="#E6C15A" outlineSize="2" padding="12 12 12 12">
   <VerticalLayout spacing="8" childForceExpandHeight="false">
     <Text fontSize="18" color="#E6C15A" fontStyle="Bold" preferredHeight="28">Import a warband</Text>
-    <Text fontSize="12" color="#C8C8C8" preferredHeight="40">In the list builder press <b>Export for TTS</b>, then paste the clipboard below and choose a side of the table.</Text>
+    <Text fontSize="12" color="#C8C8C8" preferredHeight="40">In the list builder press <b>Export for TTS</b>, then paste the clipboard below and choose whose zone it goes to.</Text>
 
     <InputField id="mcRoster" preferredHeight="220" lineType="MultiLineNewline" placeholder="Paste roster JSON here…"
                 onValueChanged="mc_onRosterText" fontSize="11" color="#1B2530" textColor="#F0F0F0" placeholderColor="#808080" />
 
     <HorizontalLayout spacing="8" preferredHeight="40">
-      <Button onClick="mc_importSouth">Import South</Button>
-      <Button onClick="mc_importNorth">Import North</Button>
+      <Button onClick="mc_importSouth" color="#7A2A2A">Import {SOUTH}</Button>
+      <Button onClick="mc_importNorth" color="#2A4A7A">Import {NORTH}</Button>
     </HorizontalLayout>
     <HorizontalLayout spacing="8" preferredHeight="34">
-      <Button onClick="mc_clearSouth" color="#4A2B2B">Clear South</Button>
-      <Button onClick="mc_clearNorth" color="#4A2B2B">Clear North</Button>
+      <Button onClick="mc_clearSouth" color="#4A2B2B">Clear {SOUTH}</Button>
+      <Button onClick="mc_clearNorth" color="#2B344A">Clear {NORTH}</Button>
       <Button onClick="mc_clearAll" color="#5A2222">Clear All</Button>
     </HorizontalLayout>
     <Button onClick="mc_refreshLibrary" preferredHeight="30" color="#2B4A3A">Rescan model library</Button>

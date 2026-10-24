@@ -318,6 +318,10 @@ function injectLine(src, name, value){
 }
 let lua = injectLine(luaSrc, "BOARD", `BOARD = { centerX = ${B.centerX}, centerZ = ${B.centerZ}, surfaceY = ${B.surfaceY}, widthX = ${F.widthX}, depthZ = ${F.depthZ}, boardWidthX = ${B.widthX}, boardDepthZ = ${B.depthZ} }`);
 lua = injectLine(lua, "MODEL_LIBRARY", libraryLua);
+const southSeat = seats.find(s => s.z < 0), northSeat = seats.find(s => s.z > 0);
+const seatNames = { south: southSeat ? southSeat.color : "South", north: northSeat ? northSeat.color : "North" };
+lua = injectLine(lua, "SEATS", `SEATS = { south = "${seatNames.south}", north = "${seatNames.north}" }`);
+const xmlOut = xml.replace(/\{SOUTH\}/g, seatNames.south).replace(/\{NORTH\}/g, seatNames.north);
 {
   const SP = profile.spawn;
   lua = injectLine(lua, "SPAWN", `SPAWN = { cardStepX = ${SP.cardStepX}, cardRowGap = ${SP.cardRowGap}, cardOffset = ${SP.cardOffset}, modelStepX = ${SP.modelStepX}, modelRowGap = ${SP.modelRowGap}, modelOffset = ${SP.modelOffset}, inset = ${SP.inset} }`);
@@ -327,7 +331,7 @@ base.SaveName = profile.saveName;
 base.GameMode = profile.saveName;
 base.LuaScript = lua;
 base.LuaScriptState = "";
-base.XmlUI = xml;
+base.XmlUI = xmlOut;
 base.Date = new Date().toLocaleString();
 base.Tags = Array.from(new Set([...(base.Tags || []), "Mirrored City"]));
 base.Hands = Object.assign(base.Hands || {}, { Enable: seats.length > 0, DisableUnused: false, Hiding: 0 });
@@ -338,7 +342,7 @@ if (profile.lighting){
 if ("sky" in profile){ if (profile.sky) base.SkyURL = profile.sky; else delete base.SkyURL; }   // null = TTS default sky
 if ("music" in profile && !profile.music && base.MusicPlayer){ base.MusicPlayer.CurrentAudioURL = ""; base.MusicPlayer.CurrentAudioTitle = ""; }
 base.TabStates = { "0": { title: "Mirrored City", body:
-  `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9). Seats: Red south, Blue north.\n\n1. In the list builder press Export for TTS.\n2. Press Import Warband on the List Importer station (or the Mirrored City button, top right), paste, choose Import South or North.\n3. Cards land in the outlined CARDS zone on that side, models in the MODELS zone.\n\nMiniatures are embedded in the table script. To swap one in-game, put a model in a bag, set the bag's GM Notes to the unit id (e.g. mc_captain) and press Rescan models.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
+  `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9). Seats: Red south, Blue north.\n\n1. In the list builder press Export for TTS.\n2. Press Import Warband on the List Importer station (or the Mirrored City button, top right), paste, choose Import ${seatNames.south} or Import ${seatNames.north}.\n3. Cards and models land in that player's outlined zone beyond their edge of the board.\n\nMiniatures are embedded in the table script. To swap one in-game, put a model in a bag, set the bag's GM Notes to the unit id (e.g. mc_captain) and press Rescan models.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
   color: "Grey", visibleColor: { r: 0.5, g: 0.5, b: 0.5 }, id: 0 } };
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });

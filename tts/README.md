@@ -53,9 +53,11 @@ The rulebook (p.9) plays on a 44" by 30" battlefield, or 22" by 30" for small sc
 The table has two seats, Red on the south edge and Blue on the north, each with a **Sit here** button on its coloured bar, and the List Importer station in the free strip left of the board. Each player has an outlined staging zone in their colour beyond their edge of the board: an imported warband's cards fill the rows nearest the board and its models the rows behind, and the player deploys from there. Distances are measured with TTS's own ruler on the left toolbar. The Kraken table is scaled up by half so all of this fits around the 72" x 48" board; its top is glass, so the build lays a black slab across it as the playing surface (`board.tableTop` in the profile).
 
 1. In the list builder press **Export for TTS**. The roster JSON is now on the clipboard.
-2. Press **Import Warband** on the List Importer station (or the **Mirrored City** button, top right), paste into the box, press **Import South** or **Import North**.
-3. One Notecard per Stat Card appears in that side's staging zone, with the full card text on it and a **Full** button that opens a readable panel. One miniature per model appears in the rows behind the cards, named after its card, with the stat line and weapons as hover text.
-4. **Clear South / North** on the station (or **Clear All** in the panel) removes what the importer spawned and nothing else. Importing to a side clears it first.
+2. Press **Import Warband** on the List Importer station (or the **Mirrored City** button, top right), paste into the box, press **Import Red** or **Import Blue**.
+3. One Notecard per Stat Card appears in that player's zone with the full card text on it. One miniature per model appears in the rows behind the cards, named after its card, with the stat line and weapons as hover text.
+4. **Clear Red / Blue** on the station (or **Clear All** in the panel) removes what the importer spawned and nothing else. Importing to a zone clears it first.
+
+The side names come from the profile's seat colours; the build injects them into the Lua (`SEATS`) and the XML.
 
 Positions come from `BOARD` and `SPAWN`, which the build injects from the profile's `board`, `battlefield` and `spawn` blocks.
 
