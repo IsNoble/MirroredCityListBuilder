@@ -29,13 +29,42 @@
     "frameColor": { "r": 0.90, "g": 0.76, "b": 0.35 }
   },
 
+  "sky": null,
+  "music": null,
+
+  "ground": {
+    "_comment": "Textured tile laid over the board under the terrain. imageFile is relative to tts/ and becomes a file:// URL (local only; upload it to Steam Cloud and switch to imageUrl before publishing). A Custom_Tile is 2 x 2 units at scale 1, so scale = size / 2. Set to null for none.",
+    "imageFile": "assets/ground-cobblestone.jpg",
+    "imageUrl": "",
+    "widthX": 72, "depthZ": 48, "thickness": 0.1
+  },
+
   "keep": {
     "_comment": "What survives from the base save. Terrain = Custom_Model / Custom_Assetbundle inside playBox and above the table. Everything else is dropped unless listed.",
     "tableNames": ["Board", "The Kraken Table"],
     "playBox": { "xMin": -22, "xMax": 48, "zMin": -26, "zMax": 27, "yMin": -30 },
     "dropNames": ["Mordheim"],
+    "dropGuids": {
+      "_comment": "Terrain whose mesh or texture no longer exists online (pastebin / dead CDN files). They would show as blank models and load errors.",
+      "4383ec": "plaza model, pastebin mesh gone", "e5ff98": "plaza model, pastebin mesh gone",
+      "f87c32": "oil lantern, bundle 404", "c9168e": "oil lantern, bundle 404", "724c32": "oil lantern, bundle 404", "9a2f69": "oil lantern, bundle 404",
+      "2e24e2": "Crates, Pile, pastebin mesh gone", "dfebb1": "Crates, Pile, pastebin mesh gone",
+      "48d6ab": "pastebin mesh gone", "d7e33f": "pastebin mesh gone", "f35ab6": "pastebin mesh gone", "6ea206": "pastebin mesh gone"
+    },
+    "stripUrlPatterns": {
+      "_comment": "Any object whose mesh, bundle or image URL contains one of these is dropped; attached child objects and decals that match are removed from the objects that carry them.",
+      "general-chaos.com": "attached crates, site gone",
+      "1008188088484277215": "ivy decal image gone",
+      "1647714120271753573": "oil lantern bundle 404",
+      "1647714120271748429": "oil lantern bundle 404",
+      "pastebin.com/raw.php?i=cghKDqjm": "Crates, Pile mesh gone",
+      "pastebin.com/raw.php?i=WUngPUx6": "mesh gone",
+      "pastebin.com/raw.php?i=wv7nr12R": "plaza mesh gone",
+      "1777209780715628589": "plaza texture gone"
+    },
     "guids": { "8a28fc": "D6 dispenser", "c43435": "D6 dispenser" },
-    "bags": {
+    "bags": {},
+    "_bagsAvailable": {
       "4262d3": "Ruins library",
       "fc34bd": "Example table layout",
       "d32f06": "Terrain and details",

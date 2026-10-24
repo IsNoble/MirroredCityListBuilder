@@ -99,9 +99,20 @@ function label3d(text, x, z, color, size){
 const K = profile.keep;
 const tableNames = new Set(K.tableNames || []);
 const dropNames = new Set(K.dropNames || []);
+const dropGuids = new Set(Object.keys(K.dropGuids || {}).filter(k => k !== "_comment"));
+const stripPatterns = Object.keys(K.stripUrlPatterns || {}).filter(k => k !== "_comment");
+const refsDead = o => stripPatterns.some(p => JSON.stringify({ a: o.CustomMesh, b: o.CustomAssetbundle, c: o.CustomImage, d: o.CustomDecal }).includes(p));
+let strippedChildren = 0, strippedDecals = 0, droppedByUrl = 0;
+function stripDead(o){
+  if (Array.isArray(o.ChildObjects)){ const n = o.ChildObjects.length; o.ChildObjects = o.ChildObjects.filter(c => !refsDead(c)); strippedChildren += n - o.ChildObjects.length; o.ChildObjects.forEach(stripDead); }
+  if (Array.isArray(o.AttachedDecals)){ const n = o.AttachedDecals.length; o.AttachedDecals = o.AttachedDecals.filter(d => !refsDead(d)); strippedDecals += n - o.AttachedDecals.length; }
+  for (const c of o.ContainedObjects || []) stripDead(c);
+}
 const kept = [], shelfBags = [];
 for (const o of base.ObjectStates){
   const t = o.Transform, nick = (o.Nickname || "").trim();
+  if (dropGuids.has(o.GUID)) continue;
+  if (refsDead(o)) { droppedByUrl++; continue; }   // its own mesh / bundle / image is on the dead list
   if (K.guids && K.guids[o.GUID]) { kept.push(o); continue; }
   if (K.bags && K.bags[o.GUID]) { shelfBags.push(o); continue; }
   if (tableNames.has(nick)) { kept.push(o); continue; }
@@ -111,6 +122,7 @@ for (const o of base.ObjectStates){
   if (terrainType && onBoard && !dropNames.has(nick)) { kept.push(o); continue; }
 }
 const prunedCount = base.ObjectStates.length - kept.length - shelfBags.length;
+kept.forEach(stripDead);
 
 // Terrain shelf
 const TS = profile.shelves.terrain;
@@ -126,9 +138,28 @@ base.ObjectStates = kept;
 if (shelfBags.length) base.ObjectStates.push(label3d("Terrain library", TS.labelX, TS.z, { r: 0.9, g: 0.85, b: 0.7 }));
 
 // ---------------------------------------------------------------------------
+// Ground texture: a Custom_Tile laid on the board under the terrain (2 x 2 units at scale 1)
+// ---------------------------------------------------------------------------
+const B = profile.board, F = profile.battlefield, G = profile.ground;
+if (G && !G.imageUrl && G.imageFile){
+  const abs = path.resolve(here, G.imageFile);
+  if (!fs.existsSync(abs)) throw new Error(`ground.imageFile not found: ${abs}`);
+  G.imageUrl = "file:///" + abs.replace(/\\/g, "/");
+}
+if (G && G.imageUrl){
+  base.ObjectStates.push({
+    GUID: guid(), Name: "Custom_Tile", Nickname: "Ground", Description: "", GMNotes: "MC_GROUND",
+    Transform: { posX: B.centerX, posY: B.surfaceY + (G.thickness || 0.1) / 2 - 0.1, posZ: B.centerZ, rotX: 0, rotY: 0, rotZ: 0,
+                 scaleX: G.widthX / 2, scaleY: 1, scaleZ: G.depthZ / 2 },
+    ColorDiffuse: { r: 1, g: 1, b: 1 }, Locked: true, Grid: false, Snap: false, Tooltip: false, IgnoreFoW: true,
+    CustomImage: { ImageURL: G.imageUrl, ImageSecondaryURL: "", ImageScalar: 1.0, WidthScale: 0.0,
+                   CustomTile: { Type: 0, Thickness: G.thickness || 0.1, Stackable: false, Stretch: true } },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Battlefield frame (rulebook size), centred on the board
 // ---------------------------------------------------------------------------
-const B = profile.board, F = profile.battlefield;
 function bar(x, z, lenX, lenZ){
   return { GUID: guid(), Name: "BlockSquare", Nickname: "Battlefield edge", Description: `${F.widthX}" x ${F.depthZ}" battlefield`, GMNotes: "MC_FRAME",
     Transform: { posX: x, posY: B.surfaceY + 0.03, posZ: z, rotX: 0, rotY: 0, rotZ: 0, scaleX: lenX, scaleY: 0.06, scaleZ: lenZ },
@@ -194,6 +225,8 @@ if (profile.lighting){
   const { _comment, ...lighting } = profile.lighting;
   base.Lighting = Object.assign({}, base.Lighting || {}, lighting);
 }
+if ("sky" in profile){ if (profile.sky) base.SkyURL = profile.sky; else delete base.SkyURL; }   // null = TTS default sky
+if ("music" in profile && !profile.music && base.MusicPlayer){ base.MusicPlayer.CurrentAudioURL = ""; base.MusicPlayer.CurrentAudioTitle = ""; }
 base.TabStates = { "0": { title: "Mirrored City", body:
   `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9).\n\n1. In the list builder press Export for TTS.\n2. Press the Mirrored City button (top right), paste, choose Import South or North.\n3. Model library: shelf south of the table, one bag per unit. Terrain library: shelf north of the table.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
   color: "Grey", visibleColor: { r: 0.5, g: 0.5, b: 0.5 }, id: 0 } };
@@ -204,6 +237,7 @@ const thumb = path.join(workshopDir, profile.base.workshopId + ".png");
 if (fs.existsSync(thumb)) fs.copyFileSync(thumb, outPath.replace(/\.json$/i, ".png"));
 
 console.log(report.join("\n"));
-console.log(`\nMap: ${profile.base.title}. Dropped ${prunedCount} base objects; kept ${kept.length - shelfBags.length} table/terrain objects and ${shelfBags.length} terrain bags.`);
+console.log(`\nMap: ${profile.base.title}. Dropped ${prunedCount} base objects; kept ${kept.length - shelfBags.length} table/terrain objects and ${shelfBags.length} terrain bags. Dead assets: dropped ${droppedByUrl} objects, stripped ${strippedChildren} attached objects and ${strippedDecals} decals.`);
+console.log(G && G.imageUrl ? `Ground tile ${G.widthX}" x ${G.depthZ}" from ${G.imageUrl}` : "No ground tile.");
 console.log(`Battlefield frame ${F.widthX}" x ${F.depthZ}" at (${B.centerX}, ${B.centerZ}).`);
 console.log(`${bagCount} bags on the model shelf, ${filled} with a model. Save written to:\n${outPath}\n${(fs.statSync(outPath).size / 1048576).toFixed(1)} MB`);

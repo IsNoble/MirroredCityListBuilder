@@ -27,6 +27,16 @@ Rerun after any change to `model-map.json`, `Global.lua` or `Global.xml`. Pass `
 
 What survives from the base map is decided by the profile's `keep` block: the table surface, every terrain piece inside `playBox`, the listed GUIDs (the two dice dispensers), and the listed bags (terrain and effects, re-labelled and parked on a shelf north of the table). Everything else is dropped: rulebooks, warband sheets, scenarios, counters, templates, hand zones, deployment markers, setup instructions, cabinets. To keep something else, add its GUID to `keep.guids` or `keep.bags`.
 
+## Dead assets
+
+Old Workshop maps point at files that no longer exist (pastebin meshes, dead CDN bundles, a sky image). TTS shows a load error and a blank model for each. The profile's `keep.stripUrlPatterns` lists URL fragments that are known dead: any object whose own asset matches is dropped, and attached objects or decals that match are removed from their parent. `keep.dropGuids` drops specific objects by id. `sky: null` resets to the default sky and `music: null` clears the music player.
+
+To find new dead links after swapping maps, run the scratch URL checker against the built save (GET, with `cloud-3.steamusercontent.com` rewritten to `steamusercontent-a.akamaihd.net`, which is the host TTS really uses; a plain HEAD on the old host returns 403 for everything).
+
+## Ground texture
+
+The profile's `ground` block lays a textured Custom_Tile over the board under the terrain. `assets/ground-cobblestone.jpg` is a 72" x 48" tiling of a CC0 cobblestone texture by n4 from OpenGameArt, built with the scratch tiling script in headless Edge. It is referenced as a `file://` URL, so it works only on this machine; before publishing, upload it to Steam Cloud in-game and put the resulting URL in `ground.imageUrl`.
+
 ## Battlefield size
 
 The rulebook (p.9) plays on a 44" by 30" battlefield, or 22" by 30" for small scenarios. Most Workshop tables are 72" by 48", so the build draws a gold frame of the rulebook size in the middle of the board and leaves the terrain outside it as scenery. Cards spawn just outside the frame, models just inside. The frame size and centre come from the profile's `board` and `battlefield` blocks and are injected into `Global.lua` as the `BOARD` line.
