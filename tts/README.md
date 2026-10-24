@@ -50,15 +50,14 @@ The rulebook (p.9) plays on a 44" by 30" battlefield, or 22" by 30" for small sc
 
 ## Using the table
 
-The table has two seats, Red on the south edge and Blue on the north, each with a **Sit here** button on its coloured bar, and two stations in the free area left of the board. Outlined drop zones on each side show where an imported warband's cards (outside the frame) and models (inside the frame) land. Measuring sticks of 12, 6, 3 and 1 inch lie in the strip right of the board; TTS's own ruler on the left toolbar measures any distance.
+The table has two seats, Red on the south edge and Blue on the north, each with a **Sit here** button on its coloured bar, and the List Importer station in the free strip left of the board. Outlined drop zones on each side show where an imported warband's cards (outside the frame) and models (inside the frame) land. Measuring sticks of 12, 6, 3 and 1 inch lie in the strip right of the board; TTS's own ruler on the left toolbar measures any distance. The Kraken table is scaled up a quarter so all of this fits beyond the 72" x 48" board.
 
 1. In the list builder press **Export for TTS**. The roster JSON is now on the clipboard.
 2. Press **Import Warband** on the List Importer station (or the **Mirrored City** button, top right), paste into the box, press **Import South** or **Import North**.
 3. One Notecard per Stat Card appears just outside the battlefield frame on that side, with the full card text on it and a **Full** button that opens a readable panel. One miniature per model appears just inside the frame, named after its card, with the stat line and weapons as hover text.
 4. **Clear South / North** on the station (or **Clear All** in the panel) removes what the importer spawned and nothing else. Importing to a side clears it first.
-5. **New Stat Card** on the Card Creator station spawns a blank card with the Stat Card layout for hand-made entries. **Clear blank cards** removes them.
 
-Positions come from `BOARD` and `CARD_SPAWN`, which the build injects from the profile; row spacing is in `CONFIG` at the top of `Global.lua`.
+Positions come from `BOARD` and `SPAWN`, which the build injects from the profile's `board`, `battlefield` and `spawn` blocks.
 
 ## The model library
 

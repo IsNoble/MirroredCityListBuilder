@@ -20,7 +20,6 @@ CONFIG = {
 
   libraryTag = "MC_LIBRARY",   -- optional override bags carry this tag
   spawnedTag = "MC_SPAWNED",   -- everything the importer creates carries this tag
-  customTag  = "MC_CUSTOM_CARD",
 
   -- Filled in by buildSides() from BOARD and SPAWN: card rows just outside the battlefield frame, model rows just inside it.
   sides = {},
@@ -40,9 +39,6 @@ CONFIG = {
 -- Board geometry. build-save.js replaces this line from the map profile (tts/maps/<map>.json).
 -- centerX/centerZ: middle of the battlefield frame; widthX/depthZ: frame size in inches (1 TTS unit = 1").
 BOARD = { centerX = 12.65, centerZ = 0, surfaceY = 1.0, widthX = 44, depthZ = 30 }
-
--- Where the Card Creator puts new blank cards. build-save.js replaces this line from the map profile.
-CARD_SPAWN = { x = -62, y = 2.5, z = -6, stepX = 4.8, perRow = 8, stepZ = -3.4, rotY = 0 }
 
 -- unitId -> object JSON (string). build-save.js replaces this line; keep it on one line.
 MODEL_LIBRARY = {}
@@ -198,47 +194,8 @@ function setupStations()
       stationButton(obj, "Clear South",    "mc_clearSouth", -2.9, -1.0, 5200, "Remove everything imported on the south side")
       stationButton(obj, "Clear North",    "mc_clearNorth",  2.9, -1.0, 5200, "Remove everything imported on the north side")
       stationButton(obj, "Rescan models",  "mc_refreshLibrary", 0, 2.0, 11000, "Pick up override bags added in-game")
-    elseif note == "MC_STATION_CARDS" then
-      obj.clearButtons()
-      stationButton(obj, "New Stat Card",  "mc_newCard", 0, -1.6, 11000, "Spawn a blank Mirrored City Stat Card to fill in by hand")
-      stationButton(obj, "Clear blank cards", "mc_clearCustomCards", 0, 1.6, 11000, "Remove the cards made here")
     end
   end
-end
-
--- Card Creator: a blank Notecard with the Stat Card layout, laid out in a grid near the station.
-function mc_newCard(obj, playerColor)
-  local n = #getObjectsWithTag(CONFIG.customTag)
-  local pos = gridPos(CARD_SPAWN, n)
-  spawnObject({
-    type = "Notecard", position = pos, rotation = { 0, CARD_SPAWN.rotY, 0 }, scale = CONFIG.cardScale, sound = false,
-    callback_function = function(card)
-      card.setName("New Stat Card  —  HERO, 0 lumens")
-      card.setDescription(blankCardBody())
-      card.addTag(CONFIG.customTag)
-    end,
-  })
-end
-
-function mc_clearCustomCards(obj, playerColor)
-  local removed = 0
-  for _, o in ipairs(getObjectsWithTag(CONFIG.customTag)) do destroyObject(o); removed = removed + 1 end
-  if removed > 0 then broadcastToAll("Removed " .. removed .. " blank cards.", {0.8, 1, 0.8}) end
-end
-
-function blankCardBody()
-  local h = function(t) return "[e6c15a]" .. t .. "[-]" end
-  return table.concat({
-    h("Stats"),
-    "SPD -   STR -   TGH -   WIL -   HP -",
-    "ATK -   FGT -   SHT -   ARM -   XP -",
-    "Tags: ",
-    h("Weapons"), "- : R -, Hit -, Str -, AP -, Dmg -",
-    h("Armor"), "-",
-    h("Equipment"), "-",
-    h("Special Rules"), "-",
-    "", "(Hover the card and press the gear icon to edit the name and this text.)",
-  }, "\n")
 end
 
 -- ---------------------------------------------------------------------------

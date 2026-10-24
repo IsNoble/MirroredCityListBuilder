@@ -184,7 +184,7 @@ if (G && G.imageUrl){
 // ---------------------------------------------------------------------------
 function bar(x, z, lenX, lenZ){
   return { GUID: guid(), Name: "BlockSquare", Nickname: "Battlefield edge", Description: `${F.widthX}" x ${F.depthZ}" battlefield`, GMNotes: "MC_FRAME",
-    Transform: { posX: x, posY: B.surfaceY + 0.03, posZ: z, rotX: 0, rotY: 0, rotZ: 0, scaleX: lenX, scaleY: 0.06, scaleZ: lenZ },
+    Transform: { posX: x, posY: B.surfaceY + 0.18, posZ: z, rotX: 0, rotY: 0, rotZ: 0, scaleX: lenX, scaleY: 0.06, scaleZ: lenZ },
     ColorDiffuse: F.frameColor, Locked: true, Grid: false, Snap: false, Tooltip: true, IgnoreFoW: true };
 }
 const hx = F.widthX / 2, hz = F.depthZ / 2, th = 0.25;
@@ -247,7 +247,7 @@ for (const s of seats){
   const modelZ = B.centerZ + dir * (hz - SP.modelInset - (SP.modelRows - 1) * SP.modelRowGap / 2);
   const zone = (cx, cz, w, d, name) => {
     const edges = [ bar(cx, cz - d / 2, w + th, th), bar(cx, cz + d / 2, w + th, th), bar(cx - w / 2, cz, th, d + th), bar(cx + w / 2, cz, th, d + th) ];
-    for (const e of edges){ e.ColorDiffuse = zoneColor; e.Nickname = name; e.Description = "Imported warbands appear here."; e.GMNotes = "MC_ZONE"; e.Transform.scaleY = 0.04; base.ObjectStates.push(e); }
+    for (const e of edges){ e.ColorDiffuse = zoneColor; e.Nickname = name; e.Description = "Imported warbands appear here."; e.GMNotes = "MC_ZONE"; e.Transform.scaleY = 0.05; e.Transform.posY = B.surfaceY + 0.16; base.ObjectStates.push(e); }
     const l = label3d(name, cx - w / 2 + 6, cz, zoneColor, 36); l.Transform.rotY = s.rotY; base.ObjectStates.push(l);
   };
   zone(B.centerX, cardZ, cardW, cardD, `${s.color.toUpperCase()} CARDS`);
@@ -271,20 +271,38 @@ if (MSK){
 // ---------------------------------------------------------------------------
 const ST = profile.stations;
 if (ST){
-  const A = ST.area, dim = { r: 0.55, g: 0.5, b: 0.42 }, midZ = (A.zMin + A.zMax) / 2;
-  const halfBars = (zMin, zMax) => {
+  const A = ST.area, dim = { r: 0.55, g: 0.5, b: 0.42 };
+  const areaBars = (zMin, zMax) => {
     const cx = (A.xMin + A.xMax) / 2, cz = (zMin + zMax) / 2, w = A.xMax - A.xMin, d = zMax - zMin;
     return [ bar(cx, zMin, w + th, th), bar(cx, zMax, w + th, th), bar(A.xMin, cz, th, d + th), bar(A.xMax, cz, th, d + th) ];
   };
-  for (const b of [...halfBars(midZ, A.zMax), ...halfBars(A.zMin, midZ)]){ b.ColorDiffuse = dim; b.Nickname = "Station edge"; b.Description = ""; b.GMNotes = "MC_STATION_EDGE"; base.ObjectStates.push(b); }
   const pad = (note, label, p, labelZ) => {
     base.ObjectStates.push(label3d(label, (A.xMin + A.xMax) / 2, labelZ, { r: 0.9, g: 0.85, b: 0.7 }, ST.labelSize || 72));
     base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: label, Description: "Mirrored City station. The buttons are created by the table script.", GMNotes: note,
-      Transform: { posX: p.x, posY: B.surfaceY + 0.15, posZ: p.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 1, scaleY: 0.3, scaleZ: 1 },
+      Transform: { posX: p.x, posY: B.surfaceY + 0.3, posZ: p.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 1, scaleY: 0.3, scaleZ: 1 },
       ColorDiffuse: { r: 0.16, g: 0.2, b: 0.24 }, Locked: true, Grid: false, Snap: false, Tooltip: true });
   };
-  pad("MC_STATION_IMPORT", ST.import.label, ST.import.pad, A.zMax - 2.5);
-  pad("MC_STATION_CARDS",  ST.cards.label,  ST.cards.pad,  midZ - 2.5);
+  // One station fills the area; two split it north / south.
+  const stations = [["MC_STATION_IMPORT", ST.import], ["MC_STATION_CARDS", ST.cards]].filter(([, s]) => s);
+  const d = (A.zMax - A.zMin) / stations.length;
+  stations.forEach(([note, s], i) => {
+    const zMax = A.zMax - i * d, zMin = zMax - d;
+    for (const b of areaBars(zMin, zMax)){ b.ColorDiffuse = dim; b.Nickname = "Station edge"; b.Description = ""; b.GMNotes = "MC_STATION_EDGE"; base.ObjectStates.push(b); }
+    pad(note, s.label, s.pad, zMax - 2.5);
+  });
+}
+
+// Table furniture scale (room for seats and card rows beyond the board)
+if (B.tableScale){
+  const names = new Set(B.tableScale.names || []);
+  for (const o of base.ObjectStates){
+    if (names.has((o.Nickname || "").trim())){
+      const k = B.tableScale.scale, t = o.Transform;
+      t.scaleX *= k; t.scaleY *= k; t.scaleZ *= k;
+      // The table mesh's origin is far below its top; keep the top at the board surface after scaling.
+      t.posY = B.surfaceY - (B.surfaceY - t.posY) * k;
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -296,10 +314,6 @@ function injectLine(src, name, value){
   return src.replace(re, () => value);
 }
 let lua = injectLine(luaSrc, "BOARD", `BOARD = { centerX = ${B.centerX}, centerZ = ${B.centerZ}, surfaceY = ${B.surfaceY}, widthX = ${F.widthX}, depthZ = ${F.depthZ} }`);
-if (ST && ST.cards && ST.cards.spawn){
-  const c = ST.cards.spawn;
-  lua = injectLine(lua, "CARD_SPAWN", `CARD_SPAWN = { x = ${c.x}, y = ${B.surfaceY + 1.5}, z = ${c.z}, stepX = ${c.stepX}, perRow = ${c.perRow}, stepZ = ${c.stepZ}, rotY = ${c.rotY || 0} }`);
-}
 lua = injectLine(lua, "MODEL_LIBRARY", libraryLua);
 {
   const SP = profile.spawn;
@@ -321,7 +335,7 @@ if (profile.lighting){
 if ("sky" in profile){ if (profile.sky) base.SkyURL = profile.sky; else delete base.SkyURL; }   // null = TTS default sky
 if ("music" in profile && !profile.music && base.MusicPlayer){ base.MusicPlayer.CurrentAudioURL = ""; base.MusicPlayer.CurrentAudioTitle = ""; }
 base.TabStates = { "0": { title: "Mirrored City", body:
-  `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9). Seats: Red south, Blue north.\n\n1. In the list builder press Export for TTS.\n2. Press Import Warband on the List Importer station (or the Mirrored City button, top right), paste, choose Import South or North.\n3. Card Creator station: New Stat Card spawns a blank card to fill in by hand.\n\nMiniatures are embedded in the table script. To swap one in-game, put a model in a bag, set the bag's GM Notes to the unit id (e.g. mc_captain) and press Rescan models.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
+  `Mirrored City table (${profile.base.title}).\n\nBattlefield frame: ${F.widthX}" x ${F.depthZ}" (rulebook p.9). Seats: Red south, Blue north.\n\n1. In the list builder press Export for TTS.\n2. Press Import Warband on the List Importer station (or the Mirrored City button, top right), paste, choose Import South or North.\n3. Cards land in the outlined CARDS zone on that side, models in the MODELS zone.\n\nMiniatures are embedded in the table script. To swap one in-game, put a model in a bag, set the bag's GM Notes to the unit id (e.g. mc_captain) and press Rescan models.\n\nSources: ${profile.base.title} (table and terrain), Ulthuan (miniatures).`,
   color: "Grey", visibleColor: { r: 0.5, g: 0.5, b: 0.5 }, id: 0 } };
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
