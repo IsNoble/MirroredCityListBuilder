@@ -2442,14 +2442,9 @@ function savePreview(){
 
 // Custom Name: update state and the name pill directly while typing. No full render(), so the
 // input keeps focus and caret and the mobile keyboard stays open.
-function bindCustomNameInput(inputEl, pillEl, getValue, setValue){
+function bindCustomNameInput(inputEl, syncTitle, getValue, setValue){
   if (!inputEl) return;
-  const sync = () => {
-    if (!pillEl) return;
-    const v = getValue() || "";
-    pillEl.textContent = v;
-    pillEl.style.display = v ? "" : "none";
-  };
+  const sync = () => { if (typeof syncTitle === "function") syncTitle(getValue() || ""); };
   inputEl.value = getValue() || "";
   sync();
   inputEl.addEventListener("input", () => { setValue(inputEl.value); sync(); savePreview(); });
@@ -2727,11 +2722,22 @@ function bindCardToggles(wrap, ui){
   if (c) c.addEventListener("click", () => { ui.collapsed = !ui.collapsed; render(); });
 }
 
-function setNamePill(wrap, name){
-  const pill = wrap.querySelector(".namePill");
-  if (!pill) return;
-  pill.textContent = name || "";
-  pill.style.display = name ? "" : "none";
+// Card title: bold text is the custom name, else the unit name, else the card-kind fallback.
+// The card kind is always a pill; the unit name moves into a pill once the model is renamed.
+function cardTitleHtml(kindLabel){
+  return `<span class="cardName"></span>
+          <span class="pill">${escapeHtml(kindLabel)}</span>
+          <span class="pill unitPill" style="display:none"></span>`;
+}
+function syncCardTitle(wrap, customName, unitName, fallback){
+  const nameEl = wrap.querySelector(".cardName");
+  const unitPill = wrap.querySelector(".unitPill");
+  const custom = (customName || "").trim();
+  if (nameEl) nameEl.textContent = custom || unitName || fallback;
+  if (unitPill){
+    unitPill.textContent = unitName || "";
+    unitPill.style.display = (custom && unitName) ? "" : "none";
+  }
 }
 
 function summaryChips(items){
@@ -2797,8 +2803,10 @@ function renderLeaderStatCard(){
   const ui = cardUi(leaderCard);
   const lc = leaderCost();
 
+  const leaderName = leaderUnit ? leaderUnit.name : "";
+  const syncTitle = v => syncCardTitle(wrap, v, leaderName, "LEADER Card");
   const titlePills = ui.collapsed
-    ? `<span class="pill">${leaderUnit ? escapeHtml(leaderUnit.name) : "—"}</span>`
+    ? ""
     : `${unitTagPills(state.leaderUnitId)}
        <span class="pill">Counts as 1 Card</span>
        <span class="pill">Cost: ${lc.sum}${lc.hasVariable ? "+" : ""} <span class="lumIcon">$</span></span>`;
@@ -2807,14 +2815,13 @@ function renderLeaderStatCard(){
     wrap.innerHTML = `
       <div class="card-top">
         <div class="card-title">
-          <span>LEADER Stat Card</span>
-          <span class="pill good namePill" style="display:none"></span>
+          ${cardTitleHtml("Leader")}
           ${titlePills}
         </div>
         ${cardToggleButtonsHtml(ui)}
       </div>
       ${ui.collapsed ? "" : renderCardSummary(leaderCard)}`;
-    setNamePill(wrap, state.leaderCustomName);
+    syncTitle(state.leaderCustomName);
     bindCardToggles(wrap, ui);
     return wrap;
   }
@@ -2822,8 +2829,7 @@ function renderLeaderStatCard(){
   wrap.innerHTML = `
     <div class="card-top">
       <div class="card-title">
-        <span>LEADER Stat Card</span>
-        <span class="pill good namePill" style="display:none"></span>
+        ${cardTitleHtml("Leader")}
         ${titlePills}
       </div>
       ${cardToggleButtonsHtml(ui)}
@@ -2853,7 +2859,7 @@ function renderLeaderStatCard(){
   renderEquipmentSlotsUI(host, leaderCard, "LEADER");
 
   bindCardToggles(wrap, ui);
-  bindCustomNameInput(wrap.querySelector("#leaderCustomName"), wrap.querySelector(".namePill"),
+  bindCustomNameInput(wrap.querySelector("#leaderCustomName"), syncTitle,
     () => state.leaderCustomName, v => { state.leaderCustomName = v; });
 
   renderMagicUI(wrap.querySelector("#leaderMagicRow"), leaderCard);
@@ -2883,8 +2889,10 @@ function renderStatCard(card, warbandBase){
   const cc = cardCost(card);
   const ui = cardUi(card);
 
+  const typeLabel = kindLabel === "HERO" ? "Hero" : (kindLabel === "SELLSWORD" ? "Sellsword" : "Henchmen");
+  const syncTitle = v => syncCardTitle(wrap, v, unit ? unit.name : "", `${kindLabel} Card`);
   const titlePills = ui.collapsed
-    ? `<span class="pill">${unit ? escapeHtml(unit.name) : "No unit"}</span>`
+    ? ""
     : `${card.unitId ? unitTagPills(card.unitId) : ""}
        <span class="pill">Cost: ${cc.sum}${cc.hasVariable ? "+" : ""} <span class="lumIcon">$</span></span>
        ${unit?.limit ? `<span class="pill">${unit.limit}</span>` : ""}`;
@@ -2894,14 +2902,13 @@ function renderStatCard(card, warbandBase){
     wrap.innerHTML = `
       <div class="card-top">
         <div class="card-title">
-          <span>${kindLabel} Card</span>
-          <span class="pill good namePill" style="display:none"></span>
+          ${cardTitleHtml(typeLabel)}
           ${titlePills}
         </div>
         ${cardToggleButtonsHtml(ui, removeBtn)}
       </div>
       ${ui.collapsed ? "" : renderCardSummary(card)}`;
-    setNamePill(wrap, card.customName);
+    syncTitle(card.customName);
     bindCardToggles(wrap, ui);
     wrap.querySelector(`#rm_${card.id}`).addEventListener("click", () => {
       state.cards = state.cards.filter(c => c.id !== card.id);
@@ -2913,8 +2920,7 @@ function renderStatCard(card, warbandBase){
   wrap.innerHTML = `
     <div class="card-top">
       <div class="card-title">
-        <span>${kindLabel} Card</span>
-        <span class="pill good namePill" style="display:none"></span>
+        ${cardTitleHtml(typeLabel)}
         ${titlePills}
       </div>
       ${cardToggleButtonsHtml(ui, removeBtn)}
@@ -2957,7 +2963,7 @@ function renderStatCard(card, warbandBase){
   });
   bindCardToggles(wrap, ui);
 
-  bindCustomNameInput(wrap.querySelector(`#customName_${card.id}`), wrap.querySelector(".namePill"),
+  bindCustomNameInput(wrap.querySelector(`#customName_${card.id}`), syncTitle,
     () => card.customName, v => { card.customName = v; });
 
   renderDutyUI(wrap.querySelector(`#dutyCol_${card.id}`), wrap.querySelector(`#duty_${card.id}`), wrap.querySelector(`#dutyHelp_${card.id}`),
