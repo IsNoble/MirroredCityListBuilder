@@ -50,11 +50,11 @@ The rulebook (p.9) plays on a 44" by 30" battlefield, or 22" by 30" for small sc
 
 ## Using the table
 
-The table has two seats, Red on the south edge and Blue on the north, each with a **Sit here** button on its coloured bar, and the List Importer station in the free strip left of the board. Outlined drop zones on each side show where an imported warband's cards (outside the frame) and models (inside the frame) land. Measuring sticks of 12, 6, 3 and 1 inch lie in the strip right of the board; TTS's own ruler on the left toolbar measures any distance. The Kraken table is scaled up a quarter so all of this fits beyond the 72" x 48" board.
+The table has two seats, Red on the south edge and Blue on the north, each with a **Sit here** button on its coloured bar, and the List Importer station in the free strip left of the board. Each player has an outlined staging zone in their colour beyond their edge of the board: an imported warband's cards fill the rows nearest the board and its models the rows behind, and the player deploys from there. Measuring sticks of 12, 6, 3 and 1 inch lie in the strip right of the board; TTS's own ruler on the left toolbar measures any distance. The Kraken table is scaled up by half so all of this fits around the 72" x 48" board.
 
 1. In the list builder press **Export for TTS**. The roster JSON is now on the clipboard.
 2. Press **Import Warband** on the List Importer station (or the **Mirrored City** button, top right), paste into the box, press **Import South** or **Import North**.
-3. One Notecard per Stat Card appears just outside the battlefield frame on that side, with the full card text on it and a **Full** button that opens a readable panel. One miniature per model appears just inside the frame, named after its card, with the stat line and weapons as hover text.
+3. One Notecard per Stat Card appears in that side's staging zone, with the full card text on it and a **Full** button that opens a readable panel. One miniature per model appears in the rows behind the cards, named after its card, with the stat line and weapons as hover text.
 4. **Clear South / North** on the station (or **Clear All** in the panel) removes what the importer spawned and nothing else. Importing to a side clears it first.
 
 Positions come from `BOARD` and `SPAWN`, which the build injects from the profile's `board`, `battlefield` and `spawn` blocks.

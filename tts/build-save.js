@@ -238,20 +238,15 @@ for (const s of seats){
   const lbl = label3d(`${s.color.toUpperCase()} PLAYER`, s.x, s.z, seatColors[s.color] || { r: 0.9, g: 0.9, b: 0.9 }, 64);
   lbl.Transform.rotY = s.rotY; base.ObjectStates.push(lbl);
 
-  // Drop zones for this side: where an imported warband's cards (outside the frame) and models (inside) land.
-  const SP = profile.spawn, dir = Math.sign(s.z) || 1, hz = F.depthZ / 2, zoneColor = { r: 0.75, g: 0.65, b: 0.4 };
-  const cardsPerRow = Math.max(1, Math.floor(F.widthX / SP.cardStepX));
-  const cardW = (cardsPerRow - 1) * SP.cardStepX + 4.2, cardD = (SP.cardRows - 1) * SP.cardRowGap + 3.6;
-  const cardZ = B.centerZ + dir * (hz + SP.cardOffset + (SP.cardRows - 1) * SP.cardRowGap / 2);
-  const modelW = F.widthX - 2 * SP.modelInset + 2.2, modelD = (SP.modelRows - 1) * SP.modelRowGap + 2.4;
-  const modelZ = B.centerZ + dir * (hz - SP.modelInset - (SP.modelRows - 1) * SP.modelRowGap / 2);
-  const zone = (cx, cz, w, d, name) => {
-    const edges = [ bar(cx, cz - d / 2, w + th, th), bar(cx, cz + d / 2, w + th, th), bar(cx - w / 2, cz, th, d + th), bar(cx + w / 2, cz, th, d + th) ];
-    for (const e of edges){ e.ColorDiffuse = zoneColor; e.Nickname = name; e.Description = "Imported warbands appear here."; e.GMNotes = "MC_ZONE"; e.Transform.scaleY = 0.05; e.Transform.posY = B.surfaceY + 0.16; base.ObjectStates.push(e); }
-    const l = label3d(name, cx - w / 2 + 6, cz, zoneColor, 36); l.Transform.rotY = s.rotY; base.ObjectStates.push(l);
-  };
-  zone(B.centerX, cardZ, cardW, cardD, `${s.color.toUpperCase()} CARDS`);
-  zone(B.centerX, modelZ, modelW, modelD, `${s.color.toUpperCase()} MODELS`);
+  // Staging zone for this side: beyond the board edge, as wide as the board. Imported cards fill the
+  // rows nearest the board, models the rows behind them.
+  const SP = profile.spawn, dir = Math.sign(s.z) || 1, edge = B.depthZ / 2, zoneColor = seatColors[s.color] || { r: 0.75, g: 0.65, b: 0.4 };
+  const near = edge + 1.0;
+  const far  = edge + SP.modelOffset + (SP.modelRows - 1) * SP.modelRowGap + 1.6;
+  const cz = B.centerZ + dir * (near + far) / 2, d = far - near, w = B.widthX;
+  const edges = [ bar(B.centerX, cz - d / 2, w + th, th), bar(B.centerX, cz + d / 2, w + th, th), bar(B.centerX - w / 2, cz, th, d + th), bar(B.centerX + w / 2, cz, th, d + th) ];
+  for (const e of edges){ e.ColorDiffuse = zoneColor; e.Nickname = `${s.color} warband zone`; e.Description = `${s.color}'s imported warband appears here: cards nearest the board, models behind.`; e.GMNotes = "MC_ZONE"; e.Transform.scaleY = 0.05; e.Transform.posY = B.surfaceY + 0.16; base.ObjectStates.push(e); }
+  const l = label3d(`${s.color.toUpperCase()} WARBAND`, B.centerX - dir * (w / 2 - 7), B.centerZ + dir * (far - 1.6), zoneColor, 40); l.Transform.rotY = s.rotY; base.ObjectStates.push(l);
 }
 
 // ---------------------------------------------------------------------------
@@ -313,11 +308,11 @@ function injectLine(src, name, value){
   if (!re.test(src)) throw new Error(`Global.lua has no '${name} = { ... }' line to replace.`);
   return src.replace(re, () => value);
 }
-let lua = injectLine(luaSrc, "BOARD", `BOARD = { centerX = ${B.centerX}, centerZ = ${B.centerZ}, surfaceY = ${B.surfaceY}, widthX = ${F.widthX}, depthZ = ${F.depthZ} }`);
+let lua = injectLine(luaSrc, "BOARD", `BOARD = { centerX = ${B.centerX}, centerZ = ${B.centerZ}, surfaceY = ${B.surfaceY}, widthX = ${F.widthX}, depthZ = ${F.depthZ}, boardWidthX = ${B.widthX}, boardDepthZ = ${B.depthZ} }`);
 lua = injectLine(lua, "MODEL_LIBRARY", libraryLua);
 {
   const SP = profile.spawn;
-  lua = injectLine(lua, "SPAWN", `SPAWN = { cardStepX = ${SP.cardStepX}, cardRowGap = ${SP.cardRowGap}, cardOffset = ${SP.cardOffset}, modelStepX = ${SP.modelStepX}, modelRowGap = ${SP.modelRowGap}, modelInset = ${SP.modelInset} }`);
+  lua = injectLine(lua, "SPAWN", `SPAWN = { cardStepX = ${SP.cardStepX}, cardRowGap = ${SP.cardRowGap}, cardOffset = ${SP.cardOffset}, modelStepX = ${SP.modelStepX}, modelRowGap = ${SP.modelRowGap}, modelOffset = ${SP.modelOffset}, inset = ${SP.inset} }`);
 }
 
 base.SaveName = profile.saveName;

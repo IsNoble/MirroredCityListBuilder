@@ -37,30 +37,34 @@ CONFIG = {
 }
 
 -- Board geometry. build-save.js replaces this line from the map profile (tts/maps/<map>.json).
--- centerX/centerZ: middle of the battlefield frame; widthX/depthZ: frame size in inches (1 TTS unit = 1").
-BOARD = { centerX = 12.65, centerZ = 0, surfaceY = 1.0, widthX = 44, depthZ = 30 }
+-- centerX/centerZ: middle of the battlefield frame; widthX/depthZ: frame size in inches (1 TTS unit = 1");
+-- boardWidthX/boardDepthZ: the physical board the staging zones sit beyond.
+BOARD = { centerX = 12.65, centerZ = 0, surfaceY = 1.0, widthX = 44, depthZ = 30, boardWidthX = 72, boardDepthZ = 48 }
 
 -- unitId -> object JSON (string). build-save.js replaces this line; keep it on one line.
 MODEL_LIBRARY = {}
 
--- Spacing of imported cards and models relative to the frame edge. build-save.js replaces this line from the map profile.
-SPAWN = { cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 4.5, modelStepX = 2.3, modelRowGap = 2.6, modelInset = 2.0 }
+-- Spacing of imported cards and models, measured outward from the board edge into the player's staging zone.
+-- build-save.js replaces this line from the map profile.
+SPAWN = { cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 3.4, modelStepX = 2.3, modelRowGap = 2.6, modelOffset = 10.4, inset = 2.0 }
 
--- South = negative Z, North = positive Z. Cards outside the frame, models inside.
+-- South = negative Z, North = positive Z. Each side's zone lies beyond its board edge, as wide as the board:
+-- card rows nearest the board, model rows behind them, both stepping away from the board.
 function buildSides()
   local y = BOARD.surfaceY + 1.5
-  local hx, hz = BOARD.widthX / 2, BOARD.depthZ / 2
-  local cardsPerRow  = math.max(1, math.floor(BOARD.widthX / SPAWN.cardStepX))
-  local modelsPerRow = math.max(1, math.floor((BOARD.widthX - 2 * SPAWN.modelInset) / SPAWN.modelStepX))
+  local edge = BOARD.boardDepthZ / 2
+  local usable = BOARD.boardWidthX - 2 * SPAWN.inset
+  local cardsPerRow  = math.max(1, math.floor(usable / SPAWN.cardStepX))
+  local modelsPerRow = math.max(1, math.floor(usable / SPAWN.modelStepX))
   local cardSpan  = (cardsPerRow - 1) * SPAWN.cardStepX
   local modelSpan = (modelsPerRow - 1) * SPAWN.modelStepX
   CONFIG.sides = {
     south = { label = "South", rotY = 0,
-      cards  = { x = BOARD.centerX - cardSpan / 2,  y = y, z = BOARD.centerZ - hz - SPAWN.cardOffset, stepX = SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ = -SPAWN.cardRowGap },
-      models = { x = BOARD.centerX - modelSpan / 2, y = y, z = BOARD.centerZ - hz + SPAWN.modelInset, stepX = SPAWN.modelStepX, perRow = modelsPerRow, stepZ =  SPAWN.modelRowGap } },
+      cards  = { x = BOARD.centerX - cardSpan / 2,  y = y, z = BOARD.centerZ - edge - SPAWN.cardOffset,  stepX = SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ = -SPAWN.cardRowGap },
+      models = { x = BOARD.centerX - modelSpan / 2, y = y, z = BOARD.centerZ - edge - SPAWN.modelOffset, stepX = SPAWN.modelStepX, perRow = modelsPerRow, stepZ = -SPAWN.modelRowGap } },
     north = { label = "North", rotY = 180,
-      cards  = { x = BOARD.centerX + cardSpan / 2,  y = y, z = BOARD.centerZ + hz + SPAWN.cardOffset, stepX = -SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ =  SPAWN.cardRowGap },
-      models = { x = BOARD.centerX + modelSpan / 2, y = y, z = BOARD.centerZ + hz - SPAWN.modelInset, stepX = -SPAWN.modelStepX, perRow = modelsPerRow, stepZ = -SPAWN.modelRowGap } },
+      cards  = { x = BOARD.centerX + cardSpan / 2,  y = y, z = BOARD.centerZ + edge + SPAWN.cardOffset,  stepX = -SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ =  SPAWN.cardRowGap },
+      models = { x = BOARD.centerX + modelSpan / 2, y = y, z = BOARD.centerZ + edge + SPAWN.modelOffset, stepX = -SPAWN.modelStepX, perRow = modelsPerRow, stepZ =  SPAWN.modelRowGap } },
   }
 end
 
