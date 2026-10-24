@@ -78,7 +78,7 @@ function cleanModel(src, label){
   delete o.LuaScript; delete o.LuaScriptState; delete o.XmlUI; delete o.States; delete o.AttachedSnapPoints;
   delete o.ContainedObjects; delete o.GMNotes; delete o.Tags; delete o.AttachedDecals;
   o.GUID = guid(); o.Nickname = label; o.Description = ""; o.Locked = false;
-  o.MeasureMovement = true;   // show the ruler while a model is being moved, for every unit (the source mod is inconsistent)
+  (function mm(x){ x.MeasureMovement = true; for (const c of x.ChildObjects || []) mm(c); })(o);   // ruler while moving, for every unit (the source mod is inconsistent)
   const t = o.Transform || {};
   o.Transform = { posX: 0, posY: 2, posZ: 0, rotX: 0, rotY: 0, rotZ: 0, scaleX: t.scaleX ?? 1, scaleY: t.scaleY ?? 1, scaleZ: t.scaleZ ?? 1 };
   return o;
