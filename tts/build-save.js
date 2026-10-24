@@ -141,16 +141,37 @@ if (shelfBags.length) base.ObjectStates.push(label3d("Terrain library", TS.label
 // Ground texture: a Custom_Tile laid on the board under the terrain (2 x 2 units at scale 1)
 // ---------------------------------------------------------------------------
 const B = profile.board, F = profile.battlefield, G = profile.ground;
+
+// Width / height of a PNG or JPEG file, read from the header.
+function imageSize(file){
+  const b = fs.readFileSync(file);
+  if (b.slice(1, 4).toString() === "PNG") return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  if (b[0] === 0xFF && b[1] === 0xD8){
+    let i = 2;
+    while (i < b.length){
+      if (b[i] !== 0xFF) { i++; continue; }
+      const marker = b[i + 1];
+      if (marker >= 0xC0 && marker <= 0xCF && ![0xC4, 0xC8, 0xCC].includes(marker)) return { h: b.readUInt16BE(i + 5), w: b.readUInt16BE(i + 7) };
+      i += 2 + b.readUInt16BE(i + 2);
+    }
+  }
+  throw new Error(`Cannot read image size of ${file}`);
+}
+
+let groundAspect = G && G.imageAspect;
 if (G && !G.imageUrl && G.imageFile){
   const abs = path.resolve(here, G.imageFile);
   if (!fs.existsSync(abs)) throw new Error(`ground.imageFile not found: ${abs}`);
   G.imageUrl = "file:///" + abs.replace(/\\/g, "/");
+  const sz = imageSize(abs); groundAspect = sz.w / sz.h;
 }
 if (G && G.imageUrl){
+  if (!groundAspect) throw new Error("ground.imageAspect (width / height) is required when the ground image is a remote URL.");
+  // A Custom_Tile is 2 units deep at scale 1; its width at scale 1 is 2 * image aspect.
   base.ObjectStates.push({
     GUID: guid(), Name: "Custom_Tile", Nickname: "Ground", Description: "", GMNotes: "MC_GROUND",
     Transform: { posX: B.centerX, posY: B.surfaceY + (G.thickness || 0.1) / 2 - 0.1, posZ: B.centerZ, rotX: 0, rotY: 0, rotZ: 0,
-                 scaleX: G.widthX / 2, scaleY: 1, scaleZ: G.depthZ / 2 },
+                 scaleX: G.widthX / (2 * groundAspect), scaleY: 1, scaleZ: G.depthZ / 2 },
     ColorDiffuse: { r: 1, g: 1, b: 1 }, Locked: true, Grid: false, Snap: false, Tooltip: false, IgnoreFoW: true,
     CustomImage: { ImageURL: G.imageUrl, ImageSecondaryURL: "", ImageScalar: 1.0, WidthScale: 0.0,
                    CustomTile: { Type: 0, Thickness: G.thickness || 0.1, Stackable: false, Stretch: true } },
