@@ -25,7 +25,7 @@ const ttsDir = path.join(os.homedir(), "Documents", "My Games", "Tabletop Simula
 const workshopDir = path.join(ttsDir, "Mods", "Workshop");
 const savesDir = path.join(ttsDir, "Saves");
 const SAVE_NAME = "Mirrored City - Merchant Quarter";
-let outPath = path.join(savesDir, SAVE_NAME + ".json");
+let outPath = path.join(savesDir, "MirroredCity", SAVE_NAME + ".json");
 const argv = process.argv.slice(2);
 const oi = argv.indexOf("--out"); if (oi >= 0) outPath = argv[oi + 1];
 
@@ -85,7 +85,63 @@ function cleanModel(src, label){
 }
 
 // ---------------------------------------------------------------------------
-// Shelf layout: one row per faction, south of the table, below the rulebook PDFs.
+// Prune the Mordheim kit. Keep: the table furniture, every terrain piece placed on
+// the playing area, the dice, and the terrain / effects bags (moved to a shelf
+// north of the table and stripped of the setup-kit script). Everything else in the
+// base save (rulebooks, warband sheets, scenarios, counters, templates, setup
+// instructions, hand and deployment zones) is dropped.
+// ---------------------------------------------------------------------------
+const textTemplate = JSON.parse(JSON.stringify(base.ObjectStates.find(o => o.Name === "3DText") || { Name: "3DText", Text: {} }));
+const PLAY = { xMin: -22, xMax: 48, zMin: -26, zMax: 27 };   // the board plus a little spill-over
+const TABLE_NAMES = new Set(["Board", "The Kraken Table", "Table Extension", "Extend", "Board Cabinet", "Board Cabinet (Drawn)", "Fan"]);
+const KEEP_BAGS = {   // GUID in the Merchant Quarter save -> label on our terrain shelf
+  "4262d3": "Ruins library",
+  "fc34bd": "Example table layout",
+  "d32f06": "Terrain and details",
+  "2c7a37": "Buildings, bridges, river",
+  "fbf5fd": "Houses 1",
+  "e49912": "Houses 2",
+  "926237": "Houses 3",
+  "2fcbe3": "Houses 4",
+  "1af9ec": "Terrain extra",
+  "0d3390": "Effects: all",
+  "c32ef9": "Effects: fog",
+  "af970b": "Effects: clouds",
+  "6bf9de": "Effects: rain",
+  "1cf45c": "Effects: glow lights",
+  "fd0689": "Effects: water sound",
+};
+const KEEP_GUIDS = new Set(["8a28fc", "c43435"]);   // the two D6 dispensers
+
+const TERRAIN_SHELF = { x0: -62, stepX: 4.0, z: 48, y: 1.5, labelX: -70 };
+const kept = [], shelfBags = [];
+for (const o of base.ObjectStates){
+  const t = o.Transform, nick = (o.Nickname || "").trim();
+  if (KEEP_GUIDS.has(o.GUID)) { kept.push(o); continue; }
+  if (KEEP_BAGS[o.GUID]) { shelfBags.push(o); continue; }
+  if (TABLE_NAMES.has(nick)) { kept.push(o); continue; }
+  const terrainType = o.Name === "Custom_Model" || o.Name === "Custom_Assetbundle";
+  const onBoard = t.posX >= PLAY.xMin && t.posX <= PLAY.xMax && t.posZ >= PLAY.zMin && t.posZ <= PLAY.zMax && t.posY > -30;
+  if (terrainType && onBoard && nick !== "Mordheim") { kept.push(o); continue; }
+}
+shelfBags.forEach((o, i) => {
+  delete o.LuaScript; delete o.LuaScriptState; delete o.XmlUI;
+  o.Nickname = KEEP_BAGS[o.GUID];
+  o.Description = "Terrain library. Drag pieces out onto the table; put them back when done.";
+  o.GMNotes = "MC_TERRAIN";
+  o.Locked = true;
+  o.Transform = { posX: TERRAIN_SHELF.x0 + i * TERRAIN_SHELF.stepX, posY: TERRAIN_SHELF.y, posZ: TERRAIN_SHELF.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 0.8, scaleY: 0.8, scaleZ: 0.8 };
+  kept.push(o);
+});
+const prunedCount = base.ObjectStates.length - kept.length;
+base.ObjectStates = kept;
+if (base.Hands) base.Hands.Enable = false;
+base.TabStates = { "0": { title: "Mirrored City", body:
+  "Mirrored City table.\n\n1. In the list builder press Export for TTS.\n2. Press the Mirrored City button (top right), paste, choose Import South or North.\n3. Model library: shelf south of the table, one bag per unit. Terrain library: shelf north of the table.\n\nSources: Merchant Quarter (table and terrain), Ulthuan (miniatures).",
+  color: "Grey", visibleColor: { r: 0.5, g: 0.5, b: 0.5 }, id: 0 } };
+
+// ---------------------------------------------------------------------------
+// Shelf layout: one row per faction, south of the table.
 // ---------------------------------------------------------------------------
 const SHELF = { x0: -62, stepX: 3.6, z0: -48, stepZ: -4.2, y: 1.5, labelX: -70 };
 const factionOrder = Object.keys(map.factions);
@@ -93,15 +149,16 @@ const factionOrder = Object.keys(map.factions);
 // Remove any shelf from a previous build so the script is rerunnable on its own output too.
 base.ObjectStates = base.ObjectStates.filter(o => !((o.Tags || []).includes(LIBRARY_TAG) || (o.GMNotes || "").startsWith("MC_SHELF")));
 
-const textTemplate = base.ObjectStates.find(o => o.Name === "3DText");
 function label3d(text, x, z, color){
-  const o = textTemplate ? JSON.parse(JSON.stringify(textTemplate)) : { Name: "3DText", Text: {} };
+  const o = JSON.parse(JSON.stringify(textTemplate));
   o.GUID = guid(); o.Nickname = ""; o.Description = ""; o.GMNotes = "MC_SHELF_LABEL"; o.Locked = true;
   delete o.LuaScript; delete o.LuaScriptState; delete o.XmlUI;
   o.Transform = { posX: x, posY: SHELF.y + 0.1, posZ: z, rotX: 90, rotY: 0, rotZ: 0, scaleX: 1, scaleY: 1, scaleZ: 1 };
   o.Text = { Text: text, colorstate: color, fontSize: 48 };
   return o;
 }
+
+base.ObjectStates.push(label3d("Terrain library", TERRAIN_SHELF.labelX, TERRAIN_SHELF.z, { r: 0.9, g: 0.85, b: 0.7 }));
 
 const report = [];
 let bagCount = 0, filled = 0;
@@ -151,4 +208,5 @@ const thumb = path.join(workshopDir, map.sources.merchant.workshopId + ".png");
 if (fs.existsSync(thumb)) fs.copyFileSync(thumb, outPath.replace(/\.json$/i, ".png"));
 
 console.log(report.join("\n"));
-console.log(`\n${bagCount} bags on the shelf, ${filled} with a model. Save written to:\n${outPath}\n${(fs.statSync(outPath).size / 1048576).toFixed(1)} MB`);
+console.log(`\nDropped ${prunedCount} Mordheim objects from the base map; kept ${kept.length - shelfBags.length} table/terrain objects and ${shelfBags.length} terrain bags.`);
+console.log(`${bagCount} bags on the model shelf, ${filled} with a model. Save written to:\n${outPath}\n${(fs.statSync(outPath).size / 1048576).toFixed(1)} MB`);

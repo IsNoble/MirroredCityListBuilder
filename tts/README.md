@@ -20,9 +20,11 @@ There is no Node on this machine, so VS Code's Electron is used as Node:
 ELECTRON_RUN_AS_NODE=1 "C:/Users/<you>/AppData/Local/Programs/Microsoft VS Code/Code.exe" tts/build-save.js
 ```
 
-Output: `Documents\My Games\Tabletop Simulator\Saves\Mirrored City - Merchant Quarter.json` plus a thumbnail. Load it from Games, Save & Load. The script prints one line per unit; `!!` marks a bag that stayed empty because the model name was not found.
+Output: `Documents\My Games\Tabletop Simulator\Saves\MirroredCity\Mirrored City - Merchant Quarter.json` plus a thumbnail. Load it from Games, Save & Load. The script prints one line per unit; `!!` marks a bag that stayed empty because the model name was not found.
 
-Rerun after any change to `model-map.json`, `Global.lua` or `Global.xml`. The shelf is rebuilt each time; everything else in the base map is untouched. Pass `--out <path>` to write somewhere else.
+Rerun after any change to `model-map.json`, `Global.lua` or `Global.xml`. Pass `--out <path>` to write somewhere else.
+
+What survives from the Merchant Quarter map is decided in the **Prune** section of `build-save.js`: the table furniture, every terrain piece on the playing area, the two dice dispensers, and the terrain and effects bags (re-labelled and parked on a shelf north of the table). Rulebooks, warband sheets, scenarios, counters, templates, hand zones, deployment markers and the bilingual setup instructions are dropped. To keep something else, add its GUID to `KEEP_GUIDS` or `KEEP_BAGS`.
 
 ## Using the table
 
