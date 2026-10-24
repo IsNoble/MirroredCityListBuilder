@@ -294,6 +294,7 @@ function spawnModel(modelData, label, tooltip, tint, pos, rotY, tags)
   local function finish(obj)
     obj.setName(label)
     obj.setDescription(tooltip)
+    obj.measure_movement = true   -- ruler while moving, for library models and fallback pawns alike
     for _, t in ipairs(tags) do obj.addTag(t) end
   end
   if modelData ~= nil then
