@@ -156,11 +156,13 @@ end
 -- ---------------------------------------------------------------------------
 -- Stations: physical buttons on the table
 -- ---------------------------------------------------------------------------
+-- Buttons on a 1 x 1 pad: width/height are in 1/1000 of a table unit. The pad is read from the
+-- south seat, the same way as the 3D text labels, hence the 180 degree rotation.
 function stationButton(obj, label, fn, dx, dz, width, tooltip)
   obj.createButton({
     label = label, click_function = fn, function_owner = Global,
-    position = { dx, 0.6, dz }, rotation = { 0, 0, 0 }, scale = { 1, 1, 1 },
-    width = width, height = 420, font_size = 180,
+    position = { -dx, 0.6, -dz }, rotation = { 0, 180, 0 }, scale = { 1, 1, 1 },
+    width = width, height = 1100, font_size = 380,
     color = { 0.17, 0.23, 0.29 }, font_color = { 0.94, 0.94, 0.94 }, tooltip = tooltip or "",
   })
 end
@@ -170,14 +172,14 @@ function setupStations()
     local note = obj.getGMNotes() or ""
     if note == "MC_STATION_IMPORT" then
       obj.clearButtons()
-      stationButton(obj, "Import Warband", "mc_openPanel", 0, -2.2, 2600, "Open the paste box for a roster from the list builder")
-      stationButton(obj, "Clear South",    "mc_clearSouth", -3.2, 0.8, 1500, "Remove everything imported on the south side")
-      stationButton(obj, "Clear North",    "mc_clearNorth",  3.2, 0.8, 1500, "Remove everything imported on the north side")
-      stationButton(obj, "Rescan models",  "mc_refreshLibrary", 0, 3.4, 2000, "Pick up override bags added in-game")
+      stationButton(obj, "Import Warband", "mc_openPanel", 0, -4.0, 11000, "Open the paste box for a roster from the list builder")
+      stationButton(obj, "Clear South",    "mc_clearSouth", -2.9, -1.0, 5200, "Remove everything imported on the south side")
+      stationButton(obj, "Clear North",    "mc_clearNorth",  2.9, -1.0, 5200, "Remove everything imported on the north side")
+      stationButton(obj, "Rescan models",  "mc_refreshLibrary", 0, 2.0, 11000, "Pick up override bags added in-game")
     elseif note == "MC_STATION_CARDS" then
       obj.clearButtons()
-      stationButton(obj, "New Stat Card",  "mc_newCard", 0, -2.2, 2600, "Spawn a blank Mirrored City Stat Card to fill in by hand")
-      stationButton(obj, "Clear blank cards", "mc_clearCustomCards", 0, 0.8, 2600, "Remove the cards made here")
+      stationButton(obj, "New Stat Card",  "mc_newCard", 0, -1.6, 11000, "Spawn a blank Mirrored City Stat Card to fill in by hand")
+      stationButton(obj, "Clear blank cards", "mc_clearCustomCards", 0, 1.6, 11000, "Remove the cards made here")
     end
   end
 end

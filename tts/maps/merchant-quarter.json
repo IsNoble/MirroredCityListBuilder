@@ -92,11 +92,12 @@
   },
 
   "stations": {
-    "_comment": "The free table area left of the board, cut in two: List Importer north, Card Creator south. Each half gets an outline, a label and a button pad (GM Notes MC_STATION_*).",
-    "area": { "xMin": -66, "xMax": -27, "zMin": -22, "zMax": 22 },
-    "import": { "label": "LIST IMPORTER", "pad": { "x": -46.5, "z": 12 } },
-    "cards":  { "label": "CARD CREATOR",  "pad": { "x": -46.5, "z": -14 },
-                "spawn": { "x": -62, "z": -4, "stepX": 4.8, "perRow": 7, "stepZ": -3.4, "rotY": 0 } }
+    "_comment": "The free table strip left of the board (table edge is near x -44), cut in two: List Importer north, Card Creator south. Each half gets an outline, a label and a button pad (GM Notes MC_STATION_*).",
+    "area": { "xMin": -43.5, "xMax": -26.5, "zMin": -23, "zMax": 23 },
+    "labelSize": 48,
+    "import": { "label": "LIST IMPORTER", "pad": { "x": -35, "z": 10 } },
+    "cards":  { "label": "CARD CREATOR",  "pad": { "x": -35, "z": -5 },
+                "spawn": { "x": -40, "z": -11, "stepX": 4.8, "perRow": 3, "stepZ": -3.6, "rotY": 0 } }
   },
 
   "shelves": {

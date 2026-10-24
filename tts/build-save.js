@@ -228,6 +228,14 @@ for (const s of seats){
   h.FogColor = s.color; h.FogHidePointers = false; h.FogReverseHiding = false; h.FogSeethrough = false;
   h.Transform = { posX: s.x, posY: B.surfaceY + 1.0, posZ: s.z, rotX: 0, rotY: s.rotY, rotZ: 0, scaleX: s.widthX, scaleY: 5, scaleZ: s.depthZ };
   base.ObjectStates.push(h);
+  // Visible seat: a coloured bar along the outer edge of the hand zone and a label, so the seat is obvious before anyone sits.
+  const seatColors = { Red: { r: 0.85, g: 0.2, b: 0.2 }, Blue: { r: 0.25, g: 0.45, b: 0.9 }, Green: { r: 0.3, g: 0.7, b: 0.3 }, Yellow: { r: 0.9, g: 0.8, b: 0.2 },
+                       White: { r: 0.9, g: 0.9, b: 0.9 }, Orange: { r: 0.95, g: 0.55, b: 0.15 }, Purple: { r: 0.6, g: 0.3, b: 0.8 }, Pink: { r: 0.95, g: 0.5, b: 0.75 } };
+  const outer = s.z + Math.sign(s.z) * (s.depthZ / 2 + 0.3);
+  const sb = bar(s.x, outer, s.widthX, 0.5); sb.ColorDiffuse = seatColors[s.color] || { r: 0.7, g: 0.7, b: 0.7 }; sb.Nickname = `${s.color} seat`; sb.Description = `${s.color} player's seat. Click the colour on the player list to sit here.`; sb.GMNotes = "MC_SEAT_BAR";
+  base.ObjectStates.push(sb);
+  const lbl = label3d(`${s.color.toUpperCase()} PLAYER`, s.x, s.z, seatColors[s.color] || { r: 0.9, g: 0.9, b: 0.9 }, 64);
+  lbl.Transform.rotY = s.rotY; base.ObjectStates.push(lbl);
 }
 
 // ---------------------------------------------------------------------------
@@ -242,7 +250,7 @@ if (ST){
   };
   for (const b of [...halfBars(midZ, A.zMax), ...halfBars(A.zMin, midZ)]){ b.ColorDiffuse = dim; b.Nickname = "Station edge"; b.Description = ""; b.GMNotes = "MC_STATION_EDGE"; base.ObjectStates.push(b); }
   const pad = (note, label, p, labelZ) => {
-    base.ObjectStates.push(label3d(label, (A.xMin + A.xMax) / 2, labelZ, { r: 0.9, g: 0.85, b: 0.7 }, 72));
+    base.ObjectStates.push(label3d(label, (A.xMin + A.xMax) / 2, labelZ, { r: 0.9, g: 0.85, b: 0.7 }, ST.labelSize || 72));
     base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: label, Description: "Mirrored City station. The buttons are created by the table script.", GMNotes: note,
       Transform: { posX: p.x, posY: B.surfaceY + 0.15, posZ: p.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 1, scaleY: 0.3, scaleZ: 1 },
       ColorDiffuse: { r: 0.16, g: 0.2, b: 0.24 }, Locked: true, Grid: false, Snap: false, Tooltip: true });
