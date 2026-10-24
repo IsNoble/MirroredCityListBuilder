@@ -2500,22 +2500,35 @@ function magicCostLabel(e){
   return `Power ${e.powerCost}${emp}`;
 }
 
+// Spells / Prayers render as a box in the equipment grid (see placeMagicBox).
 function magicRowHtml(id){
-  return `<div class="row" id="${id}">
-    <div>
-      <label>Spells / Prayers</label>
-      <div class="slotAddRow">
-        <div>
-          <select></select>
-          <div class="tiny muted magicHelp"></div>
-        </div>
-        <div class="btnRow" style="margin-top:0">
-          <button class="noPrint magicRoll" type="button" title="Generate the additional Spell/Prayer by rolling a D6">Roll D6</button>
-        </div>
-      </div>
-      <div class="equipList"></div>
+  return `<div class="slotBox magicBox" id="${id}">
+    <div class="slotHdr">
+      <strong class="magicTitle">Spells / Prayers</strong>
+      <span class="magicCount"></span>
     </div>
+    <div class="tiny muted magicHelp"></div>
+    <div class="slotAddRow">
+      <div>
+        <label>Add</label>
+        <select></select>
+      </div>
+      <button class="noPrint magicRoll" type="button" title="Generate the additional Spell/Prayer by rolling a D6">Roll D6</button>
+    </div>
+    <div class="equipList"></div>
   </div>`;
+}
+
+// Move the Spells / Prayers box into the card's equipment grid so it sits beside the gear boxes.
+function placeMagicBox(rowEl, host){
+  if (!rowEl || !host || rowEl.style.display === "none") return;
+  let grid = host.querySelector(".slotGrid");
+  if (!grid){
+    grid = document.createElement("div");
+    grid.className = "slotGrid";
+    host.appendChild(grid);
+  }
+  grid.appendChild(rowEl);
 }
 
 function quirkRowHtml(id){
@@ -2547,13 +2560,15 @@ function renderMagicUI(rowEl, cardLike){
 
   const ids = ensureMagicIds(cardLike);
   const singular = data.type === "PRAYER" ? "Prayer" : "Spell";
-  const label = rowEl.querySelector("label");
+  const label = rowEl.querySelector(".magicTitle");
+  const countEl = rowEl.querySelector(".magicCount");
   const sel = rowEl.querySelector("select");
   const help = rowEl.querySelector(".magicHelp");
   const rollBtn = rowEl.querySelector(".magicRoll");
   const list = rowEl.querySelector(".equipList");
 
   if (label) label.textContent = `${data.label} — ${data.listName}`;
+  if (countEl) countEl.textContent = `${(data.signature ? 1 : 0) + ids.length} known`;
 
   sel.innerHTML = "";
   const opt0 = document.createElement("option");
@@ -2863,6 +2878,7 @@ function renderLeaderStatCard(){
     () => state.leaderCustomName, v => { state.leaderCustomName = v; });
 
   renderMagicUI(wrap.querySelector("#leaderMagicRow"), leaderCard);
+  placeMagicBox(wrap.querySelector("#leaderMagicRow"), host);
 
   renderDutyUI(wrap.querySelector("#leaderDutyCol"), wrap.querySelector("#leaderDutySel"), wrap.querySelector("#leaderDutyHelp"),
     state.leaderUnitId, state.leaderDutyId || "", "LEADER", v => { state.leaderDutyId = v; });
@@ -3034,6 +3050,7 @@ function renderStatCard(card, warbandBase){
 
   const host = wrap.querySelector(`#equipHost_${card.id}`);
   renderEquipmentSlotsUI(host, card, card.kind);
+  placeMagicBox(wrap.querySelector(`#magicRow_${card.id}`), host);
 
   return wrap;
 }

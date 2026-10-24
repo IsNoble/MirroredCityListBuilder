@@ -5,6 +5,7 @@
 - Dropdowns add on selection: picking a weapon, armor piece, equipment item, Spell/Prayer or Quirk adds it immediately. The Add buttons are gone; Roll D6 / Roll 2D6 remain.
 - Each card has a **View / Edit** toggle (stats, tags, Duty, Quirks, Spells and gear with no controls) and a **Collapse / Expand** toggle (card type, custom name and unit only). The Leader card has both as well. The chosen view is saved with the roster.
 - Card titles: the bold title is the custom name, otherwise the unit name, otherwise "HERO Card" / "HENCHMEN Card" / "LEADER Card". The card type (Leader, Hero, Henchmen, Sellsword) and the unit name are always shown as pills once a unit is picked.
+- Spells and Prayers are their own box in the equipment grid (beside Weapons, Armor and Equipment) instead of a row above the Unit selector. The box header shows the list name and how many entries the model knows.
 
 ## 2026-10-24 — Tabletop Simulator export
 
