@@ -22,10 +22,8 @@ CONFIG = {
   spawnedTag = "MC_SPAWNED",   -- everything the importer creates carries this tag
   customTag  = "MC_CUSTOM_CARD",
 
-  -- Filled in by buildSides() from BOARD: card rows just outside the battlefield frame, model rows just inside it.
+  -- Filled in by buildSides() from BOARD and SPAWN: card rows just outside the battlefield frame, model rows just inside it.
   sides = {},
-  cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 4.5,   -- cards start this far outside the frame edge
-  modelStepX = 2.3, modelRowGap = 2.6, modelInset = 2.0, -- models start this far inside the frame edge
 
   cardScale = { x = 1.0, y = 1.0, z = 1.0 },
   pawnScale = { x = 0.8, y = 0.8, z = 0.8 },
@@ -49,21 +47,24 @@ CARD_SPAWN = { x = -62, y = 2.5, z = -6, stepX = 4.8, perRow = 8, stepZ = -3.4, 
 -- unitId -> object JSON (string). build-save.js replaces this line; keep it on one line.
 MODEL_LIBRARY = {}
 
+-- Spacing of imported cards and models relative to the frame edge. build-save.js replaces this line from the map profile.
+SPAWN = { cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 4.5, modelStepX = 2.3, modelRowGap = 2.6, modelInset = 2.0 }
+
 -- South = negative Z, North = positive Z. Cards outside the frame, models inside.
 function buildSides()
   local y = BOARD.surfaceY + 1.5
   local hx, hz = BOARD.widthX / 2, BOARD.depthZ / 2
-  local cardsPerRow  = math.max(1, math.floor(BOARD.widthX / CONFIG.cardStepX))
-  local modelsPerRow = math.max(1, math.floor((BOARD.widthX - 2 * CONFIG.modelInset) / CONFIG.modelStepX))
-  local cardSpan  = (cardsPerRow - 1) * CONFIG.cardStepX
-  local modelSpan = (modelsPerRow - 1) * CONFIG.modelStepX
+  local cardsPerRow  = math.max(1, math.floor(BOARD.widthX / SPAWN.cardStepX))
+  local modelsPerRow = math.max(1, math.floor((BOARD.widthX - 2 * SPAWN.modelInset) / SPAWN.modelStepX))
+  local cardSpan  = (cardsPerRow - 1) * SPAWN.cardStepX
+  local modelSpan = (modelsPerRow - 1) * SPAWN.modelStepX
   CONFIG.sides = {
     south = { label = "South", rotY = 0,
-      cards  = { x = BOARD.centerX - cardSpan / 2,  y = y, z = BOARD.centerZ - hz - CONFIG.cardOffset, stepX = CONFIG.cardStepX,  perRow = cardsPerRow,  stepZ = -CONFIG.cardRowGap },
-      models = { x = BOARD.centerX - modelSpan / 2, y = y, z = BOARD.centerZ - hz + CONFIG.modelInset, stepX = CONFIG.modelStepX, perRow = modelsPerRow, stepZ =  CONFIG.modelRowGap } },
+      cards  = { x = BOARD.centerX - cardSpan / 2,  y = y, z = BOARD.centerZ - hz - SPAWN.cardOffset, stepX = SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ = -SPAWN.cardRowGap },
+      models = { x = BOARD.centerX - modelSpan / 2, y = y, z = BOARD.centerZ - hz + SPAWN.modelInset, stepX = SPAWN.modelStepX, perRow = modelsPerRow, stepZ =  SPAWN.modelRowGap } },
     north = { label = "North", rotY = 180,
-      cards  = { x = BOARD.centerX + cardSpan / 2,  y = y, z = BOARD.centerZ + hz + CONFIG.cardOffset, stepX = -CONFIG.cardStepX,  perRow = cardsPerRow,  stepZ =  CONFIG.cardRowGap },
-      models = { x = BOARD.centerX + modelSpan / 2, y = y, z = BOARD.centerZ + hz - CONFIG.modelInset, stepX = -CONFIG.modelStepX, perRow = modelsPerRow, stepZ = -CONFIG.modelRowGap } },
+      cards  = { x = BOARD.centerX + cardSpan / 2,  y = y, z = BOARD.centerZ + hz + SPAWN.cardOffset, stepX = -SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ =  SPAWN.cardRowGap },
+      models = { x = BOARD.centerX + modelSpan / 2, y = y, z = BOARD.centerZ + hz - SPAWN.modelInset, stepX = -SPAWN.modelStepX, perRow = modelsPerRow, stepZ = -SPAWN.modelRowGap } },
   }
 end
 
@@ -167,10 +168,31 @@ function stationButton(obj, label, fn, dx, dz, width, tooltip)
   })
 end
 
+-- Seat bars (GM Notes "MC_SEAT_BAR:<Color>") get a Sit button that moves the clicking player to that colour.
+function seatButton(obj, color)
+  local fn = "mc_sit_" .. color
+  _G[fn] = function(_, playerColor)
+    local p = Player[playerColor]
+    if p == nil then return end
+    if playerColor == color then broadcastToColor("You are already " .. color .. ".", playerColor, {1, 1, 0.7}); return end
+    if Player[color].seated then broadcastToColor(color .. " is taken by " .. tostring(Player[color].steam_name) .. ".", playerColor, {1, 0.7, 0.7}); return end
+    p.changeColor(color)
+  end
+  obj.clearButtons()
+  obj.createButton({
+    label = "Sit here as " .. color, click_function = fn, function_owner = Global,
+    position = { 0, 1.5, 0 }, rotation = { 0, 0, 0 }, scale = { 1 / obj.getScale().x, 1, 1 / obj.getScale().z },
+    width = 9000, height = 1300, font_size = 420,
+    color = { 0.1, 0.1, 0.1 }, font_color = { 1, 1, 1 }, tooltip = "Take the " .. color .. " seat",
+  })
+end
+
 function setupStations()
   for _, obj in ipairs(getAllObjects()) do
     local note = obj.getGMNotes() or ""
-    if note == "MC_STATION_IMPORT" then
+    if note:sub(1, 12) == "MC_SEAT_BAR:" then
+      seatButton(obj, note:sub(13))
+    elseif note == "MC_STATION_IMPORT" then
       obj.clearButtons()
       stationButton(obj, "Import Warband", "mc_openPanel", 0, -4.0, 11000, "Open the paste box for a roster from the list builder")
       stationButton(obj, "Clear South",    "mc_clearSouth", -2.9, -1.0, 5200, "Remove everything imported on the south side")

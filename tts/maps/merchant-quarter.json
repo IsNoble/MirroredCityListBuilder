@@ -83,6 +83,18 @@
     }
   },
 
+  "spawn": {
+    "_comment": "Where imported Stat Cards and models land, relative to the battlefield frame edge on each side. Cards outside the frame, models inside. Injected into Global.lua as SPAWN; the build also draws the drop zones from it.",
+    "cardStepX": 4.8, "cardRowGap": 3.4, "cardOffset": 4.5,
+    "modelStepX": 2.3, "modelRowGap": 2.6, "modelInset": 2.0,
+    "cardRows": 2, "modelRows": 2
+  },
+
+  "tools": {
+    "_comment": "Measuring sticks: plain unlocked blocks of exact length in inches, laid in the free strip right of the board. TTS's own ruler (toolbar, or hold a model and press R) measures any distance.",
+    "measuringSticks": { "x": 50.5, "stepX": 2.2, "z": 0, "lengths": [12, 6, 3, 1], "rotY": 90 }
+  },
+
   "seats": {
     "_comment": "Player hand zones along the long table edges. widthX / depthZ in inches.",
     "list": [

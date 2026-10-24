@@ -50,7 +50,7 @@ The rulebook (p.9) plays on a 44" by 30" battlefield, or 22" by 30" for small sc
 
 ## Using the table
 
-The table has two seats, Red on the south edge and Blue on the north, and two stations in the free area left of the board.
+The table has two seats, Red on the south edge and Blue on the north, each with a **Sit here** button on its coloured bar, and two stations in the free area left of the board. Outlined drop zones on each side show where an imported warband's cards (outside the frame) and models (inside the frame) land. Measuring sticks of 12, 6, 3 and 1 inch lie in the strip right of the board; TTS's own ruler on the left toolbar measures any distance.
 
 1. In the list builder press **Export for TTS**. The roster JSON is now on the clipboard.
 2. Press **Import Warband** on the List Importer station (or the **Mirrored City** button, top right), paste into the box, press **Import South** or **Import North**.

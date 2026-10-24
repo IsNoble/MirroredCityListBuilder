@@ -232,10 +232,38 @@ for (const s of seats){
   const seatColors = { Red: { r: 0.85, g: 0.2, b: 0.2 }, Blue: { r: 0.25, g: 0.45, b: 0.9 }, Green: { r: 0.3, g: 0.7, b: 0.3 }, Yellow: { r: 0.9, g: 0.8, b: 0.2 },
                        White: { r: 0.9, g: 0.9, b: 0.9 }, Orange: { r: 0.95, g: 0.55, b: 0.15 }, Purple: { r: 0.6, g: 0.3, b: 0.8 }, Pink: { r: 0.95, g: 0.5, b: 0.75 } };
   const outer = s.z + Math.sign(s.z) * (s.depthZ / 2 + 0.3);
-  const sb = bar(s.x, outer, s.widthX, 0.5); sb.ColorDiffuse = seatColors[s.color] || { r: 0.7, g: 0.7, b: 0.7 }; sb.Nickname = `${s.color} seat`; sb.Description = `${s.color} player's seat. Click the colour on the player list to sit here.`; sb.GMNotes = "MC_SEAT_BAR";
+  const sb = bar(s.x, outer, s.widthX, 0.5); sb.ColorDiffuse = seatColors[s.color] || { r: 0.7, g: 0.7, b: 0.7 }; sb.Nickname = `${s.color} seat`; sb.Description = `${s.color} player's seat. Press the Sit button, or click the colour on the player list.`; sb.GMNotes = "MC_SEAT_BAR:" + s.color;
+  sb.Transform.rotY = s.rotY; sb.Transform.scaleY = 0.3;
   base.ObjectStates.push(sb);
   const lbl = label3d(`${s.color.toUpperCase()} PLAYER`, s.x, s.z, seatColors[s.color] || { r: 0.9, g: 0.9, b: 0.9 }, 64);
   lbl.Transform.rotY = s.rotY; base.ObjectStates.push(lbl);
+
+  // Drop zones for this side: where an imported warband's cards (outside the frame) and models (inside) land.
+  const SP = profile.spawn, dir = Math.sign(s.z) || 1, hz = F.depthZ / 2, zoneColor = { r: 0.75, g: 0.65, b: 0.4 };
+  const cardsPerRow = Math.max(1, Math.floor(F.widthX / SP.cardStepX));
+  const cardW = (cardsPerRow - 1) * SP.cardStepX + 4.2, cardD = (SP.cardRows - 1) * SP.cardRowGap + 3.6;
+  const cardZ = B.centerZ + dir * (hz + SP.cardOffset + (SP.cardRows - 1) * SP.cardRowGap / 2);
+  const modelW = F.widthX - 2 * SP.modelInset + 2.2, modelD = (SP.modelRows - 1) * SP.modelRowGap + 2.4;
+  const modelZ = B.centerZ + dir * (hz - SP.modelInset - (SP.modelRows - 1) * SP.modelRowGap / 2);
+  const zone = (cx, cz, w, d, name) => {
+    const edges = [ bar(cx, cz - d / 2, w + th, th), bar(cx, cz + d / 2, w + th, th), bar(cx - w / 2, cz, th, d + th), bar(cx + w / 2, cz, th, d + th) ];
+    for (const e of edges){ e.ColorDiffuse = zoneColor; e.Nickname = name; e.Description = "Imported warbands appear here."; e.GMNotes = "MC_ZONE"; e.Transform.scaleY = 0.04; base.ObjectStates.push(e); }
+    const l = label3d(name, cx - w / 2 + 6, cz, zoneColor, 36); l.Transform.rotY = s.rotY; base.ObjectStates.push(l);
+  };
+  zone(B.centerX, cardZ, cardW, cardD, `${s.color.toUpperCase()} CARDS`);
+  zone(B.centerX, modelZ, modelW, modelD, `${s.color.toUpperCase()} MODELS`);
+}
+
+// ---------------------------------------------------------------------------
+// Measuring sticks
+// ---------------------------------------------------------------------------
+const MSK = profile.tools && profile.tools.measuringSticks;
+if (MSK){
+  MSK.lengths.forEach((len, i) => {
+    base.ObjectStates.push({ GUID: guid(), Name: "BlockSquare", Nickname: `${len}" measuring stick`, Description: `Exactly ${len} inch${len === 1 ? "" : "es"} long. TTS's ruler tool (left toolbar) measures any distance.`, GMNotes: "MC_TOOL",
+      Transform: { posX: MSK.x + i * MSK.stepX, posY: B.surfaceY + 0.3, posZ: MSK.z, rotX: 0, rotY: MSK.rotY || 0, rotZ: 0, scaleX: len, scaleY: 0.25, scaleZ: 0.7 },
+      ColorDiffuse: i % 2 ? { r: 0.85, g: 0.8, b: 0.6 } : { r: 0.6, g: 0.5, b: 0.35 }, Locked: false, Grid: false, Snap: false, Tooltip: true, MeasureMovement: true });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -273,6 +301,10 @@ if (ST && ST.cards && ST.cards.spawn){
   lua = injectLine(lua, "CARD_SPAWN", `CARD_SPAWN = { x = ${c.x}, y = ${B.surfaceY + 1.5}, z = ${c.z}, stepX = ${c.stepX}, perRow = ${c.perRow}, stepZ = ${c.stepZ}, rotY = ${c.rotY || 0} }`);
 }
 lua = injectLine(lua, "MODEL_LIBRARY", libraryLua);
+{
+  const SP = profile.spawn;
+  lua = injectLine(lua, "SPAWN", `SPAWN = { cardStepX = ${SP.cardStepX}, cardRowGap = ${SP.cardRowGap}, cardOffset = ${SP.cardOffset}, modelStepX = ${SP.modelStepX}, modelRowGap = ${SP.modelRowGap}, modelInset = ${SP.modelInset} }`);
+}
 
 base.SaveName = profile.saveName;
 base.GameMode = profile.saveName;
