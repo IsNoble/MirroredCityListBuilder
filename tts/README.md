@@ -50,7 +50,7 @@ The rulebook (p.9) plays on a 44" by 30" battlefield, or 22" by 30" for small sc
 
 ## Using the table
 
-The table has two seats, Red on the south edge and Blue on the north, each with a **Sit here** button on its coloured bar, and the List Importer station in the free strip left of the board. Each player has an outlined staging zone in their colour beyond their edge of the board: an imported warband's cards fill the rows nearest the board and its models the rows behind, and the player deploys from there. Distances are measured with TTS's own ruler on the left toolbar. The Kraken table is scaled up by half so all of this fits around the 72" x 48" board; its top is glass, so the build lays a black slab across it as the playing surface (`board.tableTop` in the profile).
+The table has two seats, Red on the south edge and Blue on the north, marked by coloured bars and labels (sit by clicking the colour in TTS's player list), and the List Importer station in the free strip left of the board. Each player has an outlined staging zone in their colour beyond their edge of the board: an imported warband's cards fill the rows nearest the board and its models the rows behind, and the player deploys from there. Distances are measured with TTS's own ruler on the left toolbar. The Kraken table is scaled up by half so all of this fits around the 72" x 48" board; its top is glass, so the build lays a black slab across it as the playing surface (`board.tableTop` in the profile).
 
 1. In the list builder press **Export for TTS**. The roster JSON is now on the clipboard.
 2. Press **Import List** on the List Importer station, paste into the box, press **Import Red** or **Import Blue**. **Close** hides the box.
@@ -63,7 +63,9 @@ Positions come from `BOARD` and `SPAWN`, which the build injects from the profil
 
 ## Stat Cards on the table
 
-Each imported Stat Card is a flat cream slab (`CONFIG.card` in `Global.lua`) with the text drawn on its face: title, two stat lines, tags, weapon and armor profiles, equipment names, rule names, known spells or prayers. Item rules text is not on the face; hovering the card shows the full text in the tooltip. Card depth grows with the number of lines, so every card fits its content. Font sizes and padding are in `CONFIG.card` and the spacing of the card row in the profile's `spawn` block.
+Each imported Stat Card is a Notecard scaled up (`CONFIG.cardScale` in `Global.lua`) with the title as its name and a compact block as its text: two stat lines, tags, weapon and armor profiles, equipment names, rule names, known spells or prayers. Item rules text is deliberately left off; the rulebook and the pages on the table cover it. A Notecard holds about a dozen lines, which fits every card the builder produces today. The spacing of the card row is in the profile's `spawn` block.
+
+A closer match to the list builder's printed cards would need card images, which TTS loads only from URLs; that means hosting a PNG per card for every import, so it is not done.
 
 ## Mirrored City extras
 

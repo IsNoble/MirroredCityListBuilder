@@ -24,13 +24,7 @@ CONFIG = {
   -- Filled in by buildSides() from BOARD and SPAWN: card rows just outside the battlefield frame, model rows just inside it.
   sides = {},
 
-  -- Stat Card slab. Sizes in table units; font sizes are button font_size (1/1000 units at scale 1).
-  card = {
-    width = 11, minDepth = 6, thickness = 0.08,
-    topPad = 0.55, bottomPad = 0.45, sidePad = 0.35, lineHeight = 0.5,
-    titleSize = 300, fontSize = 230,
-    color = { r = 0.93, g = 0.90, b = 0.82 }, titleColor = { 0.10, 0.18, 0.22 }, textColor = { 0.08, 0.08, 0.08 },
-  },
+  cardScale = { x = 1.6, y = 1.0, z = 1.6 },   -- Notecard scale: text scales with the card, so bigger = more readable
   pawnScale = { x = 0.8, y = 0.8, z = 0.8 },
 
   -- Tint for the fallback pawn, by warband id. Unknown warbands get grey.
@@ -176,25 +170,6 @@ function stationButton(obj, label, fn, dx, dz, width, tooltip)
   })
 end
 
--- Seat bars (GM Notes "MC_SEAT_BAR:<Color>") get a Sit button that moves the clicking player to that colour.
-function seatButton(obj, color)
-  local fn = "mc_sit_" .. color
-  _G[fn] = function(_, playerColor)
-    local p = Player[playerColor]
-    if p == nil then return end
-    if playerColor == color then broadcastToColor("You are already " .. color .. ".", playerColor, {1, 1, 0.7}); return end
-    if Player[color].seated then broadcastToColor(color .. " is taken by " .. tostring(Player[color].steam_name) .. ".", playerColor, {1, 0.7, 0.7}); return end
-    p.changeColor(color)
-  end
-  obj.clearButtons()
-  obj.createButton({
-    label = "Sit here as " .. color, click_function = fn, function_owner = Global,
-    position = { 0, 1.5, 0 }, rotation = { 0, 0, 0 }, scale = { 1 / obj.getScale().x, 1, 1 / obj.getScale().z },
-    width = 9000, height = 1300, font_size = 420,
-    color = { 0.1, 0.1, 0.1 }, font_color = { 1, 1, 1 }, tooltip = "Take the " .. color .. " seat",
-  })
-end
-
 -- Quick-reference slab text (rulebook p.12-13). One entry per line; "" is a blank line.
 REFERENCE = {
   "ROUND SEQUENCE",
@@ -236,9 +211,7 @@ end
 function setupStations()
   for _, obj in ipairs(getAllObjects()) do
     local note = obj.getGMNotes() or ""
-    if note:sub(1, 12) == "MC_SEAT_BAR:" then
-      seatButton(obj, note:sub(13))
-    elseif note == "MC_REFERENCE" then
+    if note == "MC_REFERENCE" then
       setupReference(obj)
     elseif note == "MC_STATION_IMPORT" then
       obj.clearButtons()
@@ -318,83 +291,59 @@ function gridPos(g, i)
   return { x = g.x + col * g.stepX, y = g.y, z = g.z + row * g.stepZ }
 end
 
--- A Stat Card is a flat cream slab with the card text drawn on its face as label-only buttons.
--- The face shows stats, tags, weapon and armor profiles, equipment and rule names (no item rules text);
--- the hover tooltip (description) carries everything including the rules text.
+-- A Stat Card is a Notecard: the title as its name, a compact stat block as its text. Stats, tags,
+-- weapon and armor profiles, equipment names and rule names; no item rules text (see the rulebook).
 function spawnCard(card, roster, pos, rotY, tags)
-  local C = CONFIG.card
-  local faceLines = cardFaceLines(card)
-  local height = math.max(C.minDepth, C.topPad + #faceLines * C.lineHeight + C.bottomPad)
   spawnObject({
-    type = "BlockSquare",
+    type = "Notecard",
     position = pos,
     rotation = { 0, rotY, 0 },
-    scale = { C.width, C.thickness, height },
+    scale = CONFIG.cardScale,
     sound = false,
     callback_function = function(obj)
       obj.setName(cardTitle(card))
-      obj.setDescription(cardBody(card, roster))
-      obj.setColorTint(C.color)
+      obj.setDescription(cardFaceText(card))
       for _, t in ipairs(tags) do obj.addTag(t) end
       obj.setGMNotes(card.unitId or "")
-      obj.measure_movement = false
-      -- Label-only buttons (no click, no background). Local coordinates are divided by the object's
-      -- scale, and the button scale undoes the slab's non-uniform scale so text is not stretched.
-      -- A button rotated 180 reads correctly from the object's "front" (south when rotY = 0); its local
-      -- +x is then the reader's left, and the first line sits at +z (the far edge from the reader).
-      local sx, sz = C.width, height
-      local function label(text, z, size, bold)
-        obj.createButton({
-          label = text, click_function = "mc_noop", function_owner = Global,
-          position = { (sx / 2 - C.sidePad) / sx, 1.0, z / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
-          width = 0, height = 0, font_size = size, font_color = bold and C.titleColor or C.textColor, alignment = 2,
-        })
-      end
-      local z = sz / 2 - C.topPad
-      label(cardTitle(card), z, C.titleSize, true)
-      z = z - C.lineHeight * 1.3
-      for _, line in ipairs(faceLines) do
-        label(line, z, C.fontSize, false)
-        z = z - C.lineHeight
-      end
     end,
   })
 end
 
 function mc_noop() end
 
--- Lines drawn on the card face. Headings are plain text here (buttons cannot colour part of a label).
-function cardFaceLines(card)
+-- Compact text for the card face. Headings use TTS rich-text colour tags.
+function cardFaceText(card)
+  local h = function(t) return "[e6c15a]" .. t .. "[-]" end
   local L = {}
   local function add(s) L[#L + 1] = s end
   add(statLine1(card.stats))
   add(statLine2(card.stats))
   if type(card.tags) == "table" and #card.tags > 0 then add("Tags: " .. table.concat(card.tags, ", ")) end
   if type(card.weapons) == "table" and #card.weapons > 0 then
-    add("WEAPONS   Rng / Hit / Str / AP / Dmg")
+    add(h("Weapons") .. "  Rng / Hit / Str / AP / Dmg")
     for _, w in ipairs(card.weapons) do add(weaponFaceLine(w)) end
   end
   if type(card.armor) == "table" and #card.armor > 0 then
-    add("ARMOR   Armor / Injury / Mobility / Move")
+    add(h("Armor") .. "  Armor / Injury / Mobility / Move")
     for _, a in ipairs(card.armor) do add(armorFaceLine(a)) end
   end
   if type(card.equipment) == "table" and #card.equipment > 0 then
     local names = {}
     for _, e in ipairs(card.equipment) do names[#names + 1] = tostring(e.name) end
-    add("EQUIPMENT: " .. table.concat(names, ", "))
+    add(h("Equipment") .. " " .. table.concat(names, ", "))
   end
   local rules = {}
   for _, r in ipairs(card.special or {}) do rules[#rules + 1] = tostring(r.name) end
   if type(card.duty) == "table" then rules[#rules + 1] = "Duty: " .. tostring(card.duty.name) end
   for _, q in ipairs(card.quirks or {}) do rules[#rules + 1] = "Quirk: " .. tostring(q.name) end
-  if #rules > 0 then add("RULES: " .. table.concat(rules, "; ")) end
+  if #rules > 0 then add(h("Rules") .. " " .. table.concat(rules, "; ")) end
   if type(card.magic) == "table" and type(card.magic.entries) == "table" and #card.magic.entries > 0 then
     local names = {}
     for _, e in ipairs(card.magic.entries) do names[#names + 1] = tostring(e.name) .. (e.signature and "*" or "") end
-    add(tostring(card.magic.label or "SPELLS"):upper() .. ": " .. table.concat(names, ", "))
+    add(h(tostring(card.magic.label or "Spells")) .. " " .. table.concat(names, ", "))
   end
-  if type(card.sellsword) == "table" then add("SELLSWORD: retainer " .. tostring(card.sellsword.retainer) .. " lumens") end
-  return L
+  if type(card.sellsword) == "table" then add(h("Sellsword") .. " retainer " .. tostring(card.sellsword.retainer) .. " lumens") end
+  return table.concat(L, "\n")
 end
 
 function statLine1(st)

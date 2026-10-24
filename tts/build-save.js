@@ -233,7 +233,7 @@ for (const s of seats){
   base.ObjectStates.push(h);
   // Visible seat: a coloured bar along the outer edge of the hand zone and a label, so the seat is obvious before anyone sits.
   const outer = s.z + Math.sign(s.z) * (s.depthZ / 2 + 0.3);
-  const sb = bar(s.x, outer, s.widthX, 0.5); sb.ColorDiffuse = seatColors[s.color] || { r: 0.7, g: 0.7, b: 0.7 }; sb.Nickname = `${s.color} seat`; sb.Description = `${s.color} player's seat. Press the Sit button, or click the colour on the player list.`; sb.GMNotes = "MC_SEAT_BAR:" + s.color;
+  const sb = bar(s.x, outer, s.widthX, 0.5); sb.ColorDiffuse = seatColors[s.color] || { r: 0.7, g: 0.7, b: 0.7 }; sb.Nickname = `${s.color} seat`; sb.Description = `${s.color} player's seat. Click the colour on the player list to sit here.`; sb.GMNotes = "MC_SEAT_BAR:" + s.color;
   sb.Transform.rotY = s.rotY; sb.Transform.scaleY = 0.3;
   base.ObjectStates.push(sb);
   const lbl = label3d(`${s.color.toUpperCase()} PLAYER`, s.x, s.z, seatColors[s.color] || { r: 0.9, g: 0.9, b: 0.9 }, 64);

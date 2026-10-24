@@ -91,8 +91,8 @@
 
   "spawn": {
     "_comment": "Each player's staging zone lies beyond their long edge of the board (board.depthZ / 2 from centre), as wide as the board. Cards fill the rows nearest the board, models the rows behind them, all measured outward from the board edge. Injected into Global.lua as SPAWN; the build draws the zone from it.",
-    "cardStepX": 11.6, "cardRowGap": 9.0, "cardOffset": 5.6, "cardRows": 1,
-    "modelStepX": 2.3, "modelRowGap": 2.6, "modelOffset": 12.2, "modelRows": 2,
+    "cardStepX": 7.0, "cardRowGap": 5.4, "cardOffset": 3.8, "cardRows": 1,
+    "modelStepX": 2.3, "modelRowGap": 2.6, "modelOffset": 9.4, "modelRows": 2,
     "inset": 1.0
   },
 
