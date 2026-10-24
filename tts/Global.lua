@@ -173,13 +173,16 @@ end
 -- ---------------------------------------------------------------------------
 -- Stations: physical buttons on the table
 -- ---------------------------------------------------------------------------
--- Buttons on a 1 x 1 pad: width/height are in 1/1000 of a table unit. The pad is read from the
--- south seat, the same way as the 3D text labels, hence the 180 degree rotation.
-function stationButton(obj, label, fn, dx, dz, width, tooltip)
+-- Button width / height units per table inch on a scale-1 object (measured: a width of 11000 drew 16.5" wide).
+BTN_PER_INCH = 667
+
+-- Buttons on a 1 x 1 pad, sizes in inches. The pad is read from the south seat, the same way as the
+-- 3D text labels, hence the 180 degree rotation (which also mirrors x, so dx is negated).
+function stationButton(obj, label, fn, dx, dz, widthIn, tooltip)
   obj.createButton({
     label = label, click_function = fn, function_owner = Global,
     position = { -dx, 0.6, -dz }, rotation = { 0, 180, 0 }, scale = { 1, 1, 1 },
-    width = width, height = 1100, font_size = 380,
+    width = widthIn * BTN_PER_INCH, height = 1.6 * BTN_PER_INCH, font_size = 380,
     color = { 0.17, 0.23, 0.29 }, font_color = { 0.94, 0.94, 0.94 }, tooltip = tooltip or "",
   })
 end
@@ -261,7 +264,7 @@ function setupTracker(obj)
       obj.createButton({
         label = tostring(value), click_function = fn, function_owner = Global,
         position = { u / sx, 1.0, v / sz }, rotation = { 0, 180, 0 }, scale = { 1 / sx, 1, 1 / sz },
-        width = (cell - 0.15) * 1000, height = (rowGap - 0.6) * 1000, font_size = cell < 1.2 and 360 or 440,
+        width = (cell - 0.15) * BTN_PER_INCH, height = (rowGap - 0.6) * BTN_PER_INCH, font_size = cell < 1.2 and 300 or 380,
         color = { 0.42, 0.40, 0.36 }, font_color = { 0.95, 0.95, 0.95 }, tooltip = row.label .. " " .. value,
       })
       index = index + 1
@@ -300,9 +303,9 @@ function setupStations()
       setupReference(obj)
     elseif note == "MC_STATION_IMPORT" then
       obj.clearButtons()
-      stationButton(obj, "Import List", "mc_openPanel", 0, -2.0, 11000, "Open the paste box for a roster from the list builder")
-      stationButton(obj, "Clear " .. SEATS.south, "mc_clearSouth", -2.9, 1.2, 5200, "Remove everything imported into the " .. SEATS.south .. " zone")
-      stationButton(obj, "Clear " .. SEATS.north, "mc_clearNorth",  2.9, 1.2, 5200, "Remove everything imported into the " .. SEATS.north .. " zone")
+      stationButton(obj, "Import List", "mc_openPanel", 0, -1.6, 9.5, "Open the paste box for a roster from the list builder")
+      stationButton(obj, "Clear " .. SEATS.south, "mc_clearSouth", -2.5, 1.4, 4.4, "Remove everything imported into the " .. SEATS.south .. " zone")
+      stationButton(obj, "Clear " .. SEATS.north, "mc_clearNorth",  2.5, 1.4, 4.4, "Remove everything imported into the " .. SEATS.north .. " zone")
     end
   end
 end
