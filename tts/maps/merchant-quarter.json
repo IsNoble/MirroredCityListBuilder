@@ -94,12 +94,13 @@
     "_comment": "Each player's staging zone lies beyond their long edge of the board (board.depthZ / 2 from centre), as wide as the board. Cards fill the rows nearest the board, models the rows behind them, all measured outward from the board edge. Injected into Global.lua as SPAWN; the build draws the zone from it.",
     "cardStepX": 7.0, "cardRowGap": 5.4, "cardOffset": 3.8, "cardRows": 1,
     "modelStepX": 2.3, "modelRowGap": 2.6, "modelOffset": 9.4, "modelRows": 2,
-    "inset": 1.0
+    "inset": 1.0,
+    "reserveWest": 7.0
   },
 
   "extras": {
     "_comment": "Mirrored City table furniture in the strip right of the board: status token dispensers, Tempo / VP counters per seat, and the quick-reference slab. Token text and reference text live in Global.lua.",
-    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 60, "z": -38 }, { "x": 60, "z": 37 } ],
+    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": -19.8, "z": -33 }, { "x": -19.8, "z": 33 } ],
       "spareBag": { "x": 60, "z": 10.5, "readFrom": "west" } },
     "tokens": { "_comment": "readFrom east: the grid runs along the table edge and the labels read from the east, the same for both players. x0/z0 is the first token (reader's top-left).",
       "x0": 65, "stepX": 3.2, "z0": 30, "stepZ": -3.5, "perRow": 5, "readFrom": "west", "label": "TOKENS", "scale": 0.6,

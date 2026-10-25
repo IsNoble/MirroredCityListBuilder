@@ -247,7 +247,7 @@ for (const s of seats){
   const cz = B.centerZ + dir * (near + far) / 2, d = far - near, w = B.widthX;
   const edges = [ bar(B.centerX, cz - d / 2, w + th, th), bar(B.centerX, cz + d / 2, w + th, th), bar(B.centerX - w / 2, cz, th, d + th), bar(B.centerX + w / 2, cz, th, d + th) ];
   for (const e of edges){ e.ColorDiffuse = zoneColor; e.Nickname = `${s.color} warband zone`; e.Description = `${s.color}'s imported warband appears here: cards nearest the board, models behind.`; e.GMNotes = "MC_ZONE"; e.Transform.scaleY = 0.05; e.Transform.posY = B.surfaceY + 0.16; base.ObjectStates.push(e); }
-  const l = label3d(`${s.color.toUpperCase()} WARBAND`, B.centerX - dir * (w / 2 - 7), B.centerZ + dir * (far - 1.6), zoneColor, 40); l.Transform.rotY = s.rotY; base.ObjectStates.push(l);
+  const l = label3d(`${s.color.toUpperCase()} WARBAND`, B.centerX + (w / 2 - 7), B.centerZ + dir * (far - 1.6), zoneColor, 40); l.Transform.rotY = s.rotY; base.ObjectStates.push(l);
 }
 
 // ---------------------------------------------------------------------------
@@ -474,7 +474,7 @@ lua = injectLine(lua, "SEATS", `SEATS = { south = "${seatNames.south}", north = 
 const xmlOut = xml.replace(/\{SOUTH\}/g, seatNames.south).replace(/\{NORTH\}/g, seatNames.north);
 {
   const SP = profile.spawn;
-  lua = injectLine(lua, "SPAWN", `SPAWN = { cardStepX = ${SP.cardStepX}, cardRowGap = ${SP.cardRowGap}, cardOffset = ${SP.cardOffset}, modelStepX = ${SP.modelStepX}, modelRowGap = ${SP.modelRowGap}, modelOffset = ${SP.modelOffset}, inset = ${SP.inset} }`);
+  lua = injectLine(lua, "SPAWN", `SPAWN = { cardStepX = ${SP.cardStepX}, cardRowGap = ${SP.cardRowGap}, cardOffset = ${SP.cardOffset}, modelStepX = ${SP.modelStepX}, modelRowGap = ${SP.modelRowGap}, modelOffset = ${SP.modelOffset}, inset = ${SP.inset}, reserveWest = ${SP.reserveWest || 0} }`);
 }
 
 base.SaveName = profile.saveName;

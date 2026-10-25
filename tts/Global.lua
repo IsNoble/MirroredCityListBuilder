@@ -55,25 +55,28 @@ trackerValues = {}
 
 -- Spacing of imported cards and models, measured outward from the board edge into the player's staging zone.
 -- build-save.js replaces this line from the map profile.
-SPAWN = { cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 3.4, modelStepX = 2.3, modelRowGap = 2.6, modelOffset = 10.4, inset = 2.0 }
+SPAWN = { cardStepX = 4.8, cardRowGap = 3.4, cardOffset = 3.4, modelStepX = 2.3, modelRowGap = 2.6, modelOffset = 10.4, inset = 2.0, reserveWest = 0 }
 
 -- South = negative Z, North = positive Z. Each side's zone lies beyond its board edge, as wide as the board:
 -- card rows nearest the board, model rows behind them, both stepping away from the board.
 function buildSides()
   local y = BOARD.surfaceY + 1.5
   local edge = BOARD.boardDepthZ / 2
-  local usable = BOARD.boardWidthX - 2 * SPAWN.inset
+  -- The west end of each zone (reserveWest inches) is kept clear for that player's dice roller.
+  local reserve = SPAWN.reserveWest or 0
+  local usable = BOARD.boardWidthX - 2 * SPAWN.inset - reserve
+  local midX = BOARD.centerX + reserve / 2
   local cardsPerRow  = math.max(1, math.floor(usable / SPAWN.cardStepX))
   local modelsPerRow = math.max(1, math.floor(usable / SPAWN.modelStepX))
   local cardSpan  = (cardsPerRow - 1) * SPAWN.cardStepX
   local modelSpan = (modelsPerRow - 1) * SPAWN.modelStepX
   CONFIG.sides = {
     south = { label = SEATS.south, rotY = 0,
-      cards  = { x = BOARD.centerX - cardSpan / 2,  y = y, z = BOARD.centerZ - edge - SPAWN.cardOffset,  stepX = SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ = -SPAWN.cardRowGap },
-      models = { x = BOARD.centerX - modelSpan / 2, y = y, z = BOARD.centerZ - edge - SPAWN.modelOffset, stepX = SPAWN.modelStepX, perRow = modelsPerRow, stepZ = -SPAWN.modelRowGap } },
+      cards  = { x = midX - cardSpan / 2,  y = y, z = BOARD.centerZ - edge - SPAWN.cardOffset,  stepX = SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ = -SPAWN.cardRowGap },
+      models = { x = midX - modelSpan / 2, y = y, z = BOARD.centerZ - edge - SPAWN.modelOffset, stepX = SPAWN.modelStepX, perRow = modelsPerRow, stepZ = -SPAWN.modelRowGap } },
     north = { label = SEATS.north, rotY = 180,
-      cards  = { x = BOARD.centerX + cardSpan / 2,  y = y, z = BOARD.centerZ + edge + SPAWN.cardOffset,  stepX = -SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ =  SPAWN.cardRowGap },
-      models = { x = BOARD.centerX + modelSpan / 2, y = y, z = BOARD.centerZ + edge + SPAWN.modelOffset, stepX = -SPAWN.modelStepX, perRow = modelsPerRow, stepZ =  SPAWN.modelRowGap } },
+      cards  = { x = midX + cardSpan / 2,  y = y, z = BOARD.centerZ + edge + SPAWN.cardOffset,  stepX = -SPAWN.cardStepX,  perRow = cardsPerRow,  stepZ =  SPAWN.cardRowGap },
+      models = { x = midX + modelSpan / 2, y = y, z = BOARD.centerZ + edge + SPAWN.modelOffset, stepX = -SPAWN.modelStepX, perRow = modelsPerRow, stepZ =  SPAWN.modelRowGap } },
   }
 end
 
