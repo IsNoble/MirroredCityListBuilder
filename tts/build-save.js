@@ -364,8 +364,21 @@ if (EX && EX.counters){
   const spots = (EX && EX.dice && EX.dice.positions) || [];
   dice.forEach((o, i) => {
     if (spots[i]){ o.Transform.posX = spots[i].x; o.Transform.posZ = spots[i].z; }
-    o.Nickname = "D6 dice"; o.Description = "Drag dice out. The cup never empties.";
-    base.ObjectStates.push(label3d("D6 DICE", o.Transform.posX, o.Transform.posZ - 3.2 * Math.sign(o.Transform.posZ || 1), { r: 0.85, g: 0.85, b: 0.85 }, 28));
+    // Make the Roll-O-Matic a plain movable model: an infinite bag cannot be dragged (dragging pulls a die out).
+    // The die it used to contain is embedded in its script and spawned with spawnObjectData instead of takeObject.
+    const die = JSON.parse(JSON.stringify(o.ContainedObjects.find(c => /^Die_/.test(c.Name))));
+    delete die.GUID;
+    const dieJson = JSON.stringify(die);
+    if (dieJson.includes("]==]")) throw new Error("die JSON contains a Lua long-bracket terminator");
+    const take = /local newD = self\.takeObject\(\{\s*position=pos, rotation=rot,\s*callback="afterSpawn", callback_owner=self, params=\{color=color, num=num\}\s*\}\)/;
+    if (!take.test(o.LuaScript)) throw new Error("Roll-O-Matic script changed: takeObject call not found");
+    o.LuaScript = `MC_DIE_DATA = JSON.decode([==[${dieJson}]==])\n` + o.LuaScript.replace(take,
+      `local newD = spawnObjectData({ data = MC_DIE_DATA, position = pos, rotation = rot,\n                    callback_function = function(spawned) afterSpawn(spawned, {color=color, num=num}) end })`);
+    o.Name = "Custom_Model";
+    delete o.ContainedObjects;
+    if (o.CustomMesh) o.CustomMesh.TypeIndex = 0;
+    o.Locked = false;
+    o.Nickname = "D6 dice roller"; o.Description = "Click a number to roll that many D6. Drag to move it.";
   });
 }
 if (EX && EX.reference){
