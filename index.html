@@ -186,6 +186,11 @@
     .btnRow{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
     .cardBtns{display:flex; flex-wrap:wrap; gap:6px; flex-shrink:0; justify-content:flex-end}
     .cardBtns button{padding:6px 9px; font-size:12px}
+    .cardBtns .moveUp, .cardBtns .moveDown{min-width:30px; padding:6px 8px}
+    @media (max-width: 700px){
+      .card-top{flex-wrap:wrap}
+      .cardBtns{width:100%; justify-content:flex-start}
+    }
 
     .slotGrid{
       display:grid;
@@ -2730,6 +2735,32 @@ function cardToggleButtonsHtml(ui, extraHtml){
   </div>`;
 }
 
+// Up / down arrows for Hero and Henchmen cards. The Leader card is always first and has none.
+function cardMoveButtonsHtml(card){
+  const i = state.cards.indexOf(card);
+  const last = state.cards.length - 1;
+  return `<button type="button" class="moveUp" title="Move this card up" aria-label="Move card up" ${i <= 0 ? "disabled" : ""}>▲</button>
+    <button type="button" class="moveDown" title="Move this card down" aria-label="Move card down" ${i < 0 || i >= last ? "disabled" : ""}>▼</button>`;
+}
+
+function moveCard(card, delta){
+  const i = state.cards.indexOf(card);
+  const j = i + delta;
+  if (i < 0 || j < 0 || j >= state.cards.length) return;
+  [state.cards[i], state.cards[j]] = [state.cards[j], state.cards[i]];
+  render();
+}
+
+// Wires the Remove and move arrows shared by both card layouts.
+function bindCardListButtons(wrap, card){
+  wrap.querySelector(`#rm_${card.id}`)?.addEventListener("click", () => {
+    state.cards = state.cards.filter(c => c.id !== card.id);
+    render();
+  });
+  wrap.querySelector(".moveUp")?.addEventListener("click", () => moveCard(card, -1));
+  wrap.querySelector(".moveDown")?.addEventListener("click", () => moveCard(card, 1));
+}
+
 function bindCardToggles(wrap, ui){
   const d = wrap.querySelector(".toggleDisplay");
   const c = wrap.querySelector(".toggleCollapse");
@@ -2912,7 +2943,7 @@ function renderStatCard(card, warbandBase){
     : `${card.unitId ? unitTagPills(card.unitId) : ""}
        <span class="pill">Cost: ${cc.sum}${cc.hasVariable ? "+" : ""} <span class="lumIcon">$</span></span>
        ${unit?.limit ? `<span class="pill">${unit.limit}</span>` : ""}`;
-  const removeBtn = `<button type="button" class="noPrint" id="rm_${card.id}">Remove</button>`;
+  const removeBtn = `${cardMoveButtonsHtml(card)}<button type="button" class="noPrint" id="rm_${card.id}">Remove</button>`;
 
   if (ui.collapsed || ui.display){
     wrap.innerHTML = `
@@ -2926,10 +2957,7 @@ function renderStatCard(card, warbandBase){
       ${ui.collapsed ? "" : renderCardSummary(card)}`;
     syncTitle(card.customName);
     bindCardToggles(wrap, ui);
-    wrap.querySelector(`#rm_${card.id}`).addEventListener("click", () => {
-      state.cards = state.cards.filter(c => c.id !== card.id);
-      render();
-    });
+    bindCardListButtons(wrap, card);
     return wrap;
   }
 
@@ -2973,10 +3001,7 @@ function renderStatCard(card, warbandBase){
     <div id="equipHost_${card.id}"></div>
   `;
 
-  wrap.querySelector(`#rm_${card.id}`).addEventListener("click", () => {
-    state.cards = state.cards.filter(c => c.id !== card.id);
-    render();
-  });
+  bindCardListButtons(wrap, card);
   bindCardToggles(wrap, ui);
 
   bindCustomNameInput(wrap.querySelector(`#customName_${card.id}`), syncTitle,
