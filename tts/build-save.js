@@ -380,6 +380,20 @@ if (EX && EX.counters){
     o.Locked = false;
     o.Nickname = "D6 dice roller"; o.Description = "Click a number to roll that many D6. Drag to move it.";
   });
+  // Spare rollers: an infinite bag holding a copy of the converted roller.
+  const spareAt = EX && EX.dice && EX.dice.spareBag;
+  if (dice.length && spareAt){
+    const copy = JSON.parse(JSON.stringify(dice[0]));
+    copy.GUID = guid();
+    copy.LuaScriptState = "";
+    copy.Transform = Object.assign({}, copy.Transform, { posX: 0, posY: 2, posZ: 0 });
+    base.ObjectStates.push({ GUID: guid(), Name: "Infinite_Bag", Nickname: "Spare dice rollers", Description: "Drag out a new D6 dice roller if one goes missing. The bag never empties.", GMNotes: "MC_DICE_BAG",
+      Transform: { posX: spareAt.x, posY: B.surfaceY + 0.6, posZ: spareAt.z, rotX: 0, rotY: 0, rotZ: 0, scaleX: 1, scaleY: 1, scaleZ: 1 },
+      ColorDiffuse: { r: 0.55, g: 0.42, b: 0.25 }, Locked: true, Grid: false, Snap: false, Tooltip: true, Bag: { Order: 0 }, ContainedObjects: [copy] });
+    const F = readerFrame(spareAt.readFrom || "west");
+    const l = label3d("SPARE DICE ROLLERS", spareAt.x + F.down.x * 2, spareAt.z + F.down.z * 2, { r: 0.85, g: 0.85, b: 0.85 }, 26);
+    l.Transform.rotY = F.rotY; base.ObjectStates.push(l);
+  }
 }
 if (EX && EX.reference){
   const RF = EX.reference;

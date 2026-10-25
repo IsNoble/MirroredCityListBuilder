@@ -99,7 +99,8 @@
 
   "extras": {
     "_comment": "Mirrored City table furniture in the strip right of the board: status token dispensers, Tempo / VP counters per seat, and the quick-reference slab. Token text and reference text live in Global.lua.",
-    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 60, "z": -38 }, { "x": 60, "z": 37 } ] },
+    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 60, "z": -38 }, { "x": 60, "z": 37 } ],
+      "spareBag": { "x": 60, "z": 10.5, "readFrom": "west" } },
     "tokens": { "_comment": "readFrom east: the grid runs along the table edge and the labels read from the east, the same for both players. x0/z0 is the first token (reader's top-left).",
       "x0": 65, "stepX": 3.2, "z0": 30, "stepZ": -3.5, "perRow": 5, "readFrom": "west", "label": "TOKENS", "scale": 0.6,
       "list": [
