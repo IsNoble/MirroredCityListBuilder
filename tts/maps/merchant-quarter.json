@@ -41,7 +41,8 @@
   "ground": {
     "_comment": "Textured tile laid over the board under the terrain. imageFile is relative to tts/ and becomes a file:// URL (local only; upload it to Steam Cloud and switch to imageUrl before publishing). A Custom_Tile is 2 units deep at scale 1 and its width follows the image aspect, so the build reads the image size to get the scale right; for a remote imageUrl give imageAspect (width / height). Set to null for none.",
     "imageFile": "assets/ground-cobblestone.jpg",
-    "imageUrl": "",
+    "imageUrl": "https://raw.githubusercontent.com/IsNoble/MirroredCityListBuilder/TTS_Prototype/tts/assets/ground-cobblestone.jpg",
+    "imageAspect": 1.5,
     "widthX": 72, "depthZ": 48, "thickness": 0.1
   },
 
@@ -98,7 +99,7 @@
 
   "extras": {
     "_comment": "Mirrored City table furniture in the strip right of the board: status token dispensers, Tempo / VP counters per seat, and the quick-reference slab. Token text and reference text live in Global.lua.",
-    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 76, "z": -36 }, { "x": 76, "z": 36 } ] },
+    "dice": { "_comment": "Where the two D6 cups kept from the base map go.", "positions": [ { "x": 60, "z": -38 }, { "x": 60, "z": 37 } ] },
     "tokens": { "_comment": "readFrom east: the grid runs along the table edge and the labels read from the east, the same for both players. x0/z0 is the first token (reader's top-left).",
       "x0": 65, "stepX": 3.2, "z0": 30, "stepZ": -3.5, "perRow": 5, "readFrom": "west", "label": "TOKENS", "scale": 0.6,
       "list": [
