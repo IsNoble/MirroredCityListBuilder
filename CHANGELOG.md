@@ -7,6 +7,7 @@
 - **Field Chirurgeon** surgery: the model is Slain if the 3D10 roll is 10 or less (was 25+), all three dice match, or the warband cannot pay.
 - **Grappling Iron**: the reroll applies only to Move Checks to climb.
 - **Cutthroat** carries a Flash Bomb as part of its fixed wargear; it appears on the card and under Equipment in both exports.
+- The **View / Edit** button is greyed out while a card is collapsed; expand the card to switch modes.
 
 ## 2026-10-24 — Card controls
 

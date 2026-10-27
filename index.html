@@ -2786,7 +2786,7 @@ function cardUi(cardLike){
 
 function cardToggleButtonsHtml(ui, extraHtml){
   return `<div class="cardBtns noPrint">
-    <button type="button" class="toggleDisplay" title="${ui.display ? "Show the editing controls" : "Show only stats and gear"}">${ui.display ? "Edit" : "View"}</button>
+    <button type="button" class="toggleDisplay" title="${ui.collapsed ? "Expand the card to switch between View and Edit" : ui.display ? "Show the editing controls" : "Show only stats and gear"}" ${ui.collapsed ? "disabled" : ""}>${ui.display ? "Edit" : "View"}</button>
     <button type="button" class="toggleCollapse" title="${ui.collapsed ? "Expand this card" : "Collapse this card to one line"}">${ui.collapsed ? "Expand" : "Collapse"}</button>
     ${extraHtml || ""}
   </div>`;
