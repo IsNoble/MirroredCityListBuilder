@@ -1,6 +1,6 @@
 # Mirrored City List Builder
 
-A single-file warband builder for **Mirrored City Beta v2.9**. Everything lives in `index.html`: the page, the styles, the rules data and the logic. There is no build step. Open the file in a browser, or upload `index.html` and `MIRROREDCITYICONS.TTF` to any web host.
+A single-file warband builder for **Mirrored City v1.0.1** (the Beta releases up to v2.9 were the alpha; rules data was audited against the Beta v2.9 rulebook plus later designer updates). Everything lives in `index.html`: the page, the styles, the rules data and the logic. There is no build step. Open the file in a browser, or upload `index.html` and `MIRROREDCITYICONS.TTF` to any web host.
 
 - `index.html` — the whole app
 - `MIRROREDCITYICONS.TTF` — icon font; the `$` glyph is the lumen symbol (used via `<span class="lumIcon">$</span>`)
@@ -277,7 +277,7 @@ Warband-level Sellsword fields, all optional:
 `safeExportState()` produces the JSON used for both `localStorage` and the Export button:
 
 ```json
-{ "version": 7, "rules": "Beta v2.9",
+{ "version": 7, "rules": "v1.0.1",
   "roster": { "name", "warbandId", "archetypeId", "leaderUnitId", "leaderEquipment", "leaderCustomName", "leaderDutyId", "leaderMagicIds",
     "cards": [ { "id", "kind", "unitId", "count", "customName", "dutyId", "quirkIds", "magicIds",
                  "equipment": { "weaponIds": [], "helmetId": "", "armorId": "", "shieldId": "", "otherIds": [] } } ] } }
@@ -294,7 +294,7 @@ If you rename a unit id, add `old_id: "new_id"` to `UNIT_ID_ALIASES`; `applyImpo
 `buildTTSExport()` → `buildTTSCardData(cardLike)` build it; `collectWeaponProfiles` and `collectArmorIds` are shared with the printable Stat Cards so both exports always agree.
 
 ```json
-{ "format": "mirrored-city-tts", "formatVersion": 1, "rules": "Beta v2.9", "exportedAt": "<ISO date>",
+{ "format": "mirrored-city-tts", "formatVersion": 1, "rules": "v1.0.1", "exportedAt": "<ISO date>",
   "roster": { "name", "warbandId", "warband", "archetypeId", "archetype", "spent", "spentVariable" },
   "cards": [ {
     "kind": "LEADER | HERO | HENCHMEN | SELLSWORD",

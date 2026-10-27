@@ -272,7 +272,7 @@
 <body>
   <header class="noPrint">
     <div class="hdr-left">
-      <h1>Mirrored City Beta v2.9</h1>
+      <h1>Mirrored City v1.0.1</h1>
       <div class="sub">Noble Builder • Pure HTML • Auto-saves locally</div>
     </div>
     <div class="hdr-actions">
@@ -392,11 +392,11 @@
 
 <script>
 /* =========================================================
-   RULES (Mirrored City Beta v2.9)
+   RULES (Mirrored City v1.0.1; data audited from the Beta v2.9 rulebook plus later designer updates)
    ========================================================= */
 
 const RULES = {
-  rulesVersion: "Beta v2.9",
+  rulesVersion: "v1.0.1",
   startingLumens: 1000,          // p.58: each player begins with 1,000 lumens
   startingMaxUnspent: 100,       // p.58: no more than 100 unspent lumens
   startingStatCardsMax: 5,
@@ -549,7 +549,7 @@ const UNITS = [
   { id:"ss_cutthroat", name:"Cutthroat", faction:"", type:"SELLSWORD", cost:80, retainer:20, limit:"",
     tags:["SELLSWORD","ELITE","CUTTHROAT"],
     stats:{spd:6,str:3,tgh:3,wil:"8+",hp:3,atk:2,fgt:4,sht:"3+",arm:"5+",xp:0},
-    equipLists:[], noEquipment:true, fixedWargear:["eq_rapier","eq_dagger","eq_hand_crossbow","eq_light_armor"],
+    equipLists:[], noEquipment:true, fixedWargear:["eq_rapier","eq_dagger","eq_hand_crossbow","eq_light_armor","eq_flash_bomb"],
     specialRules:[
       {name:"Flash Bomb", text:"The Cutthroat begins each battle with one Flash Bomb."},
       {name:"Sneak Attack", text:"When making an attack against an enemy model that is outnumbered, add 1 attack die."},
@@ -942,7 +942,7 @@ const EQUIPMENT_CATALOG = {
   eq_divine_focus:   { id:"eq_divine_focus", name:"Divine Focus", category:"GEAR", tags:["UNIVERSAL"], cost:35, rarity:"Common", restrictions:{ onlyTags:["PRIEST"] }, rules:"PRIEST only. When the bearer performs a Chant Prayer action, add 1 to the Channeling roll." },
   eq_spellbook:      { id:"eq_spellbook", name:"Spellbook", category:"GEAR", tags:["UNIVERSAL","CONSUMABLE"], cost:"100+2D10", rarity:8, restrictions:{ onlyTags:["HERO"] }, rules:"HERO only. When a model with the WIZARD tag studies a Spellbook, it may learn an additional Spell: roll on the Spell list available to that model. If the result is a Spell the Wizard already knows, reduce that Spell's Power Cost and Empowered Power Cost by 1. If the model does not have the WIZARD tag, generate Spells from the Collegiate Arcana." },
   eq_prayer_scrolls: { id:"eq_prayer_scrolls", name:"Prayer Scrolls", category:"GEAR", tags:["UNIVERSAL","CONSUMABLE"], cost:"100+2D10", rarity:8, restrictions:{ onlyTags:["HERO"] }, rules:"HERO only. When a model with the PRIEST tag reads Prayer Scrolls, it may learn an additional Prayer: roll on the Prayer list available to that model. If the result is a Prayer the Priest already knows, reduce that Prayer's Power Cost and Empowered Power Cost by 1. If the model does not have the PRIEST tag, generate Prayers from The Liturgy of Saint Veyra." },
-  eq_grappling_iron: { id:"eq_grappling_iron", name:"Grappling Iron", category:"GEAR", tags:["UNIVERSAL"], costHero:15, costHenchmen:30, rarity:"Common", rules:"When the bearer makes a Move Check, it may reroll the result." },
+  eq_grappling_iron: { id:"eq_grappling_iron", name:"Grappling Iron", category:"GEAR", tags:["UNIVERSAL"], costHero:15, costHenchmen:30, rarity:"Common", rules:"When the bearer makes a Move Check to climb, it may reroll the result." },
   eq_hook_hand:      { id:"eq_hook_hand", name:"Hook Hand", category:"GEAR", tags:["UNIVERSAL"], cost:10, rarity:"Common", restrictions:{ onlyTags:["HERO"] }, rules:"HERO only. A crude but practical replacement for a lost hand.",
     weaponProfiles:[{name:"Hook Hand", type:"MELEE", range:'1"', hit:"User", str:"User", ap:"—", dmg:"1", traits:["Ignore Disarm","Rend"]}] },
   eq_hooded_lantern: { id:"eq_hooded_lantern", name:"Hooded Lantern", category:"GEAR", tags:["UNIVERSAL"], costHero:15, costHenchmen:25, rarity:"Common", rules:"While carrying a hooded lantern, a model gains the Detection trait." },
@@ -953,6 +953,10 @@ const EQUIPMENT_CATALOG = {
 
   // ---------------- UNIVERSAL EQUIPMENT: BATTLEFIELD IMPLEMENTS (p.38) ----------------
   eq_blastpowder_bomb: { id:"eq_blastpowder_bomb", name:"Blastpowder Bomb", category:"IMPLEMENT", tags:["UNIVERSAL","CONSUMABLE"], cost:"25+2D10", rarity:10, commonForTags:["DWARF"], rules:"A brutal weapon of last resort.",
+    weaponProfiles:[{name:"Blastpowder Bomb", type:"RANGED", range:'8"', hit:"User", str:"4", ap:"—", dmg:"D3", traits:['Blast 2" 3+',"Dangerous","Knockback 2","Thrown"]}] },
+  // Granted by the Sapper Duty: never offered in a dropdown; added to (and removed from) the Sapper's card automatically.
+  eq_sapper_bomb: { id:"eq_sapper_bomb", name:"Blastpowder Bomb (Sapper)", category:"IMPLEMENT", tags:["CONSUMABLE","GRANTED"], cost:0, rarity:"Common", grantedByDuty:"sapper",
+    rules:"Free Blastpowder Bomb from the Sapper Duty. A brutal weapon of last resort.",
     weaponProfiles:[{name:"Blastpowder Bomb", type:"RANGED", range:'8"', hit:"User", str:"4", ap:"—", dmg:"D3", traits:['Blast 2" 3+',"Dangerous","Knockback 2","Thrown"]}] },
   eq_caltrops:   { id:"eq_caltrops", name:"Caltrops", category:"IMPLEMENT", tags:["UNIVERSAL","CONSUMABLE"], cost:10, rarity:"Common", rules:"When the bearer performs a Use action, place a token within 3\" of the model. The area within 2\" of the token's center is treated as DIFFICULT and DEADLY 2 terrain. Remove the token during the next Clean Up step." },
   eq_bola:       { id:"eq_bola", name:"Bola", category:"IMPLEMENT", tags:["UNIVERSAL"], cost:"10+D10", rarity:7, rules:"Thrown to topple or entangle a target.",
@@ -1350,12 +1354,13 @@ const MERCENARY_DUTIES = [
   { id:"cook", name:"Cook", cost:35, requiredTags:["VETERAN"],
     rules:"At the start of the battle, choose one friendly model. That model begins the battle with 1 additional Health. If the warband cannot pay a SELLSWORD's full retainer fee, it may pay what it has; the Sellsword remains for the next battle and any remainder must be paid after that battle or it leaves as normal." },
   { id:"field_chirurgeon", name:"Field Chirurgeon", cost:50, requiredTags:["LIEUTENANT","VETERAN"],
-    rules:"This model rolls 1 additional die when performing a Mend action. During the Recovery Step, friendly models within 1\" of this model count as having Regenerate 6+. During the Aftermath sequence, one friendly model with a Serious Injury may undergo surgery: roll 3D10 and pay lumens equal to the result. The model is Slain if the roll is 25+, all three dice match, or the warband cannot pay; otherwise, remove the Serious Injury." },
+    rules:"This model rolls 1 additional die when performing a Mend action. During the Recovery Step, friendly models within 1\" of this model count as having Regenerate 6+. During the Aftermath sequence, one friendly model with a Serious Injury may undergo surgery: roll 3D10 and pay lumens equal to the result. The model is Slain if the roll is 10 or less, all three dice match, or the warband cannot pay; otherwise, remove the Serious Injury." },
   { id:"lookout", name:"Lookout", cost:35, requiredTags:["SPOTTER"],
     rules:"While the Lookout is on the battlefield, add 1 to Initiative rolls." },
   { id:"quartermaster", name:"Quartermaster", cost:50, requiredTags:["CAPTAIN","LIEUTENANT"],
     rules:"When a friendly model uses a Boost while the Quartermaster is on the battlefield, roll a D6. On a 5+, it does so without spending Tempo (once per round). When purchasing equipment, you may reduce the cost of a single item by D10 lumens (to a minimum of half its listed cost), or re-roll the Rarity Check for a single item." },
   { id:"sapper", name:"Sapper", cost:40, requiredTags:["SHARPSHOOTER","SPOTTER"],
+    grantsEquipment:["eq_sapper_bomb"], makesCommon:["eq_blastpowder_bomb"],
     rules:"When this Duty is taken, the warband gains one free Blastpowder Bomb and treats Blastpowder Bombs as Common. Once per battle, a model may ignore the effects of a Misfire result." },
   { id:"weaponsmith", name:"Weaponsmith", cost:30, requiredTags:["MUSCLE","DUELIST"],
     rules:"Choose a melee weapon wielded by a friendly model. That weapon adds 1 Crit die when making attacks. In Campaign Play, when resolving the loss of a weapon, add 1 to the roll to determine whether that weapon is recovered." }
@@ -1673,8 +1678,40 @@ function isRare(eq){ return typeof eq.rarity === "number" || (eq.tags || []).inc
 function isSpecialMaterial(eq){ return (eq.tags || []).includes("SPECIAL_MATERIAL"); }
 
 // Rare N equipment is Common for units with one of eq.commonForTags (e.g. Elven Boots for ELF models).
+// Duties known anywhere in the warband (Leader included).
+function warbandDutyIds(){
+  const ids = [];
+  if (state.leaderUnitId && state.leaderDutyId) ids.push(state.leaderDutyId);
+  for (const c of (state.cards || [])) if (c && c.unitId && c.dutyId) ids.push(c.dutyId);
+  return ids;
+}
+// Equipment a Duty in the warband treats as Common (Sapper: Blastpowder Bombs).
+function isCommonByDuty(eq){
+  return warbandDutyIds().some(id => (MERCENARY_DUTIES.find(d => d.id === id)?.makesCommon || []).includes(eq.id));
+}
+function isGrantedEquip(eq){ return !!(eq && eq.grantedByDuty); }
+
+// Keep Duty-granted equipment in step with the card's Duty: add it when the Duty is known and an
+// Equipment slot is free, remove it when the Duty changes. Returns the granted ids that did not fit.
+function syncDutyGrants(equipObj, dutyId){
+  if (!equipObj) return [];
+  equipObj.otherIds = (equipObj.otherIds || []).filter(id => {
+    const eq = getEquip(id);
+    return !isGrantedEquip(eq) || eq.grantedByDuty === dutyId;
+  });
+  const duty = dutyId ? MERCENARY_DUTIES.find(d => d.id === dutyId) : null;
+  const missing = [];
+  for (const gid of (duty?.grantsEquipment || [])){
+    if (equipObj.otherIds.includes(gid)) continue;
+    if (equipObj.otherIds.length < RULES.equipSlots.OTHER) equipObj.otherIds.push(gid);
+    else missing.push(gid);
+  }
+  return missing;
+}
+
 function isRareForUnit(eq, unitId){
   if (!isRare(eq)) return false;
+  if (isCommonByDuty(eq)) return false;
   const common = eq.commonForTags || [];
   if (common.length && unitId){
     const tags = unitTags(unitId);
@@ -2269,6 +2306,7 @@ function validate(){
         warns.push(`${label}: unknown equipment id (${id}).`);
         continue;
       }
+      if (isGrantedEquip(eq)) continue;   // Duty-granted items are checked separately below
       const slot = classifyEquip(eq);
       const allowed = allowedEquipmentForUnitSlot(unitId, slot).some(x => x.id === id);
       if (!allowed){
@@ -2276,6 +2314,22 @@ function validate(){
       }
     }
   }
+
+  // Duty-granted equipment: only on a card that knows the Duty; warn when no slot was free for it.
+  function checkDutyGrants(label, dutyId, eqObj){
+    for (const id of (eqObj.otherIds || [])){
+      const eq = getEquip(id);
+      if (isGrantedEquip(eq) && eq.grantedByDuty !== dutyId) errs.push(`${label}: ${eq.name} requires the ${eq.grantedByDuty} Duty.`);
+    }
+    const duty = dutyId ? MERCENARY_DUTIES.find(d => d.id === dutyId) : null;
+    for (const gid of (duty?.grantsEquipment || [])){
+      if (!(eqObj.otherIds || []).includes(gid)){
+        warns.push(`${label}: no free Equipment slot for the ${duty.name}'s free ${getEquip(gid)?.name || gid}. Free a slot to receive it.`);
+      }
+    }
+  }
+  if (hasLeader) checkDutyGrants(getUnit(state.leaderUnitId)?.name || "Leader", state.leaderDutyId, getCardEquip({kind:"LEADER"}));
+  for (const c of state.cards){ if (c.unitId) checkDutyGrants(getUnit(c.unitId)?.name || "Card", c.dutyId, getCardEquip(c)); }
 
   for (const c of state.cards){
     const u = getUnit(c.unitId);
@@ -2412,10 +2466,13 @@ function render(){
     const leaderMagicData = getMagicDataForUnit(state.leaderUnitId);
     state.leaderMagicIds = (state.leaderMagicIds || []).filter(id => leaderMagicData && leaderMagicData.options.some(x => x.id === id));
     if (state.leaderDutyId && !getMercEligibleDutyIdsForUnit(state.leaderUnitId).includes(state.leaderDutyId)) state.leaderDutyId = "";
+    syncDutyGrants(state.leaderEquipment, state.leaderDutyId);
   } else {
     state.leaderEquipment = null;
     state.leaderMagicIds = [];
   }
+  // Duty-granted equipment (Sapper's free Blastpowder Bomb) follows each card's Duty.
+  for (const c of state.cards){ if (c && c.unitId) syncDutyGrants(getCardEquip(c), c.dutyId); }
 
   const cardsEl = byId("cards");
   cardsEl.innerHTML = "";
@@ -2809,7 +2866,7 @@ function renderCardSummary(cardLike){
     const qty = equipQuantityForCard(e, kind, modelCount);
     return {
       name: e.name,
-      meta: `${c.display}${qty > 1 ? ` ×${qty}` : ""}`,
+      meta: isGrantedEquip(e) ? "free (Duty)" : `${c.display}${qty > 1 ? ` ×${qty}` : ""}`,
       title: [(e.stats && e.stats.traits ? e.stats.traits.join(", ") : ""), e.rules || ""].filter(Boolean).join(" — ")
     };
   };
@@ -3100,7 +3157,7 @@ function pruneIllegalEquipmentForCard(card){
   const allowedOther   = new Set(allowedEquipmentForUnitSlot(unitId, "OTHER").map(e=>e.id));
 
   eqObj.weaponIds = (eqObj.weaponIds || []).filter(id => allowedWeapons.has(id)).slice(0, RULES.equipSlots.WEAPON + RULES.equipSlots.LIGHTWEIGHT);
-  eqObj.otherIds  = (eqObj.otherIds || []).filter(id => allowedOther.has(id)).slice(0, RULES.equipSlots.OTHER);
+  eqObj.otherIds  = (eqObj.otherIds || []).filter(id => allowedOther.has(id) || isGrantedEquip(getEquip(id))).slice(0, RULES.equipSlots.OTHER);
 
   if (eqObj.helmetId && !allowedHelmets.has(eqObj.helmetId)) eqObj.helmetId = "";
   if (eqObj.armorId && !allowedArmor.has(eqObj.armorId)) eqObj.armorId = "";
@@ -3121,7 +3178,7 @@ function pruneIllegalEquipmentForLeader(){
   const allowedOther   = new Set(allowedEquipmentForUnitSlot(unitId, "OTHER").map(e=>e.id));
 
   eqObj.weaponIds = (eqObj.weaponIds || []).filter(id => allowedWeapons.has(id)).slice(0, RULES.equipSlots.WEAPON + RULES.equipSlots.LIGHTWEIGHT);
-  eqObj.otherIds  = (eqObj.otherIds || []).filter(id => allowedOther.has(id)).slice(0, RULES.equipSlots.OTHER);
+  eqObj.otherIds  = (eqObj.otherIds || []).filter(id => allowedOther.has(id) || isGrantedEquip(getEquip(id))).slice(0, RULES.equipSlots.OTHER);
 
   if (eqObj.helmetId && !allowedHelmets.has(eqObj.helmetId)) eqObj.helmetId = "";
   if (eqObj.armorId && !allowedArmor.has(eqObj.armorId)) eqObj.armorId = "";
@@ -3211,6 +3268,11 @@ function renderWeaponRows(cardLike){
   return rows.join("");
 }
 
+// Fixed wargear (Sellswords) that is general equipment rather than a weapon or armor, e.g. a Flash Bomb.
+function fixedEquipmentIds(unit){
+  return (unit?.fixedWargear || []).filter(id => { const eq = getEqById(id); return eq && classifyEquip(eq) === "OTHER"; });
+}
+
 // Armor item ids worn by a card: fixed wargear armor (Sellswords) first, then helmet / body / shield slots.
 function collectArmorIds(helmetId, armorId, shieldId, fixedIds){
   const fixedArmor = (fixedIds || []).filter(id => { const eq = getEqById(id); return eq && ["HELMET","ARMOR","SHIELD"].includes(classifyEquip(eq)); });
@@ -3249,7 +3311,8 @@ function buildOneCardModel(cardLike){
   const cost = cardLike.kind === "LEADER" ? leaderCost() : cardCost(cardLike);
   const tags = unit ? unitTags(cardLike.unitId) : [];
 
-  const equipmentLines = (equip.otherIds || []).map(id => {
+  // Equipment section: bought items plus any fixed wargear that is neither a weapon nor armor (Cutthroat's Flash Bomb).
+  const equipmentLines = [...fixedEquipmentIds(unit), ...(equip.otherIds || [])].map(id => {
     const eq = getEqById(id);
     if (!eq) return "";
     return `• ${eq.name}${eq.rules ? ` — ${eq.rules}` : ""}`;
@@ -3490,7 +3553,7 @@ function buildTTSCardData(cardLike){
       };
     });
 
-  const equipment = (equip.otherIds || []).map(getEqById).filter(Boolean)
+  const equipment = [...fixedEquipmentIds(unit), ...(equip.otherIds || [])].map(getEqById).filter(Boolean)
     .map(eq => ({ name: eq.name, rules: eq.rules || "" }));
 
   // Rules text printed on equipped weapons (armor rules travel with the armor entries above)
@@ -3891,6 +3954,14 @@ function renderSlotChips(container, card, cardKind, slotKey){
     if (eq && weaponSlotsUsed(eq) > 1) meta.push(`${weaponSlotsUsed(eq)} slots`);
 
     chip.title = eq ? [(eq.stats && eq.stats.traits ? eq.stats.traits.join(", ") : ""), eq.rules || ""].filter(Boolean).join(" — ") : "";
+
+    // Duty-granted items are free and follow the Duty, so they cannot be removed by hand.
+    if (isGrantedEquip(eq)){
+      chip.innerHTML = `<span>${escapeHtml(eq.name)}</span><span class="tagMini">FREE • from Duty</span>`;
+      container.appendChild(chip);
+      continue;
+    }
+
     chip.innerHTML = `
       <span>${eq ? escapeHtml(eq.name) : escapeHtml(id)}</span>
       <span class="tagMini">

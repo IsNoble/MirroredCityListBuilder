@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-27 — Mirrored City v1.0.1
+
+- The rules are now versioned **v1.0.1**; the earlier Beta numbers (up to Beta v2.9) count as the alpha. The header, Stat Card export, saved rosters and TTS export all report v1.0.1. Old rosters still load.
+- **Sapper** now hands its model the free Blastpowder Bomb: it is added to that card's Equipment at no cost, shown as FREE, and removed if the Duty changes. If all three Equipment slots are full the Summary warns until one is freed. While a Sapper is in the warband, Blastpowder Bombs are Common for everyone.
+- **Field Chirurgeon** surgery: the model is Slain if the 3D10 roll is 10 or less (was 25+), all three dice match, or the warband cannot pay.
+- **Grappling Iron**: the reroll applies only to Move Checks to climb.
+- **Cutthroat** carries a Flash Bomb as part of its fixed wargear; it appears on the card and under Equipment in both exports.
+
 ## 2026-10-24 — Card controls
 
 - Dropdowns add on selection: picking a weapon, armor piece, equipment item, Spell/Prayer or Quirk adds it immediately. The Add buttons are gone; Roll D6 / Roll 2D6 remain.
