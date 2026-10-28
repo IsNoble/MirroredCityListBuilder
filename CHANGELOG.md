@@ -8,6 +8,9 @@
 - **Grappling Iron**: the reroll applies only to Move Checks to climb.
 - **Cutthroat** carries a Flash Bomb as part of its fixed wargear; it appears on the card and under Equipment in both exports.
 - The **View / Edit** button is greyed out while a card is collapsed; expand the card to switch modes.
+- **Lorathiir** Ranged Weapons now include the Boomerang (15).
+- **Spiritwood** (p.41, p.81): the Lorathiir can buy Spiritwood boomerangs, bows, bucklers, clubs, crossbows, elven bows, shields (THORNBOUND only), staves and spears. Cost is the greater of base ×1.5 (rounded up) or base +25. Melee weapons and shields gain Deflect; ranged weapons gain +3" Range and Choose Target. A starting warband may have at most two Spiritwood items, with Henchmen counting one per model. Other warbands are not offered Spiritwood.
+- **Holy Water** and **Holy Symbol** are Common for PRIEST models.
 
 ## 2026-10-24 — Card controls
 
@@ -69,7 +72,7 @@ Large rules update. Everything that was based on Beta v1.1 has been replaced wit
 - Import migrates older rosters (renamed unit ids, single `quirkId`, Brute cards converted to Hero cards) and prunes equipment that no longer exists.
 
 ### Not yet supported
-- Special materials: Spiritwood, Mithril, Sunsteel, Adamantite, including the Lorathiir two-Spiritwood-weapon allowance.
+- Special materials: Spiritwood, Mithril, Sunsteel, Adamantite, including the Lorathiir two-Spiritwood-weapon allowance. (Spiritwood for the Lorathiir added in v1.0.1.)
 - Campaign play beyond recording extra Spells/Prayers.
 
 ## Earlier

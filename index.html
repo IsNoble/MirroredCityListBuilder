@@ -949,7 +949,7 @@ const EQUIPMENT_CATALOG = {
   eq_signal_horn:    { id:"eq_signal_horn", name:"Signal Horn", category:"GEAR", tags:["UNIVERSAL"], cost:35, rarity:"Common", restrictions:{ onlyTags:["LEADER"] }, rules:"LEADER only. Once per battle, when the player would fail a Morale Check, they may reroll that test." },
   eq_elven_boots:    { id:"eq_elven_boots", name:"Elven Boots", category:"GEAR", tags:["UNIVERSAL"], cost:"50+3D10", rarity:11, commonForTags:["ELF"], restrictions:{ onlyTags:["HERO"], notTags:["DWARF"] }, rules:"HERO only (Common for ELF models). The bearer adds 1 to its Speed. Models with the DWARF tag cannot wear this item." },
   eq_elven_cloak:    { id:"eq_elven_cloak", name:"Elven Cloak", category:"GEAR", tags:["UNIVERSAL"], cost:"50+3D10", rarity:11, commonForTags:["ELF"], restrictions:{ onlyTags:["HERO"], notTags:["DWARF"] }, rules:"HERO only (Common for ELF models). The bearer may Hide as a Free Action, and enemy models subtract 1 from Hit rolls when targeting them with ranged attacks. Models with the DWARF tag cannot wear this item." },
-  eq_holy_symbol:    { id:"eq_holy_symbol", name:"Holy Symbol", category:"GEAR", tags:["UNIVERSAL"], cost:"15+D10", rarity:7, restrictions:{ onlyTags:["HERO"] }, rules:"HERO only. The bearer is Fearsome to models with the UNDEAD or DEMON tag. If the bearer does not have the PRIEST tag, enemy models add 1 to Will Checks caused by this effect." },
+  eq_holy_symbol:    { id:"eq_holy_symbol", name:"Holy Symbol", category:"GEAR", tags:["UNIVERSAL"], cost:"15+D10", rarity:7, commonForTags:["PRIEST"], restrictions:{ onlyTags:["HERO"] }, rules:"HERO only (Common for PRIEST models). The bearer is Fearsome to models with the UNDEAD or DEMON tag. If the bearer does not have the PRIEST tag, enemy models add 1 to Will Checks caused by this effect." },
 
   // ---------------- UNIVERSAL EQUIPMENT: BATTLEFIELD IMPLEMENTS (p.38) ----------------
   eq_blastpowder_bomb: { id:"eq_blastpowder_bomb", name:"Blastpowder Bomb", category:"IMPLEMENT", tags:["UNIVERSAL","CONSUMABLE"], cost:"25+2D10", rarity:10, commonForTags:["DWARF"], rules:"A brutal weapon of last resort.",
@@ -967,7 +967,7 @@ const EQUIPMENT_CATALOG = {
       {name:"Net (thrown)", type:"RANGED", range:'8"', hit:"User", str:"3", ap:"—", dmg:"—", traits:["Crit (+1 Damage)","Once","Inflict Rooted"]},
       {name:"Net (melee)", type:"MELEE", range:"—", hit:"—", str:"—", ap:"—", dmg:"—", traits:["Parry"]}
     ] },
-  eq_holy_water: { id:"eq_holy_water", name:"Holy Water", category:"IMPLEMENT", tags:["UNIVERSAL","CONSUMABLE"], cost:"15+D10", rarity:7, rules:"A ranged weapon with the Thrown trait and a range equal to 2x the model's Strength. On a hit, the target suffers 1 mortal wound at Strength 4 if it has the UNDEAD or DEMON tag. If the bearer suffers damage from a Fall, roll a D6; on a 1–3 the vial breaks and is lost." },
+  eq_holy_water: { id:"eq_holy_water", name:"Holy Water", category:"IMPLEMENT", tags:["UNIVERSAL","CONSUMABLE"], cost:"15+D10", rarity:7, commonForTags:["PRIEST"], rules:"Common for PRIEST models. A ranged weapon with the Thrown trait and a range equal to 2x the model's Strength. On a hit, the target suffers 1 mortal wound at Strength 4 if it has the UNDEAD or DEMON tag. If the bearer suffers damage from a Fall, roll a D6; on a 1–3 the vial breaks and is lost." },
   eq_torch:      { id:"eq_torch", name:"Torch", category:"IMPLEMENT", tags:["UNIVERSAL","CONSUMABLE"], cost:5, rarity:"Common", rules:"When a model with a torch performs the Use action, it may light or douse it. While lit, the model gains the traits below. Once doused, a torch is consumed.",
     weaponProfiles:[{name:"Torch (lit)", type:"MELEE", range:'1"', hit:"User", str:"User", ap:"—", dmg:"1", traits:["Beastbane","Detection","Exposed","Infused Fire","Rend"]}] },
 
@@ -1032,6 +1032,41 @@ const EQUIPMENT_CATALOG = {
   eq_essence_vessel:   { id:"eq_essence_vessel", name:"Essence Vessel", category:"GEAR", tags:["UNIVERSAL","UNIQUE"], cost:25, rarity:"Common", uniqueToFaction:"the_lorathiir", restrictions:{ onlyTags:["HERO"] }, rules:"HERO only. During its activation, a model carrying an Essence Vessel may store one Essence token within 1\". A model may interact with stored Essence using Calm Essence. One stored Essence may be carried over to a future battle." },
   eq_ghost_pipes:      { id:"eq_ghost_pipes", name:"Ghost Pipes", category:"GEAR", tags:["UNIVERSAL","UNIQUE"], cost:15, rarity:"Common", uniqueToFaction:"the_lorathiir", restrictions:{ onlyTags:["HERO","GROVEFOLK"] }, rules:"HEROES and GROVEFOLK only. When the bearer performs a Use action, the closest Essence token may move up to 4\" toward the bearer (Ethereal and Fly). An Essence token can only be moved by ghost pipes once per round." }
 };
+
+// ---------------- SPECIAL MATERIALS: SPIRITWOOD (p.41) ----------------
+// Each Spiritwood item is generated from its base item. Cost: the greater of base x1.5 (rounded up) or base +25.
+// Supple Strength: melee weapons and shields gain Deflect. Spirit Draw: ranged weapons add 3" Range and gain Choose Target.
+// Offered on the Lorathiir list (p.81: up to two Spiritwood items at creation); hidden from every other list.
+const SPIRITWOOD_LIMIT_AT_CREATION = 2;
+const SPIRITWOOD_BASES = ["eq_boomerang","eq_bow","eq_buckler","eq_club","eq_crossbow","eq_elven_bow","eq_shield","eq_staff","eq_spear"];
+function spiritwoodId(baseId){ return "eq_spiritwood_" + baseId.replace(/^eq_/, ""); }
+function isSpiritwood(eq){ return !!(eq && (eq.tags || []).includes("SPIRITWOOD")); }
+(function addSpiritwoodItems(){
+  const addTrait = (traits, t) => (traits || []).includes(t) ? [...traits] : [...(traits || []), t];
+  for (const baseId of SPIRITWOOD_BASES){
+    const base = EQUIPMENT_CATALOG[baseId];
+    if (!base) continue;
+    const cost = Math.max(Math.ceil(base.cost * 1.5), base.cost + 25);
+    let stats = { ...base.stats };
+    let rule;
+    if (base.category === "RANGED"){
+      const r = parseInt(String(stats.range), 10);
+      stats.range = Number.isFinite(r) ? `${r + 3}"` : stats.range;
+      stats.traits = addTrait(stats.traits, "Choose Target");
+      rule = "Spirit Draw: +3\" Range and the Choose Target trait.";
+    } else {
+      stats.traits = addTrait(stats.traits, "Deflect");
+      rule = "Supple Strength: gains Deflect.";
+    }
+    const id = spiritwoodId(baseId);
+    EQUIPMENT_CATALOG[id] = {
+      ...base, id, name: "Spiritwood " + base.name,
+      tags: [...(base.tags || []), "SPECIAL_MATERIAL", "SPIRITWOOD"],
+      cost, rarity: 10, baseItemId: baseId, stats,
+      rules: `Spiritwood (Rare 10, base cost x1.5 or +25). ${rule}` + (base.rules ? " " + base.rules : "")
+    };
+  }
+})();
 
 /* =========================================================
    EQUIPMENT LISTS (Beta v2.9)
@@ -1179,7 +1214,7 @@ const LOR_EQUIP_LISTS = {
     id: "lorathiir_equipment", name: "Lorathiir Equipment", faction: "the_lorathiir",
     items: [
       "eq_club","eq_dagger","eq_felmorn_blade","eq_long_sword","eq_sickle","eq_spear","eq_staff","eq_sword",
-      "eq_bow","eq_elven_bow","eq_javelin","eq_throwing_knives",
+      "eq_boomerang","eq_bow","eq_elven_bow","eq_javelin","eq_throwing_knives",
       "eq_helmet","eq_light_armor","eq_felmorn_weave","eq_shield","eq_buckler"
     ],
     overrides: {
@@ -1190,10 +1225,13 @@ const LOR_EQUIP_LISTS = {
   lorathiir_special_equipment: {
     id: "lorathiir_special_equipment", name: "Lorathiir Special Equipment", faction: "the_lorathiir",
     items: [
-      "eq_ash_fallen_grove","eq_bola","eq_essence_vessel","eq_ghost_pipes"
+      "eq_ash_fallen_grove","eq_bola","eq_essence_vessel","eq_ghost_pipes",
+      // Spiritwood Item* (p.81): up to two per starting warband, checked in validate().
+      ...SPIRITWOOD_BASES.map(spiritwoodId)
     ],
     overrides: {
-      eq_bola: { cost: 15 }
+      eq_bola: { cost: 15 },
+      eq_spiritwood_shield: { onlyTags: ["THORNBOUND"] }
     }
   }
 };
@@ -1437,7 +1475,7 @@ const WARBANDS = [
     id: "the_lorathiir",
     name: "The Lorathiir",
     factionTag: "LORATHIIR",
-    description: "Swift elves bound to the dying Thornwood, using Essence tokens for healing, repositioning, and focus. A starting Lorathiir warband may also purchase up to two Spiritwood weapons (not yet supported here).",
+    description: "Swift elves bound to the dying Thornwood, using Essence tokens for healing, repositioning, and focus. A starting Lorathiir warband may also purchase up to two Spiritwood items, offered in the weapon and shield dropdowns.",
     archetypes: [
       {
         id: "thornwood_seekers",
@@ -1801,7 +1839,8 @@ function isEquipAllowedForUnit(unitId, eq, slotType, listObj){
 
   if (isFactionLocked(eq, unitFactionId())) return false;
   if (isBlockedByStartingMode(eq, unitId, fromFactionList)) return false;
-  if (isSpecialMaterial(eq)) return false;
+  // Special materials are only offered where a warband list prints them (Lorathiir Spiritwood).
+  if (isSpecialMaterial(eq) && !fromFactionList) return false;
 
   if (classifyEquip(eq) !== slotType) return false;
 
@@ -2237,6 +2276,18 @@ function validate(){
     if (isSellswordUnit(c.unitId) && !warbandAllowsSellsword(warbandBase, getUnit(c.unitId))){
       errs.push(`${getUnit(c.unitId).name}: this warband cannot employ that Sellsword.`);
     }
+  }
+
+  // p.81: a starting Lorathiir warband may purchase up to two Spiritwood items (per model on Henchmen cards).
+  const spiritwoodIn = (eqObj, kind, count) => {
+    if (!eqObj) return 0;
+    const ids = [...(eqObj.weaponIds || []), eqObj.helmetId, eqObj.armorId, eqObj.shieldId, ...(eqObj.otherIds || [])];
+    return ids.map(getEquip).filter(isSpiritwood).reduce((n, eq) => n + equipQuantityForCard(eq, kind, count), 0);
+  };
+  const spiritwoodCount = (hasLeader ? spiritwoodIn(state.leaderEquipment, "LEADER", 1) : 0)
+    + state.cards.reduce((n, c) => n + (c.unitId ? spiritwoodIn(c.equipment, c.kind, c.count) : 0), 0);
+  if (spiritwoodCount > SPIRITWOOD_LIMIT_AT_CREATION){
+    errs.push(`Too many Spiritwood items: ${spiritwoodCount} / ${SPIRITWOOD_LIMIT_AT_CREATION} allowed during warband creation (Henchmen buy one per model).`);
   }
 
   // Mercenary Duties: one per model, no duplicates in the warband (p.65)

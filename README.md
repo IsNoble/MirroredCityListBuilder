@@ -136,6 +136,8 @@ eq_solar_mace: { id:"eq_solar_mace", name:"Solar Mace", category:"MELEE", tags:[
 
 **Weapon slot behaviour comes from traits, not from fields.** A weapon whose traits include `Lightweight` may use the Lightweight slot; `Bulky` (or `Bulky 2`) makes it occupy extra Weapon slots. Keep trait spelling as printed.
 
+**Special materials (Spiritwood).** Spiritwood items are not written out by hand. `SPIRITWOOD_BASES` names the base items, and each one gets a generated `eq_spiritwood_<base>` entry. Its cost is the greater of base ×1.5, rounded up, or base +25. Melee weapons and shields gain Deflect. Ranged weapons gain +3" Range and Choose Target. The generated items carry the `SPECIAL_MATERIAL` and `SPIRITWOOD` tags. A `SPECIAL_MATERIAL` item is only offered through a warband list that prints it, which today is the Lorathiir Special Equipment list. At creation the Summary flags more than `SPIRITWOOD_LIMIT_AT_CREATION` (2) Spiritwood items, and Henchmen count one per model. To offer another base, add its id to `SPIRITWOOD_BASES`.
+
 **Adding an item**
 
 1. Add it to `EQUIPMENT_CATALOG` in the matching block.
