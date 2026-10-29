@@ -97,9 +97,9 @@ Keyed by id. Two small factories keep profiles short:
 ```js
 mkWeapon(range, hit, str, ap, dmg, traits)         // -> { type:"weapon", ... }
 mkArmor(armorValue, injurySave, moveCheck, mobility, traits)  // -> { type:"armor", ... }
+```
 
 An armor item's `armorValue` (e.g. `"-2"`) is added to the model's ARM by `effectiveStats()` for whatever is in the Helmet, Body Armor and Shield slots (floor `ARMOR_FLOOR`, 2+). Sellsword `fixedWargear` armor is not applied, because Sellsword stat lines are printed with it included.
-```
 
 Examples of each category:
 
