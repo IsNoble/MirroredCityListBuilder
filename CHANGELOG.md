@@ -11,6 +11,11 @@
 - **Lorathiir** Ranged Weapons now include the Boomerang (15).
 - **Spiritwood** (p.41, p.81): the Lorathiir can buy Spiritwood boomerangs, bows, bucklers, clubs, crossbows, elven bows, shields (THORNBOUND only), staves and spears. Cost is the greater of base ×1.5 (rounded up) or base +25. Melee weapons and shields gain Deflect; ranged weapons gain +3" Range and Choose Target. A starting warband may have at most two Spiritwood items, with Henchmen counting one per model. Other warbands are not offered Spiritwood.
 - **Holy Water** and **Holy Symbol** are Common for PRIEST models.
+- **Armor modifies ARM**: the Armor Value of equipped helmet, body armor and shield now adjusts the model's ARM on the card (shown in green, base value on hover), the Stat Card export and the TTS export. Heavy Armor and a Shield take ARM 6+ to 3+; ARM never goes below 2+. Sellsword stat lines already include their fixed armor and are unchanged.
+- **Cutthroat** fixed wargear now includes a Sap.
+- **Dawnfather**: "Dawnmother" removed from the unit name; models may be named and gendered however players like.
+- **Quartermaster**: "On a 5+, it does so without spending Tempo. This may only be successfully used once per round."
+- **Silvered Ammunition** is JUSTICAR and PURIFIER only, like the Silvered weapons.
 
 ## 2026-10-24 — Card controls
 

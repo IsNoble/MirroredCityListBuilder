@@ -255,6 +255,7 @@
     .lumIcon{font-family:'MirroredCityIcons', sans-serif; font-weight:400; display:inline-block; line-height:1;}
     .statLine{display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); margin:6px 0 2px}
     .statLine b{color:var(--text); font-weight:700}
+    .statLine .statMod b, .statLine .statMod{color:var(--good)}
 
     @media print{
       header, .noPrint{display:none !important}
@@ -451,7 +452,7 @@ const UNITS = [
       {name:"Light Claim You!", text:"This model has Hatred against enemy models with the WIZARD or PRIEST tag, unless they also have the SOLMIRIC tag."}
     ]
   },
-  { id:"ols_dawnfather", name:"Dawnfather / Dawnmother", faction:"order_of_the_last_sun", type:"LEADER", cost:150, limit:"1",
+  { id:"ols_dawnfather", name:"Dawnfather", faction:"order_of_the_last_sun", type:"LEADER", cost:150, limit:"1",
     tags:["SOLMIRIC","LEADER","HERO","PRIEST","DAWNFATHER","HUMAN"],
     stats:{spd:5,str:3,tgh:3,wil:"6+",hp:3,atk:2,fgt:3,sht:"4+",arm:"6+",xp:20},
     equipLists:["clergy_equipment","ols_special_equipment"],
@@ -549,7 +550,7 @@ const UNITS = [
   { id:"ss_cutthroat", name:"Cutthroat", faction:"", type:"SELLSWORD", cost:80, retainer:20, limit:"",
     tags:["SELLSWORD","ELITE","CUTTHROAT"],
     stats:{spd:6,str:3,tgh:3,wil:"8+",hp:3,atk:2,fgt:4,sht:"3+",arm:"5+",xp:0},
-    equipLists:[], noEquipment:true, fixedWargear:["eq_rapier","eq_dagger","eq_hand_crossbow","eq_light_armor","eq_flash_bomb"],
+    equipLists:[], noEquipment:true, fixedWargear:["eq_rapier","eq_sap","eq_dagger","eq_hand_crossbow","eq_light_armor","eq_flash_bomb"],
     specialRules:[
       {name:"Flash Bomb", text:"The Cutthroat begins each battle with one Flash Bomb."},
       {name:"Sneak Attack", text:"When making an attack against an enemy model that is outnumbered, add 1 attack die."},
@@ -1012,7 +1013,7 @@ const EQUIPMENT_CATALOG = {
   eq_silvered_long_sword: { id:"eq_silvered_long_sword", name:"Silvered Long Sword", category:"MELEE", tags:["WEAPON","MELEE","UNIQUE"], cost:45, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, stats: mkWeapon('1"', "User", "User", "1", "1", ["Deflect","Parry","Silvered"]), rules:"Silvered: against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
   eq_silvered_rapier:     { id:"eq_silvered_rapier", name:"Silvered Rapier", category:"MELEE", tags:["WEAPON","MELEE","UNIQUE"], cost:30, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, stats: mkWeapon('1"', "User", "User -1", "—", "1", ["Crit (Extra Attack)","Defend +1","Riposte","Silvered"]), rules:"Silvered: against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
   eq_silvered_sword:      { id:"eq_silvered_sword", name:"Silvered Sword", category:"MELEE", tags:["WEAPON","MELEE","UNIQUE"], cost:35, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, stats: mkWeapon('1"', "User", "User", "—", "1", ["Fight +1","Silvered"]), rules:"Silvered: against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
-  eq_silvered_ammunition: { id:"eq_silvered_ammunition", name:"Silvered Ammunition", category:"ENHANCEMENT", tags:["UNIVERSAL","UNIQUE"], cost:25, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", rules:"For bows, crossbows, or blastpowder weapons. One-time purchase representing a supply of silver arrows, quarrels, or bullets. Against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
+  eq_silvered_ammunition: { id:"eq_silvered_ammunition", name:"Silvered Ammunition", category:"ENHANCEMENT", tags:["UNIVERSAL","UNIQUE"], cost:25, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, rules:"JUSTICAR and PURIFIERS only. For bows, crossbows, or blastpowder weapons. One-time purchase representing a supply of silver arrows, quarrels, or bullets. Against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
 
   // ---------------- THE GREAT FEAST: UNIQUE EQUIPMENT (p.71) ----------------
   eq_cleaver:          { id:"eq_cleaver", name:"Cleaver (counts as Axe)", category:"MELEE", tags:["WEAPON","MELEE","UNIQUE"], cost:20, rarity:"Common", uniqueToFaction:"the_great_feast", stats: mkWeapon('1"', "User", "User", "1", "1", ["Crit (+1 Damage)","Thrown (Improvised)"]) },
@@ -1396,7 +1397,7 @@ const MERCENARY_DUTIES = [
   { id:"lookout", name:"Lookout", cost:35, requiredTags:["SPOTTER"],
     rules:"While the Lookout is on the battlefield, add 1 to Initiative rolls." },
   { id:"quartermaster", name:"Quartermaster", cost:50, requiredTags:["CAPTAIN","LIEUTENANT"],
-    rules:"When a friendly model uses a Boost while the Quartermaster is on the battlefield, roll a D6. On a 5+, it does so without spending Tempo (once per round). When purchasing equipment, you may reduce the cost of a single item by D10 lumens (to a minimum of half its listed cost), or re-roll the Rarity Check for a single item." },
+    rules:"When a friendly model uses a Boost while the Quartermaster is on the battlefield, roll a D6. On a 5+, it does so without spending Tempo. This may only be successfully used once per round. When purchasing equipment, you may reduce the cost of a single item by D10 lumens (to a minimum of half its listed cost), or re-roll the Rarity Check for a single item." },
   { id:"sapper", name:"Sapper", cost:40, requiredTags:["SHARPSHOOTER","SPOTTER"],
     grantsEquipment:["eq_sapper_bomb"], makesCommon:["eq_blastpowder_bomb"],
     rules:"When this Duty is taken, the warband gains one free Blastpowder Bomb and treats Blastpowder Bombs as Common. Once per battle, a model may ignore the effects of a Misfire result." },
@@ -1437,7 +1438,7 @@ const WARBANDS = [
       {
         id: "solmiric_clergy",
         name: "Solmiric Clergy",
-        description: "A sanctified expedition led by a Dawnfather/Dawnmother (or a Vindicator). Dawnguard and Dawners are Clergy-only. Rite of Consecration: 1 free Holy Water each battle.",
+        description: "A sanctified expedition led by a Dawnfather (or a Vindicator). Dawnguard and Dawners are Clergy-only. Rite of Consecration: 1 free Holy Water each battle.",
         leaders: ["ols_dawnfather", "ols_vindicator"],
         heroes: ["ols_dawnguard", "ols_purifier", "ols_sunward_initiate", "ols_suntouched_vessel"],
         henchmen: ["ols_dawner", "ols_man_at_arms", "ols_vigilant"]
@@ -2815,12 +2816,36 @@ function unitTagPills(unitId){
   return show.map(t => `<span class="pill warn">${t}</span>`).join("");
 }
 
-function statLine(unitId){
+// p.6 / p.36: each equipped armor item's Armor Value (AV) modifies the model's Armor, cumulatively
+// (Heavy Armor -2 and Shield -1 take ARM 6+ to 3+). Only armor bought into the Helmet / Body Armor /
+// Shield slots counts: Sellsword stat lines are printed with their fixed armor already included.
+const ARMOR_FLOOR = 2;
+function armorValueTotal(equip){
+  if (!equip) return 0;
+  return [equip.helmetId, equip.armorId, equip.shieldId].filter(Boolean)
+    .map(id => parseInt(String(getEquip(id)?.stats?.armorValue ?? ""), 10))
+    .filter(Number.isFinite).reduce((a, b) => a + b, 0);
+}
+function effectiveStats(unitId, equip){
   const u = getUnit(unitId);
-  const s = u && u.stats ? u.stats : null;
+  const s = Object.assign({}, u?.stats || {});
+  const av = armorValueTotal(equip);
+  const m = /^(\d+)\+$/.exec(String(s.arm ?? ""));
+  if (av && m){
+    s.baseArm = s.arm;
+    s.arm = `${Math.max(ARMOR_FLOOR, Number(m[1]) + av)}+`;
+  }
+  return s;
+}
+
+function statLine(unitId, equip){
+  const s = getUnit(unitId)?.stats ? effectiveStats(unitId, equip) : null;
   if (!s || s.spd == null) return "";
   const cells = [["SPD",s.spd],["STR",s.str],["TGH",s.tgh],["WIL",s.wil],["HP",s.hp],["ATK",s.atk],["FGT",s.fgt],["SHT",s.sht],["ARM",s.arm],["XP",s.xp]];
-  return `<div class="statLine">${cells.map(([k,v]) => `<span><b>${k}</b> ${escapeHtml(v ?? "—")}</span>`).join("")}</div>`;
+  return `<div class="statLine">${cells.map(([k,v]) => {
+    const mod = k === "ARM" && s.baseArm;
+    return `<span${mod ? ` class="statMod" title="Base ARM ${escapeHtml(s.baseArm)}, modified by equipped armor"` : ""}><b>${k}</b> ${escapeHtml(v ?? "—")}</span>`;
+  }).join("")}</div>`;
 }
 
 /* ---------- per-card view toggles ---------- */
@@ -2944,7 +2969,7 @@ function renderCardSummary(cardLike){
 
   return `
     <div class="muted">${escapeHtml(unit.name)}${modelCount > 1 ? ` × ${modelCount}` : ""} <span class="tiny">${escapeHtml(unitTags(unitId).join(", "))}</span></div>
-    ${statLine(unitId)}
+    ${statLine(unitId, eq)}
     <div class="slotGrid">${sections.map(([t, h]) => `<div class="slotBox"><div class="slotHdr"><strong>${escapeHtml(t)}</strong></div>${h}</div>`).join("")}</div>`;
 }
 
@@ -2990,7 +3015,7 @@ function renderLeaderStatCard(){
     </div>
 
     <div class="muted">Leader: <strong>${leaderUnit ? escapeHtml(leaderUnit.name) : "—"}</strong> <span class="tiny">${leaderUnit ? escapeHtml(unitTags(state.leaderUnitId).join(", ")) : ""}</span></div>
-    ${statLine(state.leaderUnitId)}
+    ${statLine(state.leaderUnitId, state.leaderEquipment)}
 
     <div class="row two" id="leaderDutyRow">
       <div>
@@ -3078,7 +3103,7 @@ function renderStatCard(card, warbandBase){
       ${cardToggleButtonsHtml(ui, removeBtn)}
     </div>
 
-    ${unit ? `<div class="muted">${escapeHtml(unit.name)} <span class="tiny">${escapeHtml(unitTags(card.unitId).join(", "))}</span></div>${statLine(card.unitId)}` : ""}
+    ${unit ? `<div class="muted">${escapeHtml(unit.name)} <span class="tiny">${escapeHtml(unitTags(card.unitId).join(", "))}</span></div>${statLine(card.unitId, card.equipment)}` : ""}
 
     <div class="row two">
       <div>
@@ -3392,7 +3417,7 @@ function buildOneCardModel(cardLike){
     count,
     cost: `${cost.sum}${cost.hasVariable ? "+" : ""}`,
     tags: tags.join(", "),
-    stats: unit?.stats || {},
+    stats: unit ? effectiveStats(cardLike.unitId, equip) : {},
     weaponsHtml: renderWeaponRows(cardLike),
     armorHtml: renderArmorRows(equip.helmetId || "", equip.armorId || "", equip.shieldId || "", unit?.fixedWargear || []),
     equipmentText: equipmentLines.join("\n"),
@@ -3645,7 +3670,7 @@ function buildTTSCardData(cardLike){
     cost: cost.sum,
     costVariable: !!cost.hasVariable,
     tags: unit ? unitTags(cardLike.unitId).slice() : [],
-    stats: Object.assign({}, unit?.stats || {}),
+    stats: unit ? effectiveStats(cardLike.unitId, equip) : {},
     weapons,
     armor,
     equipment,

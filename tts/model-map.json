@@ -38,7 +38,7 @@
 
     "ols_vindicator":          { "faction": "order_of_the_last_sun", "name": "Vindicator",              "tile": "Stormcast Eternals",             "model": "Vindictor" },
     "ols_justicar":            { "faction": "order_of_the_last_sun", "name": "Justicar",                "tile": "Cities of Sigmar",               "model": "Galen ven Denst" },
-    "ols_dawnfather":          { "faction": "order_of_the_last_sun", "name": "Dawnfather / Dawnmother", "tile": "Cities of Sigmar",               "model": "Mallus Forgepriest" },
+    "ols_dawnfather":          { "faction": "order_of_the_last_sun", "name": "Dawnfather", "tile": "Cities of Sigmar",               "model": "Mallus Forgepriest" },
     "ols_purifier":            { "faction": "order_of_the_last_sun", "name": "Purifier",                "tile": "Cities of Sigmar",               "model": "Doralia ven Denst" },
     "ols_sunward_initiate":    { "faction": "order_of_the_last_sun", "name": "Sunward Initiate",        "tile": "Cities of Sigmar",               "model": "Freeguild Command Corps (Arch Knight)" },
     "ols_suntouched_vessel":   { "faction": "order_of_the_last_sun", "name": "Suntouched Vessel",       "tile": "Cities of Sigmar",               "model": "Freeguild Command Corps (War Surgeon)" },
