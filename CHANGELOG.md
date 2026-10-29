@@ -15,7 +15,8 @@
 - **Cutthroat** fixed wargear now includes a Sap.
 - **Dawnfather**: "Dawnmother" removed from the unit name; models may be named and gendered however players like.
 - **Quartermaster**: "On a 5+, it does so without spending Tempo. This may only be successfully used once per round."
-- **Silvered Ammunition** is JUSTICAR and PURIFIER only, like the Silvered weapons.
+- **Silvered Ammunition** is split into **Silvered Bullets**, **Silvered Arrows** and **Silvered Quarrels** (25 each), all JUSTICAR and PURIFIER only, like the Silvered weapons. Saved rosters that held the old Silvered Ammunition lose it on load; re-add the right type.
+- **Mercenary Companies** is now the default warband for new rosters and after Reset. Rosters already saved in the browser keep their warband.
 
 ## 2026-10-24 — Card controls
 

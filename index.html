@@ -1013,7 +1013,10 @@ const EQUIPMENT_CATALOG = {
   eq_silvered_long_sword: { id:"eq_silvered_long_sword", name:"Silvered Long Sword", category:"MELEE", tags:["WEAPON","MELEE","UNIQUE"], cost:45, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, stats: mkWeapon('1"', "User", "User", "1", "1", ["Deflect","Parry","Silvered"]), rules:"Silvered: against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
   eq_silvered_rapier:     { id:"eq_silvered_rapier", name:"Silvered Rapier", category:"MELEE", tags:["WEAPON","MELEE","UNIQUE"], cost:30, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, stats: mkWeapon('1"', "User", "User -1", "—", "1", ["Crit (Extra Attack)","Defend +1","Riposte","Silvered"]), rules:"Silvered: against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
   eq_silvered_sword:      { id:"eq_silvered_sword", name:"Silvered Sword", category:"MELEE", tags:["WEAPON","MELEE","UNIQUE"], cost:35, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, stats: mkWeapon('1"', "User", "User", "—", "1", ["Fight +1","Silvered"]), rules:"Silvered: against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
-  eq_silvered_ammunition: { id:"eq_silvered_ammunition", name:"Silvered Ammunition", category:"ENHANCEMENT", tags:["UNIVERSAL","UNIQUE"], cost:25, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, rules:"JUSTICAR and PURIFIERS only. For bows, crossbows, or blastpowder weapons. One-time purchase representing a supply of silver arrows, quarrels, or bullets. Against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
+  // Silvered ammunition (p.76): one-time purchase, a supply for one kind of missile weapon.
+  eq_silvered_bullets:  { id:"eq_silvered_bullets", name:"Silvered Bullets", category:"ENHANCEMENT", tags:["UNIVERSAL","UNIQUE"], cost:25, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, rules:"JUSTICAR and PURIFIERS only. For blastpowder weapons. One-time purchase representing a supply of silver bullets. Against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
+  eq_silvered_arrows:   { id:"eq_silvered_arrows", name:"Silvered Arrows", category:"ENHANCEMENT", tags:["UNIVERSAL","UNIQUE"], cost:25, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, rules:"JUSTICAR and PURIFIERS only. For bows. One-time purchase representing a supply of silver arrows. Against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
+  eq_silvered_quarrels: { id:"eq_silvered_quarrels", name:"Silvered Quarrels", category:"ENHANCEMENT", tags:["UNIVERSAL","UNIQUE"], cost:25, rarity:"Common", uniqueToFaction:"order_of_the_last_sun", restrictions:{ onlyTags:["JUSTICAR","PURIFIER"] }, rules:"JUSTICAR and PURIFIERS only. For crossbows. One-time purchase representing a supply of silver quarrels. Against DEMON, UNDEAD, or WEREBEAST models, add 1 to Hit rolls and Injury Rolls." },
 
   // ---------------- THE GREAT FEAST: UNIQUE EQUIPMENT (p.71) ----------------
   eq_cleaver:          { id:"eq_cleaver", name:"Cleaver (counts as Axe)", category:"MELEE", tags:["WEAPON","MELEE","UNIQUE"], cost:20, rarity:"Common", uniqueToFaction:"the_great_feast", stats: mkWeapon('1"', "User", "User", "1", "1", ["Crit (+1 Damage)","Thrown (Improvised)"]) },
@@ -1147,7 +1150,7 @@ const OLS_EQUIP_LISTS = {
     id: "ols_special_equipment", name: "Order of the Last Sun Special Equipment", faction: "order_of_the_last_sun",
     items: [
       "eq_holy_symbol","eq_holy_water","eq_sunfire_phial","eq_torch",
-      "eq_silvered_dagger","eq_silvered_long_sword","eq_silvered_rapier","eq_silvered_sword","eq_silvered_ammunition"
+      "eq_silvered_dagger","eq_silvered_long_sword","eq_silvered_rapier","eq_silvered_sword","eq_silvered_bullets","eq_silvered_arrows","eq_silvered_quarrels"
     ],
     overrides: {
       eq_holy_symbol: { cost: 20 },
@@ -1553,9 +1556,13 @@ function maxModelsPerCard(unitId){
 
 const STORAGE_KEY = "mirrored_city_builder_lists_v5";
 
+// New rosters (and Reset) start on this warband.
+const DEFAULT_WARBAND_ID = "mercenary_companies";
+const defaultWarbandId = () => (WARBANDS.find(w => w.id === DEFAULT_WARBAND_ID) || WARBANDS[0])?.id || "";
+
 let state = {
   name: "",
-  warbandId: WARBANDS[0]?.id || "",
+  warbandId: defaultWarbandId(),
   archetypeId: "",
   leaderUnitId: "",
   leaderEquipment: null,
@@ -4175,7 +4182,7 @@ byId("btnAddHench").addEventListener("click", () => {
 byId("btnReset").addEventListener("click", () => {
   if (!confirm("Reset roster? This clears saved data in this browser.")) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = { name:"", warbandId: WARBANDS[0]?.id || "", archetypeId:"", leaderUnitId:"", leaderEquipment:null, leaderCustomName:"", leaderDutyId:"", leaderMagicIds:[], cards: [] };
+  state = { name:"", warbandId: defaultWarbandId(), archetypeId:"", leaderUnitId:"", leaderEquipment:null, leaderCustomName:"", leaderDutyId:"", leaderMagicIds:[], cards: [] };
   render();
 });
 
@@ -4339,7 +4346,7 @@ function importRoster(){
 
 (function boot(){
   load();
-  if (!state.warbandId && WARBANDS[0]) state.warbandId = WARBANDS[0].id;
+  if (!state.warbandId) state.warbandId = defaultWarbandId();
   render();
 })();
 </script>
